@@ -134,6 +134,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/fonts/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -147,6 +148,27 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: SegoeUI
+      fonts:
+        - asset: assets/fonts/segoeui.ttf
+
+    - family: SegoeUI Bold
+      fonts:
+        - asset: assets/fonts/segoeui_bold.ttf
+
+    - family: SegoeUI Italic
+      fonts:
+        - asset: assets/fonts/segoeui_italic.ttf
+
+    - family: SegoeUI Italic Bold
+      fonts:
+        - asset: assets/fonts/segoeui_italic_bold.ttf
+
+    - family: SegoeUI SemiBold
+      fonts:
+        - asset: assets/fonts/segoeui_semibold.ttf
+
   # fonts:
   #   - family: Schyler
   #     fonts:

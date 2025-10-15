@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.1_Register/pages/register_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/pages/login_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-  static const String LoginPageRoute = "/login";
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+  static const String RegisterPageRoute = "/register";
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,6 +122,35 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 15),
+                  // Password TextField
+                  TextField(
+                    obscureText: true,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'SegoeUI SemiBold',
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Nhập lại mật khẩu',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: const Color(0xFF2A2A2A),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Colors.grey, // màu viền khi chưa focus
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Colors.cyanAccent, // màu viền khi focus
+                          width: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
 
                   // Login Button
@@ -150,42 +179,6 @@ class _LoginPageState extends State<LoginPage> {
                         child: Container(
                           alignment: Alignment.center,
                           child: Text(
-                            'Đăng nhập',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              color: Colors.white,
-                              fontFamily: 'SegoeUI Bold',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Register Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF454549),
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        shadowColor: Colors.transparent,
-                      ),
-                      onPressed: () {
-                        Get.toNamed(RegisterPage.RegisterPageRoute);
-                      },
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: Color(0xFF454549),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: Text(
                             'Đăng ký',
                             style: const TextStyle(
                               fontSize: 22,
@@ -197,15 +190,20 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+
+                  // Register Button
+
                   const SizedBox(height: 16),
 
                   // FORGOT PASSWORD
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed(LoginPage.LoginPageRoute);
+                      },
                       child: Text(
-                        'Quên mật khẩu ?',
+                        'Đã có tài khoản',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.blueAccent,

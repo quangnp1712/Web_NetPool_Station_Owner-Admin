@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.1_Register/pages/register_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/pages/login_page.dart';
 
 class RouteGenerator {
@@ -10,6 +11,10 @@ class RouteGenerator {
       GetPage(
         name: LoginPage.LoginPageRoute,
         page: () => const LoginPage(),
+      ),
+      GetPage(
+        name: RegisterPage.RegisterPageRoute,
+        page: () => const RegisterPage(),
       ),
       // GetPage(
       //   name: LandingNavBottomWidget.LandingNavBottomWidgetRoute,
