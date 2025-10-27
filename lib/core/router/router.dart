@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/landing_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.1_Register/pages/register_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/pages/login_page.dart';
 
@@ -15,6 +18,14 @@ class RouteGenerator {
       GetPage(
         name: RegisterPage.RegisterPageRoute,
         page: () => const RegisterPage(),
+      ),
+      GetPage(
+        name: HomePage.HomePageRoute,
+        page: () => const HomePage(),
+      ),
+      GetPage(
+        name: rootRoute,
+        page: () => LandingPage(),
       ),
       // GetPage(
       //   name: LandingNavBottomWidget.LandingNavBottomWidgetRoute,

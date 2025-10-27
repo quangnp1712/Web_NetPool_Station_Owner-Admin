@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.1_Register/pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -137,7 +139,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         shadowColor: Colors.transparent,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed(rootRoute);
+                      },
                       child: Ink(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
