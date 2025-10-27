@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.1_Register/pages/register_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-  static const String LoginPageRoute = "/login";
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -140,7 +140,9 @@ class _LoginPageState extends State<LoginPage> {
                         shadowColor: Colors.transparent,
                       ),
                       onPressed: () {
-                        Get.toNamed(rootRoute);
+                        // Get.toNamed(rootRoute);
+                        navigationController
+                            .navigateAndSyncURL(dashboardPageRoute);
                       },
                       child: Ink(
                         decoration: BoxDecoration(
@@ -180,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                         shadowColor: Colors.transparent,
                       ),
                       onPressed: () {
-                        Get.toNamed(RegisterPage.RegisterPageRoute);
+                        Get.toNamed(registerPageRoute);
                       },
                       child: Ink(
                         decoration: BoxDecoration(

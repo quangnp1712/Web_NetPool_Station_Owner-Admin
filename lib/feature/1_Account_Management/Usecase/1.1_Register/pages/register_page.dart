@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/pages/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
-  static const String RegisterPageRoute = "/register";
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -200,7 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
                       onTap: () {
-                        Get.toNamed(LoginPage.LoginPageRoute);
+                        Get.toNamed(loginPageRoute);
                       },
                       child: Text(
                         'Đã có tài khoản',

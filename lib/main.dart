@@ -7,6 +7,7 @@ import 'package:get/get_navigation/src/routes/transitions_type.dart'
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/router/router.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/404/error.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/bloc/login_bloc.dart';
@@ -64,7 +65,7 @@ class _MyAppState extends State<MyApp> {
           textTheme: GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)
               .apply(bodyColor: Colors.white),
         ),
-        initialRoute: LoginPage.LoginPageRoute,
+        initialRoute: loginPageRoute,
       ),
     );
   }

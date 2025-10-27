@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/side_menu.dart';
@@ -25,7 +26,6 @@ class _LandingPageState extends State<LandingPage> {
         child: SideMenu(),
       ),
       body: ResponsiveWidget(
-
           // Large Screen //
           largeScreen: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,12 +43,10 @@ class _LandingPageState extends State<LandingPage> {
               )
             ],
           ),
-
-          // Small Screen //
           smallScreen: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             color: Colors.blue,
-            // child: localNavigator(),
+            child: localNavigator(),
           )),
     );
   }

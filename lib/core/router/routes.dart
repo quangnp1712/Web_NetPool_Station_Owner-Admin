@@ -1,11 +1,21 @@
+// PAGE //
+const String loginPageRoute = "/login";
+const String registerPageRoute = "/register";
+const String homePageRoute = "/home";
+
+// ------------ //
+// ------------ //
+// SIDENAV MENU //
+
 const rootRoute = "/";
 
-// DASHBOARD //
-const dashboardPageName = "Dashboard";
+// DASHBOARD - Tổng quan //
+const dashboardPageName = "Tổng quan";
 const dashboardPageRoute = "/dashboard";
 
 // QUẢN LÝ NGƯỜI CHƠI //
-const accountListPageName = "Account List";
+const String accountParentName = "Quản lý Tài khoản Người chơi";
+const String accountListPageName = "Danh sách tài khoản";
 const accountListPageRoute = "/acc_list";
 
 // QUẢN LÝ ĐẶT LỊCH //
@@ -17,11 +27,19 @@ const matchMakingPageName = "Match";
 const matchMakingPageRoute = "/match";
 
 // QUẢN LÝ STATION //
-const stationPageName = "Stationn";
+const String stationParentName = "Quản lý Station";
+const String stationListPageName = "Danh sách Station";
+const String stationCreatePageName = "Tạo Station";
+const String stationUpdatePageName = "Cập nhật Station";
+
 const stationPageRoute = "/station";
 
 // QUẢN LÝ SPACE - LOẠI HÌNH //
-const spacePageName = "Space";
+const String spaceParentName = "Quản lý Loại hình";
+const String spaceListPageName = "Danh sách Loại hình";
+const String spaceCreatePageName = "Tạo Loại hình";
+const String spaceUpdatePageName = "Cập nhật Station - Loại hình";
+
 const spacePageRoute = "/space";
 
 // QUẢN LÝ AREA - KHU VỰC //
@@ -45,25 +63,4 @@ const paymentPageName = "Payment";
 const paymentPageRoute = "/payment";
 
 // ĐĂNG XUẤT //
-const logoutName = "Logout";
-
-class MenuItem {
-  final String name;
-  final String route;
-
-  MenuItem(this.name, this.route);
-}
-
-List<MenuItem> sideMenuItemRoutes = [
-  MenuItem(dashboardPageName, dashboardPageRoute),
-  MenuItem(accountListPageName, accountListPageRoute),
-  MenuItem(bookingPageName, accountListPageRoute),
-  MenuItem(matchMakingPageName, accountListPageRoute),
-  MenuItem(stationPageName, accountListPageRoute),
-  MenuItem(spacePageName, accountListPageRoute),
-  MenuItem(areaPageName, accountListPageRoute),
-  MenuItem(propertyPageName, accountListPageRoute),
-  MenuItem(menuPageName, accountListPageRoute),
-  MenuItem(staffPageName, accountListPageRoute),
-  MenuItem(paymentPageName, accountListPageRoute),
-];
+const logoutName = "Đăng xuất";

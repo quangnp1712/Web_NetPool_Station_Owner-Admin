@@ -17,152 +17,181 @@ class SideMenu extends StatelessWidget {
 
     return Container(
       color: AppColors.bgDark,
-      child: Column(
-        children: [
-          if (ResponsiveWidget.isSmallScreen(context))
-            Container(
-              height: 80,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Image.asset(
-                      "assets/images/logo_no_bg.png",
-                      width: 270,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          Expanded(
-            child: ListView(
+      child: Column(children: [
+        if (ResponsiveWidget.isSmallScreen(context))
+          Container(
+            height: 80,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Column(
-                //   mainAxisSize: MainAxisSize.min,
-                //   children: sideMenuItemRoutes
-                //       .map((item) => SideMenuItem(
-                //           itemName: item.name,
-                //           onTap: () {
-                //             if (!menuController.isActive(item.name)) {
-                //               menuController.changeActiveItemTo(item.name);
-                //               if (ResponsiveWidget.isSmallScreen(context)) {
-                //                 Get.back();
-                //               }
-                //               navigationController.navigateTo(item.route);
-                //             }
-                //           }))
-                //       .toList(),
-                // )
-
-                // Mục 1: Tổng quan (Không có con)
-                // Sử dụng Widget SideMenuItem đã sửa đổi
-                SideMenuItem(
-                  itemName: dashboardPageName,
-                  icon: Icons.pie_chart, // Icon từ ảnh
-                  onTap: () {
-                    if (!menuController.isActive(dashboardPageName)) {
-                      menuController.changeActiveItemTo(dashboardPageName);
-                      if (ResponsiveWidget.isSmallScreen(context)) Get.back();
-                      navigationController.navigateTo(dashboardPageRoute);
-                    }
-                  },
-                ),
-
-                // Mục 2: Quản lý Tài khoản (Có con)
-                // Sử dụng Widget CustomExpansionItem mới
-                CustomExpansionItem(
-                  parentName: "Quản lý Tài khoản Người chơi",
-                  icon: Icons.person_outline, // Icon từ ảnh
-                  children: [
-                    SideMenuChildItem(
-                      // Widget mới cho mục con
-                      itemName: "Danh sách tài khoản",
-                      onTap: () {
-                        if (!menuController.isActive(accountListPageName)) {
-                          menuController.changeActiveItemTo(
-                              "Danh sách tài khoản",
-                              parentName: "Quản lý Tài khoản Người chơi");
-                          if (ResponsiveWidget.isSmallScreen(context))
-                            Get.back();
-                          navigationController.navigateTo(accountListPageRoute);
-                        }
-                      },
-                    )
-                  ],
-                ),
-
-                // Mục 3: Quản lý Station
-                CustomExpansionItem(
-                  parentName: "Quản lý Station",
-                  icon: Icons.store_outlined,
-                  children: [
-                    SideMenuChildItem(
-                      itemName: "Danh sách Station",
-                      onTap: () {
-                        menuController.changeActiveItemTo("Danh sách Station",
-                            parentName: "Quản lý Station");
-                      },
-                    ),
-                    SideMenuChildItem(
-                      itemName: "Tạo Station",
-                      onTap: () {
-                        menuController.changeActiveItemTo("Tạo Station",
-                            parentName: "Quản lý Station");
-                      },
-                    ),
-                    SideMenuChildItem(
-                      itemName: "Cập nhật Station",
-                      onTap: () {
-                        menuController.changeActiveItemTo("Cập nhật Station",
-                            parentName: "Quản lý Station");
-                      },
-                    ),
-                  ],
-                ),
-
-                // Mục 4: Quản lý Loại hình
-                CustomExpansionItem(
-                  parentName: "Quản lý Loại hình",
-                  icon: Icons.category_outlined,
-                  children: [
-                    SideMenuChildItem(
-                        itemName: "Danh sách Loại hình",
-                        onTap: () {
-                          menuController.changeActiveItemTo(
-                              "Danh sách Loại hình",
-                              parentName: "Quản lý Loại hình");
-                        }),
-                    SideMenuChildItem(
-                        itemName: "Tạo Loại hình",
-                        onTap: () {
-                          menuController.changeActiveItemTo("Tạo Loại hình",
-                              parentName: "Quản lý Loại hình");
-                        }),
-                    SideMenuChildItem(
-                        itemName: "Cập nhật Station - Loại hình",
-                        onTap: () {
-                          menuController.changeActiveItemTo(
-                              "Cập nhật Station - Loại hình",
-                              parentName: "Quản lý Loại hình");
-                        }),
-                  ],
+                Center(
+                  child: Image.asset(
+                    "assets/images/logo_no_bg.png",
+                    width: 270,
+                  ),
                 ),
               ],
             ),
           ),
+        Expanded(
+          child: ListView(
+            children: [
+              // Column(
+              //   mainAxisSize: MainAxisSize.min,
+              //   children: sideMenuItemRoutes
+              //       .map((item) => SideMenuItem(
+              //           itemName: item.name,
+              //           onTap: () {
+              //             if (!menuController.isActive(item.name)) {
+              //               menuController.changeActiveItemTo(item.name);
+              //               if (ResponsiveWidget.isSmallScreen(context)) {
+              //                 Get.back();
+              //               }
+              //               navigationController.navigateTo(item.route);
+              //             }
+              //           }))
+              //       .toList(),
+              // )
 
-          // MỤC ĐĂNG XUẤT (Ở DƯỚI CÙNG)
-          Divider(color: Colors.grey[800]),
-          SideMenuItem(
-            itemName: logoutName,
-            icon: Icons.logout, // Icon từ ảnh
-            isLogout: true, // Flag để tô màu đỏ
-            onTap: () {
-              // ... Xử lý Đăng xuất ...
-            },
+              // Mục 1: Tổng quan (Không có con)
+              // Sử dụng Widget SideMenuItem đã sửa đổi
+              SideMenuItem(
+                itemName: dashboardPageName,
+                icon: Icons.pie_chart, // Icon từ ảnh
+                onTap: () {
+                  if (!menuController.isActive(dashboardPageName)) {
+                    menuController.changeActiveItemTo(dashboardPageName);
+                    if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                    navigationController.navigateAndSyncURL(dashboardPageRoute);
+                  }
+                },
+              ),
+
+              // Mục 2: Quản lý Tài khoản (Có con)
+              // Sử dụng Widget CustomExpansionItem mới
+              CustomExpansionItem(
+                parentName: accountParentName, // Dùng hằng số
+                icon: Icons.person_outline,
+                children: [
+                  SideMenuChildItem(
+                    itemName: accountListPageName, // Dùng hằng số
+                    onTap: () {
+                      if (!menuController.isActive(accountListPageName)) {
+                        menuController.changeActiveItemTo(
+                            accountListPageName, // Dùng hằng số
+                            parentName: accountParentName // Dùng hằng số
+                            );
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(accountListPageRoute);
+                      }
+                    },
+                  )
+                ],
+              ),
+
+              // Mục 3: Quản lý Station
+              CustomExpansionItem(
+                parentName: stationParentName, // Dùng hằng số
+                icon: Icons.store_outlined,
+                children: [
+                  SideMenuChildItem(
+                    itemName: stationListPageName, // Dùng hằng số
+                    onTap: () {
+                      if (!menuController.isActive(stationListPageName)) {
+                        menuController.changeActiveItemTo(stationListPageName,
+                            parentName: stationParentName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(stationPageRoute);
+                      }
+                    },
+                  ),
+                  SideMenuChildItem(
+                    itemName: stationCreatePageName, // Dùng hằng số
+                    onTap: () {
+                      if (!menuController.isActive(stationCreatePageName)) {
+                        menuController.changeActiveItemTo(stationCreatePageName,
+                            parentName: stationParentName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(stationPageRoute);
+                      }
+                    },
+                  ),
+                  SideMenuChildItem(
+                    itemName: stationUpdatePageName, // Dùng hằng số
+                    onTap: () {
+                      if (!menuController.isActive(stationUpdatePageName)) {
+                        menuController.changeActiveItemTo(stationUpdatePageName,
+                            parentName: stationParentName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(stationPageRoute);
+                      }
+                    },
+                  ),
+                ],
+              ),
+
+              // Mục 4: Quản lý Loại hình
+              CustomExpansionItem(
+                parentName: spaceParentName, // Dùng hằng số
+                icon: Icons.category_outlined,
+                children: [
+                  SideMenuChildItem(
+                      itemName: spaceListPageName, // Dùng hằng số
+                      onTap: () {
+                        if (!menuController.isActive(spaceListPageName)) {
+                          menuController.changeActiveItemTo(spaceListPageName,
+                              parentName: spaceParentName);
+                          if (ResponsiveWidget.isSmallScreen(context))
+                            Get.back();
+                          navigationController
+                              .navigateAndSyncURL(spacePageRoute);
+                        }
+                      }),
+                  SideMenuChildItem(
+                      itemName: spaceCreatePageName, // Dùng hằng số
+                      onTap: () {
+                        if (!menuController.isActive(spaceCreatePageName)) {
+                          menuController.changeActiveItemTo(spaceCreatePageName,
+                              parentName: spaceParentName);
+                          if (ResponsiveWidget.isSmallScreen(context))
+                            Get.back();
+                          navigationController
+                              .navigateAndSyncURL(spacePageRoute);
+                        }
+                      }),
+                  SideMenuChildItem(
+                      itemName: spaceUpdatePageName, // Dùng hằng số
+                      onTap: () {
+                        if (!menuController.isActive(spaceUpdatePageName)) {
+                          menuController.changeActiveItemTo(spaceUpdatePageName,
+                              parentName: spaceParentName);
+                          if (ResponsiveWidget.isSmallScreen(context))
+                            Get.back();
+                          navigationController
+                              .navigateAndSyncURL(spacePageRoute);
+                        }
+                      }),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // MỤC ĐĂNG XUẤT (Ở DƯỚI CÙNG)
+        Divider(color: Colors.grey[800]),
+        SideMenuItem(
+          itemName: logoutName,
+          icon: Icons.logout, // Icon từ ảnh
+          isLogout: true, // Flag để tô màu đỏ
+          onTap: () {
+            // ... Xử lý Đăng xuất ...
+          },
+        ),
+      ]),
     );
   }
 }
