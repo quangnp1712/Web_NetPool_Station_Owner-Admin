@@ -8,10 +8,15 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/router/router.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/bloc/register_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/shared_preferences/register_shared_pref.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/404/error.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/bloc/login_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/Usecase/1.2_Login/pages/login_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/pages/login_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/menu_controller.dart'
     as menu_controller;
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
@@ -29,6 +34,7 @@ Future<void> main() async {
   // _FBSignAnonymous();
   Get.put(menu_controller.MenuController());
   Get.put(NavigationController());
+  SharedPreferencesHelper.clearAll();
   runApp(const MyApp());
 }
 
@@ -46,6 +52,8 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LoginBloc()),
+        BlocProvider(create: (_) => RegisterBloc()),
+        BlocProvider(create: (_) => ValidEmailBloc()),
       ],
       child: GetMaterialApp(
         localizationsDelegates: const [
@@ -66,6 +74,27 @@ class _MyAppState extends State<MyApp> {
               .apply(bodyColor: Colors.white),
         ),
         initialRoute: loginPageRoute,
+
+        // --- XỬ LÝ KHI RỜI TRANG ---
+        routingCallback: (routing) {
+          // Định nghĩa các route thuộc luồng Đăng ký / Quên mật khẩu
+          // (Đây là các route mà bạn *cần* giữ lại email)
+          const authFlowRoutes = [
+            validEmailPageRoute,
+          ];
+
+          final previousRoute = routing?.previous; // Route vừa rời đi
+          final currentRoute = routing?.current; // Route sắp vào
+
+          // KIỂM TRA: Nếu ta vừa rời (previous) 1 trang trong luồng auth
+          // VÀ ta sắp vào (current) 1 trang KHÔNG NẰM trong luồng auth
+          // (ví dụ: đi từ /register -> /login hoặc /dashboard)
+          if (authFlowRoutes.contains(previousRoute)) {
+            RegisterSharedPref.clearEmail();
+            VerifyEmailPref.clearEmail();
+            DebugLogger.printLog("xoa Pref");
+          }
+        },
       ),
     );
   }

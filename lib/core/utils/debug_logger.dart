@@ -12,6 +12,6 @@ class DebugLogger {
 
   // Phương thức static để in log
   static void printLog(String message) {
-    print('\x1B[32m$message\x1B[0m'); // Màu xanh lá
+    print('\x1B[31m$message\x1B[0m'); // Màu đỏ
   }
 }

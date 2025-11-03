@@ -61,22 +61,22 @@ dynamic processResponse(http.Response response) {
       return {"body": responseJson, "success": true};
     case 400: //Bad request
       throw BadRequestException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     case 401: //Unauthorized
       throw UnAuthorizedException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     case 403: //Forbidden
       throw UnAuthorizedException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     case 404: //Resource Not Found
       throw NotFoundException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     case 500: //Internal Server Error
       throw InternalServerErrorException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     case 409: //Internal Server Error
       throw ConflictErrorException(
-          jsonDecode(response.body)['data'], response.statusCode);
+          jsonDecode(response.body)['message'], response.statusCode);
     default:
       throw FetchDataException('Something went wrong! ${response.statusCode}');
   }

@@ -22,4 +22,8 @@ class SharedPreferencesHelper {
   static SharedPreferences get preferences {
     return _preferences!;
   }
+
+  static Future<void> clearAll() async {
+    await preferences.clear();
+  }
 }

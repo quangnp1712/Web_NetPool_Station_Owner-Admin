@@ -1,6 +1,8 @@
 // PAGE //
 const String loginPageRoute = "/login";
 const String registerPageRoute = "/register";
+const String validEmailPageRoute = "/valid-email";
+const String sendValidCodePageRoute = "/send-valid";
 const String homePageRoute = "/home";
 
 // ------------ //
