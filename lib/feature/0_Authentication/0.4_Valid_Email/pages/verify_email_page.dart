@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Valid Email !//
 class ValidEmailPage extends StatefulWidget {
@@ -37,9 +38,9 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
       buildWhen: (previous, current) => current is! ValidEmailActionState,
       listener: (context, state) {
         switch (state.runtimeType) {
-          case ValidEmailSuccessState:
-            Get.toNamed(rootRoute);
-            // Get.offAllNamed(rootRoute);
+          case ShowSnackBarActionState:
+            final snackBarState = state as ShowSnackBarActionState;
+            ShowSnackBar(snackBarState.message, snackBarState.success);
             break;
         }
       },

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/bloc/account_list_bloc.dart';
+
+//! Account List - DS người chơi !//
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -9,45 +13,63 @@ class AccountListPage extends StatefulWidget {
 }
 
 class _AccountListPageState extends State<AccountListPage> {
+  final AccountListBloc accountListBloc = AccountListBloc();
+
+  @override
+  void initState() {
+    accountListBloc.add(AccountListInitialEvent());
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(0.0),
-      children: [
-        Container(
-          // Thêm padding cho toàn bộ body
-          padding: const EdgeInsets.all(40.0),
-          color: AppColors.mainBackground, // Màu nền tối bên ngoài
-          alignment: Alignment.center,
-          child: Container(
-            // Đây là Container chính với hiệu ứng glow
-            decoration: BoxDecoration(
-              color: AppColors.containerBackground,
-              borderRadius: BorderRadius.circular(20.0),
-              boxShadow: [
-                // Áp dụng chính xác thông số Drop Shadow bạn đã cung cấp
-                BoxShadow(
-                  color: AppColors.primaryGlow,
-                  blurRadius: 20.0,
-                  spreadRadius: 0.5,
-                  offset: const Offset(0, 4),
+    return BlocConsumer<AccountListBloc, AccountListState>(
+      bloc: accountListBloc,
+      listenWhen: (previous, current) => current is AccountListActionState,
+      buildWhen: (previous, current) => current is! AccountListActionState,
+      listener: (context, state) {
+        switch (state.runtimeType) {}
+      },
+      builder: (context, state) {
+        return ListView(
+          padding: const EdgeInsets.all(0.0),
+          children: [
+            Container(
+              // Thêm padding cho toàn bộ body
+              padding: const EdgeInsets.all(40.0),
+              color: AppColors.mainBackground, // Màu nền tối bên ngoài
+              alignment: Alignment.center,
+              child: Container(
+                // Đây là Container chính với hiệu ứng glow
+                decoration: BoxDecoration(
+                  color: AppColors.containerBackground,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    // Áp dụng chính xác thông số Drop Shadow bạn đã cung cấp
+                    BoxShadow(
+                      color: AppColors.primaryGlow,
+                      blurRadius: 20.0,
+                      spreadRadius: 0.5,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // 1. Hàng Filter (Tìm kiếm, Dropdown, Button)
-                _buildFilterBar(),
+                child: Column(
+                  children: [
+                    // 1. Hàng Filter (Tìm kiếm, Dropdown, Button)
+                    _buildFilterBar(),
 
-                // 2. Bảng Dữ liệu
-                _buildDataTable(),
-              ],
+                    // 2. Bảng Dữ liệu
+                    _buildDataTable(),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-        // 3. Footer (Copyright)
-        _buildFooter(),
-      ],
+            // 3. Footer (Copyright)
+            _buildFooter(),
+          ],
+        );
+      },
     );
   }
 

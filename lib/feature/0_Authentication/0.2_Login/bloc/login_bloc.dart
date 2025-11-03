@@ -69,37 +69,41 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(LoginSuccessState());
         DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Đăng nhập thành công", success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Đăng nhập thành công", success: responseSuccess));
       } else if (responseStatus == 404) {
         DebugLogger.printLog("$responseStatus - $responseMessage");
 
         emit(Login_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Email hoặc mật khẩu không đúng",
-        //     success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Email hoặc mật khẩu không đúng",
+            success: responseSuccess));
       } else if (responseStatus == 401) {
         DebugLogger.printLog("$responseStatus - $responseMessage");
 
         emit(Login_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: responseMessage, success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: responseMessage, success: responseSuccess));
       } else if (responseStatus == 403) {
         DebugLogger.printLog("Chưa xác thực email");
 
         emit(Login_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: responseMessage, success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Chưa xác thực email", success: responseSuccess));
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
 
         emit(Login_LoadingState(isLoading: false));
+        emit(ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại", success: responseSuccess));
       }
     } catch (e) {
       emit(Login_LoadingState(isLoading: false));
+      emit(ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại", success: false));
       DebugLogger.printLog(e.toString());
     }
   }

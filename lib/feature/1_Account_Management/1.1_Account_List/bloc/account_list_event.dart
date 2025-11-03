@@ -1,0 +1,30 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first, must_be_immutable
+part of 'account_list_bloc.dart';
+
+sealed class AccountListEvent extends Equatable {
+  const AccountListEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class AccountListInitialEvent extends AccountListEvent {}
+
+class SearchEvent extends AccountListEvent {
+  String? search;
+  String? statusCodes;
+  String? roleIds;
+  String? sorter;
+  String? current;
+  String? pageSize;
+  String? stationId;
+  SearchEvent({
+    this.search,
+    this.statusCodes,
+    this.roleIds,
+    this.sorter,
+    this.current,
+    this.pageSize,
+    this.stationId,
+  });
+}

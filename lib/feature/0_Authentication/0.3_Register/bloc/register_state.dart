@@ -22,3 +22,10 @@ class Register_LoadingState extends RegisterActionState {
 }
 
 class RegisterSuccessState extends RegisterActionState {}
+
+class ShowSnackBarActionState extends RegisterActionState {
+  final String message;
+  final bool success;
+
+  ShowSnackBarActionState({required this.success, required this.message});
+}

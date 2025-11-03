@@ -27,3 +27,10 @@ class Login_LoadingState extends LoginActionState {
 }
 
 class LoginSuccessState extends LoginActionState {}
+
+class ShowSnackBarActionState extends LoginActionState {
+  final String message;
+  final bool success;
+
+  ShowSnackBarActionState({required this.success, required this.message});
+}

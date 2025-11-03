@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Login !//
 class LoginPage extends StatefulWidget {
@@ -39,8 +41,13 @@ class _LoginPageState extends State<LoginPage> {
       listener: (context, state) {
         switch (state.runtimeType) {
           case LoginSuccessState:
-            Get.toNamed(rootRoute);
-            // Get.offAllNamed(rootRoute);
+            // Get.toNamed(rootRoute);
+            Get.offAllNamed(rootRoute);
+            break;
+
+          case ShowSnackBarActionState:
+            final snackBarState = state as ShowSnackBarActionState;
+            ShowSnackBar(snackBarState.message, snackBarState.success);
             break;
         }
       },
@@ -84,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Chỉ lắng nghe sự kiện phím *nhấn*
                       if (event is KeyDownEvent) {
                         // Kiểm tra xem có phải phím Enter không
+
                         if (event.logicalKey == LogicalKeyboardKey.enter) {
                           // Chạy hàm login
                           _formFocusNode.requestFocus();
@@ -334,6 +342,49 @@ class _LoginPageState extends State<LoginPage> {
                                   },
                                   child: Text(
                                     'Xác thực email',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                          // FORGOT PASSWORD
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // 1. Liên kết "Quên mật khẩu" (Sát trái)
+                              MouseRegion(
+                                // THÊM: Thay đổi con trỏ chuột khi hover
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    ShowSnackBar("Thành công", true);
+                                  },
+                                  child: Text(
+                                    'snack success',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 2. Liên kết "Xác thực email" (Sát phải)
+                              MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    ShowSnackBar("Lỗi", false);
+                                  },
+                                  child: Text(
+                                    'snackbar fail',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.blueAccent,

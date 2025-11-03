@@ -65,24 +65,30 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
       var responseBody = results['body'];
       if (responseSuccess || responseStatus == 200) {
         emit(ValidEmail_LoadingState(isLoading: false));
+        emit(ShowSnackBarActionState(
+            message: "OTP đã được gửi đến Email $_email",
+            success: responseSuccess));
         DebugLogger.printLog("$responseStatus - $responseMessage - thanh cong");
       } else if (responseStatus == 404) {
         emit(ValidEmail_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Email hoặc mật khẩu không đúng",
-        //     success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: responseMessage, success: responseSuccess));
       } else if (responseStatus == 401) {
         emit(ValidEmail_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: responseMessage, success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: responseMessage, success: responseSuccess));
       } else {
         emit(ValidEmail_LoadingState(isLoading: false));
+        emit(ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại", success: false));
         DebugLogger.printLog("$responseStatus - $responseMessage");
       }
     } catch (e) {
       emit(ValidEmail_LoadingState(isLoading: false));
+      emit(ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại", success: false));
       DebugLogger.printLog(e.toString());
     }
   }
@@ -106,7 +112,7 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
         emit(ValidEmail_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage - thanh cong");
         LoginPref.setEmail(_email);
-        Get.toNamed(loginPageRoute);
+        Get.offAllNamed(loginPageRoute);
       } else if (responseStatus == 404) {
         emit(ValidEmail_LoadingState(isLoading: false));
 

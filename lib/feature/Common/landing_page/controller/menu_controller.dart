@@ -6,6 +6,7 @@ import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/repository/landing_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 MenuController menuController = MenuController.instance;
 
@@ -72,6 +73,9 @@ class MenuController extends GetxController {
         Get.toNamed(loginPageRoute);
         DebugLogger.printLog("$responseMessage - đăng xuất");
       }
-    } catch (e) {}
+      ShowSnackBar("Đăng xuất thành công", true);
+    } catch (e) {
+      ShowSnackBar("Lỗi! Vui lòng thử lại", false);
+    }
   }
 }

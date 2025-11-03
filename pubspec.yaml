@@ -106,6 +106,9 @@ dependencies:
   # Dependency Injection (DI)
   provider: ^6.0.5
 
+  # data table web
+  data_table_2: ^2.6.0
+
 dev_dependencies:
   mockito: ^5.4.5
   build_runner: ^2.4.6

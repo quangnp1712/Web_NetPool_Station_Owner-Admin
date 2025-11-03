@@ -5,6 +5,8 @@ const String validEmailPageRoute = "/valid-email";
 const String sendValidCodePageRoute = "/send-valid";
 const String homePageRoute = "/home";
 
+const testRoute = "/test";
+
 // ------------ //
 // ------------ //
 // SIDENAV MENU //

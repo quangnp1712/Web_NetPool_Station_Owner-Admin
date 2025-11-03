@@ -14,6 +14,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/shared_preferences/register_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/404/error.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/pages/login_page.dart';
@@ -54,6 +55,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => LoginBloc()),
         BlocProvider(create: (_) => RegisterBloc()),
         BlocProvider(create: (_) => ValidEmailBloc()),
+        BlocProvider(create: (_) => AccountListBloc()),
       ],
       child: GetMaterialApp(
         localizationsDelegates: const [

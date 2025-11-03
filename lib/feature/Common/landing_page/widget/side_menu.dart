@@ -162,6 +162,19 @@ class SideMenu extends StatelessWidget {
                       }),
                 ],
               ),
+
+              //! TEST
+              SideMenuItem(
+                itemName: "TEST",
+                icon: Icons.pie_chart, // Icon từ ảnh
+                onTap: () {
+                  if (!menuController.isActive("TEST")) {
+                    menuController.changeActiveItemTo("TEST");
+                    if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                    navigationController.navigateAndSyncURL(testRoute);
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -173,7 +186,7 @@ class SideMenu extends StatelessWidget {
           icon: Icons.logout, // Icon từ ảnh
           isLogout: true, // Flag để tô màu đỏ
           onTap: () {
-            // ... Xử lý Đăng xuất ...
+            menuController.logout();
           },
         ),
       ]),

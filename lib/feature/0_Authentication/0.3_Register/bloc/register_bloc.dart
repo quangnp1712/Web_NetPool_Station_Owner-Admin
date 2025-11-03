@@ -50,26 +50,29 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         emit(Register_LoadingState(isLoading: false));
         emit(RegisterSuccessState());
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Đăng nhập thành công", success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Đăng ký thành công", success: responseSuccess));
       } else if (responseStatus == 404) {
         emit(Register_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Email hoặc mật khẩu không đúng",
-        //     success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: responseMessage, success: responseSuccess));
       } else if (responseStatus == 401) {
         emit(Register_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: responseMessage, success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: responseMessage, success: responseSuccess));
       } else {
         emit(Register_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage");
+        emit(ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại", success: false));
       }
     } catch (e) {
       emit(Register_LoadingState(isLoading: false));
       DebugLogger.printLog(e.toString());
+      emit(ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại", success: false));
     }
   }
 

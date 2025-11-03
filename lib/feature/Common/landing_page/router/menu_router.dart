@@ -1,7 +1,8 @@
 // Menu route render main body
 import 'package:flutter/material.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/acc_list_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/pages/account_list_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/pages/test.dart';
 import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/station_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Dashboard/dashboard.dart';
 
@@ -26,6 +27,10 @@ Route<dynamic> menuRoute(RouteSettings settings) {
       return getPageRoute(const StationListPage());
     case stationUpdatePageRoute:
       return getPageRoute(const StationListPage());
+
+    //! TEST $//
+    case testRoute:
+      return getPageRoute(const TestPage());
 
     default:
       return getPageRoute(const DashboardPage());

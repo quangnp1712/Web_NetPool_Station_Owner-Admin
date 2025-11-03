@@ -25,3 +25,10 @@ class ValidEmail_LoadingState extends ValidEmailActionState {
 }
 
 class ValidEmailSuccessState extends ValidEmailActionState {}
+
+class ShowSnackBarActionState extends ValidEmailActionState {
+  final String message;
+  final bool success;
+
+  ShowSnackBarActionState({required this.success, required this.message});
+}
