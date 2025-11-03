@@ -5,6 +5,8 @@ import 'package:equatable/equatable.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_response_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/model/login_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/repository/login_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/shared_preferences/login_shared_preferences.dart';
@@ -48,22 +50,24 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       var responseSuccess = results['success'];
       var responseBody = results['body'];
       if (responseSuccess) {
-        // AuthenticationModelResponse authenticationModelResponse =
-        //     AuthenticationModelResponse.fromJson(responseBody);
-        // save info acc
-        // AuthPref.setRole(role);
-        // if (authenticationModelResponse.data?.accountId != null) {
-        //   AuthenticationPref.setAccountID(
-        //       authenticationModelResponse.data!.accountId as int);
-        //   AuthenticationPref.setAccessToken(
-        //       authenticationModelResponse.data!.accessToken.toString());
-        //   AuthenticationPref.setAccessExpiredAt(
-        //       authenticationModelResponse.data!.accessExpiredAt.toString());
-        //   LoginPref.setPassword(event.password.toString());
-        // }
+        AuthenticationModelResponse authenticationModelResponse =
+            AuthenticationModelResponse.fromJson(responseBody);
+        if (authenticationModelResponse.data != null) {
+          AuthenticationPref.setRoleCode(
+              authenticationModelResponse.data?.roleCode ?? "");
+
+          AuthenticationPref.setAccountID(
+              authenticationModelResponse.data?.accountId as int);
+          AuthenticationPref.setAccessToken(
+              authenticationModelResponse.data?.accessToken.toString() ?? "");
+          AuthenticationPref.setAccessExpiredAt(
+              authenticationModelResponse.data?.accessExpiredAt.toString() ??
+                  "");
+          AuthenticationPref.setPassword(event.password.toString());
+        }
         emit(Login_LoadingState(isLoading: false));
         emit(LoginSuccessState());
-        DebugLogger.printLog("$responseStatus - $responseMessage");
+        DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
 
         // emit(ShowSnackBarActionState(
         //     message: "Đăng nhập thành công", success: responseSuccess));

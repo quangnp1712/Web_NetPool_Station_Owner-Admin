@@ -11,6 +11,12 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      child: ListView(
+        children: [
+          Center(child: Text("dasshborad")),
+        ],
+      ),
+    );
   }
 }

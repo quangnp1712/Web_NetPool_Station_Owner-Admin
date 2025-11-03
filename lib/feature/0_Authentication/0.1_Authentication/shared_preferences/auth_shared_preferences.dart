@@ -17,6 +17,14 @@ class AuthenticationPref {
     return SharedPreferencesHelper.preferences.getString("accessToken") ?? "";
   }
 
+  static Future<void> setRoleCode(String role) async {
+    await SharedPreferencesHelper.preferences.setString("role", role);
+  }
+
+  static String getRoleCode() {
+    return SharedPreferencesHelper.preferences.getString("role") ?? "";
+  }
+
   static Future<void> setAccessExpiredAt(String accessExpiredAt) async {
     await SharedPreferencesHelper.preferences
         .setString("accessExpiredAt", accessExpiredAt);

@@ -36,25 +36,7 @@ class SideMenu extends StatelessWidget {
         Expanded(
           child: ListView(
             children: [
-              // Column(
-              //   mainAxisSize: MainAxisSize.min,
-              //   children: sideMenuItemRoutes
-              //       .map((item) => SideMenuItem(
-              //           itemName: item.name,
-              //           onTap: () {
-              //             if (!menuController.isActive(item.name)) {
-              //               menuController.changeActiveItemTo(item.name);
-              //               if (ResponsiveWidget.isSmallScreen(context)) {
-              //                 Get.back();
-              //               }
-              //               navigationController.navigateTo(item.route);
-              //             }
-              //           }))
-              //       .toList(),
-              // )
-
-              // Mục 1: Tổng quan (Không có con)
-              // Sử dụng Widget SideMenuItem đã sửa đổi
+              //! Mục 1: Tổng quan (Không có con)
               SideMenuItem(
                 itemName: dashboardPageName,
                 icon: Icons.pie_chart, // Icon từ ảnh
@@ -67,20 +49,18 @@ class SideMenu extends StatelessWidget {
                 },
               ),
 
-              // Mục 2: Quản lý Tài khoản (Có con)
-              // Sử dụng Widget CustomExpansionItem mới
+              //! Mục 2: Quản lý Tài khoản
               CustomExpansionItem(
-                parentName: accountParentName, // Dùng hằng số
+                parentName: accountParentName,
                 icon: Icons.person_outline,
                 children: [
+                  //$ 2.1 Danh sách tài khoản - con
                   SideMenuChildItem(
-                    itemName: accountListPageName, // Dùng hằng số
+                    itemName: accountListPageName,
                     onTap: () {
                       if (!menuController.isActive(accountListPageName)) {
-                        menuController.changeActiveItemTo(
-                            accountListPageName, // Dùng hằng số
-                            parentName: accountParentName // Dùng hằng số
-                            );
+                        menuController.changeActiveItemTo(accountListPageName,
+                            parentName: accountParentName);
                         if (ResponsiveWidget.isSmallScreen(context)) Get.back();
                         navigationController
                             .navigateAndSyncURL(accountListPageRoute);
@@ -90,57 +70,62 @@ class SideMenu extends StatelessWidget {
                 ],
               ),
 
-              // Mục 3: Quản lý Station
+              //! Mục 3: Quản lý Station
               CustomExpansionItem(
-                parentName: stationParentName, // Dùng hằng số
+                parentName: stationParentName,
                 icon: Icons.store_outlined,
                 children: [
+                  //$ 3.1 Danh sách station - con
                   SideMenuChildItem(
-                    itemName: stationListPageName, // Dùng hằng số
+                    itemName: stationListPageName,
                     onTap: () {
                       if (!menuController.isActive(stationListPageName)) {
                         menuController.changeActiveItemTo(stationListPageName,
                             parentName: stationParentName);
                         if (ResponsiveWidget.isSmallScreen(context)) Get.back();
                         navigationController
-                            .navigateAndSyncURL(stationPageRoute);
+                            .navigateAndSyncURL(stationListPageRoute);
                       }
                     },
                   ),
+
+                  //$ 3.2 Tạo station - con
                   SideMenuChildItem(
-                    itemName: stationCreatePageName, // Dùng hằng số
+                    itemName: stationCreatePageName,
                     onTap: () {
                       if (!menuController.isActive(stationCreatePageName)) {
                         menuController.changeActiveItemTo(stationCreatePageName,
                             parentName: stationParentName);
                         if (ResponsiveWidget.isSmallScreen(context)) Get.back();
                         navigationController
-                            .navigateAndSyncURL(stationPageRoute);
+                            .navigateAndSyncURL(stationCreatePageRoute);
                       }
                     },
                   ),
+
+                  //$ 3.3 Câp nhập station - con
                   SideMenuChildItem(
-                    itemName: stationUpdatePageName, // Dùng hằng số
+                    itemName: stationUpdatePageName,
                     onTap: () {
                       if (!menuController.isActive(stationUpdatePageName)) {
                         menuController.changeActiveItemTo(stationUpdatePageName,
                             parentName: stationParentName);
                         if (ResponsiveWidget.isSmallScreen(context)) Get.back();
                         navigationController
-                            .navigateAndSyncURL(stationPageRoute);
+                            .navigateAndSyncURL(stationUpdatePageRoute);
                       }
                     },
                   ),
                 ],
               ),
 
-              // Mục 4: Quản lý Loại hình
+              //! Mục 4: Quản lý Loại hình
               CustomExpansionItem(
-                parentName: spaceParentName, // Dùng hằng số
+                parentName: spaceParentName,
                 icon: Icons.category_outlined,
                 children: [
                   SideMenuChildItem(
-                      itemName: spaceListPageName, // Dùng hằng số
+                      itemName: spaceListPageName,
                       onTap: () {
                         if (!menuController.isActive(spaceListPageName)) {
                           menuController.changeActiveItemTo(spaceListPageName,
@@ -152,7 +137,7 @@ class SideMenu extends StatelessWidget {
                         }
                       }),
                   SideMenuChildItem(
-                      itemName: spaceCreatePageName, // Dùng hằng số
+                      itemName: spaceCreatePageName,
                       onTap: () {
                         if (!menuController.isActive(spaceCreatePageName)) {
                           menuController.changeActiveItemTo(spaceCreatePageName,
@@ -164,7 +149,7 @@ class SideMenu extends StatelessWidget {
                         }
                       }),
                   SideMenuChildItem(
-                      itemName: spaceUpdatePageName, // Dùng hằng số
+                      itemName: spaceUpdatePageName,
                       onTap: () {
                         if (!menuController.isActive(spaceUpdatePageName)) {
                           menuController.changeActiveItemTo(spaceUpdatePageName,

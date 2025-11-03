@@ -6,6 +6,7 @@ import 'package:web_netpool_station_owner_admin/core/model/base_response_model.d
 class AuthenticationModel {
   int? accountId;
   String? email;
+  String? roleCode;
   String? accessToken;
   String? accessExpiredAt;
   String? refreshToken;
@@ -14,6 +15,7 @@ class AuthenticationModel {
   AuthenticationModel({
     this.accountId,
     this.email,
+    this.roleCode,
     this.accessToken,
     this.accessExpiredAt,
     this.refreshToken,
@@ -24,6 +26,7 @@ class AuthenticationModel {
     return <String, dynamic>{
       'accountId': accountId,
       'email': email,
+      'roleCode': roleCode,
       'accessToken': accessToken,
       'accessExpiredAt': accessExpiredAt,
       'refreshToken': refreshToken,
@@ -35,6 +38,7 @@ class AuthenticationModel {
     return AuthenticationModel(
       accountId: map['accountId'] != null ? map['accountId'] as int : null,
       email: map['email'] != null ? map['email'] as String : null,
+      roleCode: map['roleCode'] != null ? map['roleCode'] as String : null,
       accessToken:
           map['accessToken'] != null ? map['accessToken'] as String : null,
       accessExpiredAt: map['accessExpiredAt'] != null

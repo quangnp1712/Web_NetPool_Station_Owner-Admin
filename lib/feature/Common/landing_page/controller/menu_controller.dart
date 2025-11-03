@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/repository/landing_repository.dart';
 
 MenuController menuController = MenuController.instance;
 
@@ -51,5 +54,24 @@ class MenuController extends GetxController {
       icon,
       color: isHovering(itemName) ? AppColors.bgLight : AppColors.menuDisable,
     );
+  }
+
+  logout() async {
+    try {
+      var results = await LandingRepository().logout();
+      var responseMessage = results['message'];
+      var responseStatus = results['status'];
+      var responseSuccess = results['success'];
+      var responseBody = results['body'];
+
+      if (responseSuccess) {
+        SharedPreferencesHelper.clearAll();
+        Get.toNamed(loginPageRoute);
+      } else {
+        SharedPreferencesHelper.clearAll();
+        Get.toNamed(loginPageRoute);
+        DebugLogger.printLog("$responseMessage - đăng xuất");
+      }
+    } catch (e) {}
   }
 }

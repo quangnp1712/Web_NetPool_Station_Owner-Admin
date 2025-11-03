@@ -11,12 +11,22 @@ PageRoute getPageRoute(Widget child) {
 
 Route<dynamic> menuRoute(RouteSettings settings) {
   switch (settings.name) {
+    //! DASHBOARD $//
     case dashboardPageRoute:
       return getPageRoute(const DashboardPage());
+
+    //! QUẢN LÝ NGƯỜI CHƠI $//
     case accountListPageRoute:
       return getPageRoute(const AccountListPage());
-    case stationPageRoute:
+
+    //! QUẢN LÝ STATION $//
+    case stationListPageRoute:
       return getPageRoute(const StationListPage());
+    case stationCreatePageRoute:
+      return getPageRoute(const StationListPage());
+    case stationUpdatePageRoute:
+      return getPageRoute(const StationListPage());
+
     default:
       return getPageRoute(const DashboardPage());
   }

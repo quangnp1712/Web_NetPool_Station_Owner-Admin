@@ -17,6 +17,7 @@ class ValidEmailPage extends StatefulWidget {
 
 class _ValidEmailPageState extends State<ValidEmailPage> {
   final _formKey = GlobalKey<FormState>();
+  final FocusNode _formFocusNode = FocusNode();
 
   final ValidEmailBloc validEmailPageBloc = ValidEmailBloc();
 
@@ -76,191 +77,213 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                       )
                     ],
                   ),
-                  child: Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Logo + Title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FittedBox(
-                              fit: BoxFit
-                                  .cover, // hoặc BoxFit.contain tùy bạn muốn co hay cắt
-                              clipBehavior: Clip.hardEdge,
-                              child: Image.asset(
-                                'assets/images/logo_no_bg.png',
-                                height: 70,
+                  child: KeyboardListener(
+                    focusNode: _formFocusNode,
+                    onKeyEvent: (KeyEvent event) {
+                      // Chỉ lắng nghe sự kiện phím *nhấn*
+                      if (event is KeyDownEvent) {
+                        // Kiểm tra xem có phải phím Enter không
+                        if (event.logicalKey == LogicalKeyboardKey.enter) {
+                          // Chạy hàm login
+                          _formFocusNode.requestFocus();
+                          if (_formKey.currentState!.validate()) {
+                            validEmailPageBloc.add(SubmitValidEmailEvent(
+                              verificationCode: codeController.text,
+                            ));
+                          }
+                        }
+                      }
+                    },
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Logo + Title
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit
+                                    .cover, // hoặc BoxFit.contain tùy bạn muốn co hay cắt
+                                clipBehavior: Clip.hardEdge,
+                                child: Image.asset(
+                                  'assets/images/logo_no_bg.png',
+                                  height: 70,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 35),
+                            ],
+                          ),
+                          const SizedBox(height: 35),
 
-                        //$ Email TextField $//
-                        TextFormField(
-                          controller: emailController,
-                          readOnly: true,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.singleLineFormatter,
-                          ],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'SegoeUI SemiBold',
-                          ),
-                          decoration: InputDecoration(
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: const Color(0xFF2A2A2A),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.grey, // màu viền khi chưa focus
-                                width: 1.0,
-                              ),
+                          //$ Email TextField $//
+                          TextFormField(
+                            controller: emailController,
+                            readOnly: true,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.singleLineFormatter,
+                            ],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'SegoeUI SemiBold',
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.cyanAccent, // màu viền khi focus
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-
-                        //$ Code TextField $//
-                        TextFormField(
-                          controller: codeController,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.singleLineFormatter,
-                            FilteringTextInputFormatter
-                                .digitsOnly, // Chỉ cho phép nhập số
-                            LengthLimitingTextInputFormatter(6),
-                          ],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'SegoeUI SemiBold',
-                          ),
-                          decoration: InputDecoration(
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: const Color(0xFF2A2A2A),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.grey, // màu viền khi chưa focus
-                                width: 1.0,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.cyanAccent, // màu viền khi focus
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Vui lòng nhập Mã OTP';
-                            }
-                            return null; // Trả về null nếu không có lỗi
-                          },
-                        ),
-                        const SizedBox(height: 30),
-
-                        // ValidEmail Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
+                            decoration: InputDecoration(
+                              labelStyle:
+                                  const TextStyle(color: Colors.white70),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey, // màu viền khi chưa focus
+                                  width: 1.0,
+                                ),
                               ),
-                              shadowColor: Colors.transparent,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color:
+                                      Colors.cyanAccent, // màu viền khi focus
+                                  width: 1.2,
+                                ),
+                              ),
                             ),
-                            onPressed: () {
-                              // navigationController
-                              //     .navigateAndSyncURL(dashboardPageRoute);
-                              if (_formKey.currentState!.validate()) {
-                                validEmailPageBloc.add(SubmitValidEmailEvent(
-                                  verificationCode: codeController.text,
-                                ));
+                          ),
+                          const SizedBox(height: 15),
+
+                          //$ Code TextField $//
+                          TextFormField(
+                            controller: codeController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.singleLineFormatter,
+                              FilteringTextInputFormatter
+                                  .digitsOnly, // Chỉ cho phép nhập số
+                              LengthLimitingTextInputFormatter(6),
+                            ],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'SegoeUI SemiBold',
+                            ),
+                            decoration: InputDecoration(
+                              labelStyle:
+                                  const TextStyle(color: Colors.white70),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey, // màu viền khi chưa focus
+                                  width: 1.0,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color:
+                                      Colors.cyanAccent, // màu viền khi focus
+                                  width: 1.2,
+                                ),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Vui lòng nhập Mã OTP';
                               }
+                              return null; // Trả về null nếu không có lỗi
                             },
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF00C6FF),
-                                    Color(0xFFAD00FF)
-                                  ],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Xác nhận',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontFamily: 'SegoeUI Bold',
-                                  ),
-                                ),
-                              ),
-                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        // Register Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF454549),
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              shadowColor: Colors.transparent,
-                            ),
-                            onPressed: () {
-                              validEmailPageBloc
-                                  .add(SendValidCodeEvent(email: ""));
-                            },
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                color: Color(0xFF454549),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Gửi lại mã OTP',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontFamily: 'SegoeUI Bold',
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                          const SizedBox(height: 30),
 
-                        const SizedBox(height: 30),
-                      ],
+                          // ValidEmail Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                shadowColor: Colors.transparent,
+                              ),
+                              onPressed: () {
+                                // navigationController
+                                //     .navigateAndSyncURL(dashboardPageRoute);
+                                if (_formKey.currentState!.validate()) {
+                                  validEmailPageBloc.add(SubmitValidEmailEvent(
+                                    verificationCode: codeController.text,
+                                  ));
+                                }
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF00C6FF),
+                                      Color(0xFFAD00FF)
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Xác nhận',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white,
+                                      fontFamily: 'SegoeUI Bold',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Register Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF454549),
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                shadowColor: Colors.transparent,
+                              ),
+                              onPressed: () {
+                                validEmailPageBloc
+                                    .add(SendValidCodeEvent(email: ""));
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF454549),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Gửi lại mã OTP',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white,
+                                      fontFamily: 'SegoeUI Bold',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+                        ],
+                      ),
                     ),
                   ),
                 ),

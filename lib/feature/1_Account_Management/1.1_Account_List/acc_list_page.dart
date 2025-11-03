@@ -12,6 +12,7 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      padding: const EdgeInsets.all(0.0),
       children: [
         Container(
           // Thêm padding cho toàn bộ body

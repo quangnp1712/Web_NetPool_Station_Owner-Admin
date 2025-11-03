@@ -18,7 +18,7 @@ const dashboardPageRoute = "/dashboard";
 // QUẢN LÝ NGƯỜI CHƠI //
 const String accountParentName = "Quản lý Tài khoản Người chơi";
 const String accountListPageName = "Danh sách tài khoản";
-const accountListPageRoute = "/acc_list";
+const accountListPageRoute = "/acc/list";
 
 // QUẢN LÝ ĐẶT LỊCH //
 const bookingPageName = "Booking";
@@ -34,7 +34,9 @@ const String stationListPageName = "Danh sách Station";
 const String stationCreatePageName = "Tạo Station";
 const String stationUpdatePageName = "Cập nhật Station";
 
-const stationPageRoute = "/station";
+const stationListPageRoute = "/station/list";
+const stationCreatePageRoute = "/station/create";
+const stationUpdatePageRoute = "/station/update";
 
 // QUẢN LÝ SPACE - LOẠI HÌNH //
 const String spaceParentName = "Quản lý Loại hình";

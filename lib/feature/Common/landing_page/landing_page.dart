@@ -26,27 +26,64 @@ class _LandingPageState extends State<LandingPage> {
         child: SideMenu(),
       ),
       body: ResponsiveWidget(
-          // Large Screen //
+          //* Large Screen *//
           largeScreen: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // nav bar
+              //$ nav bar
               Container(width: 280, child: SideMenu()),
 
-              // main body
+              //$ main body
               Expanded(
                 flex: 5,
                 child: Container(
                   color: AppColors.bgDark,
-                  child: localNavigator(),
+                  child: Container(
+                    margin: EdgeInsets.only(top: 80),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgDark,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                      ),
+                      border: Border(
+                        top: BorderSide(
+                          color: AppColors.primaryGlow, // MÀU VIỀN TRÊN
+                          width: 1.0, // ĐỘ DÀY VIỀN
+                        ),
+                        left: BorderSide(
+                          color: AppColors.primaryGlow, // MÀU VIỀN TRÁI
+                          width: 1.0, // ĐỘ DÀY VIỀN
+                        ),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                      ),
+                      child: localNavigator(),
+                    ),
+                  ),
                 ),
               )
             ],
           ),
           smallScreen: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            color: Colors.blue,
-            child: localNavigator(),
+            decoration: BoxDecoration(
+              color: AppColors.bgDark,
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.primaryGlow, // MÀU VIỀN TRÊN
+                  width: 1.0, // ĐỘ DÀY VIỀN
+                ),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(30.0),
+              ),
+              child: localNavigator(),
+            ),
           )),
     );
   }

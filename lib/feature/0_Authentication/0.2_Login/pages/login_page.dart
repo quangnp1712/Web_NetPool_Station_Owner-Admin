@@ -17,6 +17,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final FocusNode _formFocusNode = FocusNode();
 
   final LoginBloc loginPageBloc = LoginBloc();
 
@@ -77,252 +78,275 @@ class _LoginPageState extends State<LoginPage> {
                       )
                     ],
                   ),
-                  child: Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Logo + Title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FittedBox(
-                              fit: BoxFit
-                                  .cover, // hoặc BoxFit.contain tùy bạn muốn co hay cắt
-                              clipBehavior: Clip.hardEdge,
-                              child: Image.asset(
-                                'assets/images/logo_no_bg.png',
-                                height: 70,
+                  child: KeyboardListener(
+                    focusNode: _formFocusNode,
+                    onKeyEvent: (KeyEvent event) {
+                      // Chỉ lắng nghe sự kiện phím *nhấn*
+                      if (event is KeyDownEvent) {
+                        // Kiểm tra xem có phải phím Enter không
+                        if (event.logicalKey == LogicalKeyboardKey.enter) {
+                          // Chạy hàm login
+                          _formFocusNode.requestFocus();
+                          if (_formKey.currentState!.validate()) {
+                            loginPageBloc.add(SubmitLoginEvent(
+                              email: emailController.text,
+                              password: passwordController.text,
+                            ));
+                          }
+                        }
+                      }
+                    },
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Logo + Title
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit
+                                    .cover, // hoặc BoxFit.contain tùy bạn muốn co hay cắt
+                                clipBehavior: Clip.hardEdge,
+                                child: Image.asset(
+                                  'assets/images/logo_no_bg.png',
+                                  height: 70,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 35),
-
-                        // Email TextField
-                        TextFormField(
-                          controller: emailController,
-                          keyboardType: TextInputType.text,
-                          inputFormatters: [
-                            FilteringTextInputFormatter
-                                .singleLineFormatter, // Đảm bảo chỉ nhập trên một dòng
-
-                            FilteringTextInputFormatter.deny(
-                                RegExp(r'[^a-zA-Z0-9@._-]')),
-                          ],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'SegoeUI SemiBold',
+                            ],
                           ),
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: const Color(0xFF2A2A2A),
-                            // ✅ Viền xám bên ngoài
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.grey, // màu viền khi chưa focus
-                                width: 1.0,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.cyanAccent, // màu viền khi focus
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Vui lòng nhập email";
-                            }
-                            final emailRegex = RegExp(
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
-                            if (!emailRegex.hasMatch(value)) {
-                              return "Email không hợp lệ";
-                            }
-                            return null;
-                          },
-                        ),
+                          const SizedBox(height: 35),
 
-                        const SizedBox(height: 15),
+                          // Email TextField
+                          TextFormField(
+                            controller: emailController,
+                            keyboardType: TextInputType.text,
+                            inputFormatters: [
+                              FilteringTextInputFormatter
+                                  .singleLineFormatter, // Đảm bảo chỉ nhập trên một dòng
 
-                        // Password TextField
-                        TextFormField(
-                          obscureText: true,
-                          controller: passwordController,
-                          inputFormatters: [
-                            FilteringTextInputFormatter
-                                .singleLineFormatter, // Đảm bảo chỉ nhập trên một dòng
-                          ],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'SegoeUI SemiBold',
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Mật khẩu',
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: const Color(0xFF2A2A2A),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.grey, // màu viền khi chưa focus
-                                width: 1.0,
-                              ),
+                              FilteringTextInputFormatter.deny(
+                                  RegExp(r'[^a-zA-Z0-9@._-]')),
+                            ],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'SegoeUI SemiBold',
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.cyanAccent, // màu viền khi focus
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Vui lòng nhập mật khẩu ';
-                            }
-                            return null; // Trả về null nếu không có lỗi
-                          },
-                        ),
-                        const SizedBox(height: 30),
-
-                        // Login Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
+                            decoration: InputDecoration(
+                              labelText: 'Email',
+                              labelStyle:
+                                  const TextStyle(color: Colors.white70),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              // ✅ Viền xám bên ngoài
+                              enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey, // màu viền khi chưa focus
+                                  width: 1.0,
+                                ),
                               ),
-                              shadowColor: Colors.transparent,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color:
+                                      Colors.cyanAccent, // màu viền khi focus
+                                  width: 1.2,
+                                ),
+                              ),
                             ),
-                            onPressed: () {
-                              // navigationController
-                              //     .navigateAndSyncURL(dashboardPageRoute);
-                              if (_formKey.currentState!.validate()) {
-                                loginPageBloc.add(SubmitLoginEvent(
-                                  email: emailController.text,
-                                  password: passwordController.text,
-                                ));
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Vui lòng nhập email";
                               }
+                              final emailRegex = RegExp(
+                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+                              if (!emailRegex.hasMatch(value)) {
+                                return "Email không hợp lệ";
+                              }
+                              return null;
                             },
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF00C6FF),
-                                    Color(0xFFAD00FF)
-                                  ],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Password TextField
+                          TextFormField(
+                            obscureText: true,
+                            controller: passwordController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter
+                                  .singleLineFormatter, // Đảm bảo chỉ nhập trên một dòng
+                            ],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'SegoeUI SemiBold',
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Mật khẩu',
+                              labelStyle:
+                                  const TextStyle(color: Colors.white70),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey, // màu viền khi chưa focus
+                                  width: 1.0,
+                                ),
                               ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Đăng nhập',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontFamily: 'SegoeUI Bold',
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color:
+                                      Colors.cyanAccent, // màu viền khi focus
+                                  width: 1.2,
+                                ),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Vui lòng nhập mật khẩu ';
+                              }
+                              return null; // Trả về null nếu không có lỗi
+                            },
+                          ),
+                          const SizedBox(height: 30),
+
+                          // Login Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                shadowColor: Colors.transparent,
+                              ),
+                              onPressed: () {
+                                // navigationController
+                                //     .navigateAndSyncURL(dashboardPageRoute);
+                                if (_formKey.currentState!.validate()) {
+                                  loginPageBloc.add(SubmitLoginEvent(
+                                    email: emailController.text,
+                                    password: passwordController.text,
+                                  ));
+                                }
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF00C6FF),
+                                      Color(0xFFAD00FF)
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Đăng nhập',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white,
+                                      fontFamily: 'SegoeUI Bold',
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        // Register Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF454549),
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          const SizedBox(height: 20),
+                          // Register Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF454549),
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                shadowColor: Colors.transparent,
                               ),
-                              shadowColor: Colors.transparent,
-                            ),
-                            onPressed: () {
-                              loginPageBloc.add(ShowRegisterEvent());
-                            },
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                color: Color(0xFF454549),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Đăng ký',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontFamily: 'SegoeUI Bold',
+                              onPressed: () {
+                                loginPageBloc.add(ShowRegisterEvent());
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF454549),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Đăng ký',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white,
+                                      fontFamily: 'SegoeUI Bold',
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // FORGOT PASSWORD
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // 1. Liên kết "Quên mật khẩu" (Sát trái)
-                            MouseRegion(
-                              // THÊM: Thay đổi con trỏ chuột khi hover
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Get.toNamed(validEmailPageRoute);
-                                },
-                                child: Text(
-                                  'Quên mật khẩu ?',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blueAccent,
-                                    fontFamily: 'SegoeUI',
+                          // FORGOT PASSWORD
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // 1. Liên kết "Quên mật khẩu" (Sát trái)
+                              MouseRegion(
+                                // THÊM: Thay đổi con trỏ chuột khi hover
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Get.toNamed(validEmailPageRoute);
+                                  },
+                                  child: Text(
+                                    'Quên mật khẩu ?',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
 
-                            // 2. Liên kết "Xác thực email" (Sát phải)
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Get.toNamed(sendValidCodePageRoute);
-                                },
-                                child: Text(
-                                  'Xác thực email',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blueAccent,
-                                    fontFamily: 'SegoeUI',
+                              // 2. Liên kết "Xác thực email" (Sát phải)
+                              MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Get.toNamed(sendValidCodePageRoute);
+                                  },
+                                  child: Text(
+                                    'Xác thực email',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                        ],
+                      ),
                     ),
                   ),
                 ),
