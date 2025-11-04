@@ -26,13 +26,13 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
   AccountListBloc() : super(AccountListInitial()) {
     on<AccountListInitialEvent>(_accountListInitialEvent);
     on<RoleEvent>(_roleEvent);
-    on<SearchEvent>(_searchEvent);
+    on<AccountListLoadEvent>(_accountListLoadEvent);
   }
 
   FutureOr<void> _accountListInitialEvent(
       AccountListInitialEvent event, Emitter<AccountListState> emit) {
     emit(AccountListInitial());
-    add(SearchEvent()); // truyền roleIds của player
+    add(AccountListLoadEvent()); // truyền roleIds của player
   }
 
   FutureOr<void> _roleEvent(
@@ -58,7 +58,7 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
         }
         emit(AccountList_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
-        add(SearchEvent(roleIds: _rolePlayer.roleId.toString()));
+        add(AccountListLoadEvent(roleIds: _rolePlayer.roleId.toString()));
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
 
@@ -74,8 +74,8 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
     }
   }
 
-  FutureOr<void> _searchEvent(
-      SearchEvent event, Emitter<AccountListState> emit) async {
+  FutureOr<void> _accountListLoadEvent(
+      AccountListLoadEvent event, Emitter<AccountListState> emit) async {
     emit(AccountList_ChangeState());
 
     emit(AccountList_LoadingState(isLoading: true));
@@ -90,7 +90,7 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
 
       String? current = event.current ?? "";
 
-      String? pageSize = "20";
+      String? pageSize = "10";
 
       String? stationId = event.stationId ?? "";
 
@@ -133,8 +133,11 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
                   .whereType<String>()
                   .toSet()
                   .toList();
+              ACLMetaModel metaModel = accountListModelResponse.meta!;
               emit(AccountListSuccessState(
-                  accountList: _accountList, statusNames: statusNames));
+                  accountList: _accountList,
+                  statusNames: statusNames,
+                  meta: metaModel));
             }
           }
         } catch (e) {

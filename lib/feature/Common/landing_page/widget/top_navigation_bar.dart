@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/menu_controller.dart';
 
 AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
     AppBar(
@@ -27,7 +29,38 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
       title: Row(
         children: [
           Expanded(
-            child: Container(),
+            child: Obx(
+              () {
+                // 1. Lấy giá trị .value từ controller
+                final String parent = menuController.activeParent.value;
+                final String child = menuController.activeItem.value;
+
+                // 2. Xây dựng chuỗi breadcrumb
+                String breadcrumbText;
+                if (parent.isEmpty) {
+                  breadcrumbText = child; // vd: "Tổng quan"
+                } else {
+                  // vd: "Quản lý Tài khoản / Danh sách tài khoản"
+                  breadcrumbText = "$parent / $child";
+                }
+
+                // 3. Hiển thị Text với nội dung động
+                return Container(
+                  color: AppColors.bgDark,
+                  // Thêm padding cho đẹp (giống hình)
+                  // margin:
+                  //     EdgeInsets.only(top: 40, left: 24, bottom: 20),
+                  child: Text(
+                    breadcrumbText, // <-- SỬA Ở ĐÂY
+                    style: const TextStyle(
+                      color: AppColors.bgLight,
+                      fontSize: 22,
+                      fontFamily: 'SegoeUI Italic Bold',
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           Stack(
             children: [
@@ -59,6 +92,8 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
           const SizedBox(
             width: 24,
           ),
+
+          //$ USER
           Container(
             decoration: BoxDecoration(
                 color: active.withOpacity(.5),

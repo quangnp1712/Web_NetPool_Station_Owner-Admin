@@ -23,10 +23,11 @@ class AccountList_LoadingState extends AccountListActionState {
 class AccountListSuccessState extends AccountListState {
   List<AccountListModel> accountList;
   List<String> statusNames;
-  AccountListSuccessState({
-    required this.accountList,
-    required this.statusNames,
-  });
+  ACLMetaModel meta;
+  AccountListSuccessState(
+      {required this.accountList,
+      required this.statusNames,
+      required this.meta});
 }
 
 class AccountListEmptyState extends AccountListState {}

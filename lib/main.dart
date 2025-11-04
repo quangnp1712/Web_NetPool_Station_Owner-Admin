@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/router/router.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/bloc/register_bloc.dart';
@@ -71,9 +72,14 @@ class _MyAppState extends State<MyApp> {
             transition: getXTransition.Transition.fadeIn),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.blueGrey,
+          primarySwatch: Colors.purple,
           textTheme: GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)
               .apply(bodyColor: Colors.white),
+          // Áp dụng style này cho TẤT CẢ DropdownButton (M2)
+          dropdownMenuTheme: DropdownMenuThemeData(
+            menuStyle: MenuStyle(
+                backgroundColor: WidgetStatePropertyAll(AppColors.bgCard)),
+          ),
         ),
         initialRoute: loginPageRoute,
 

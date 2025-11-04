@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/pages/account_data_source.dart';
 
 //! Account List - DS người chơi !//
 
@@ -16,39 +17,43 @@ class AccountListPage extends StatefulWidget {
 
 class _AccountListPageState extends State<AccountListPage> {
   final AccountListBloc accountListBloc = AccountListBloc();
-  List<AccountListModel> accountList = [];
+  // List<AccountListModel> accountList = [];
   List<String> statusNames = [];
   bool _sortAscending = true;
   int? _sortColumnIndex;
 
+  // --- THÊM: Biến cho phân trang và Data Source ---
+  late AccountDataSource _dataSource;
+  PaginatorController? _paginatorController;
+  int _totalRows = 0;
+  int _currentPage = 1;
+  int _rowsPerPage = 10;
+
   @override
   void initState() {
-    accountListBloc.add(AccountListInitialEvent());
     super.initState();
+    // Khởi tạo Data Source với dữ liệu rỗng
+    _dataSource = AccountDataSource(context: context, initialData: []);
+    _paginatorController = PaginatorController();
+
+    accountListBloc.add(AccountListInitialEvent());
+  }
+
+  @override
+  void dispose() {
+    _paginatorController?.dispose();
+    super.dispose();
   }
 
   // --- THÊM: HÀM SẮP XẾP (SORT) ---
   void _sort<T extends Comparable>(
-    T? Function(AccountListModel d) getField, // Sửa: Chấp nhận AccountListModel
+    T? Function(AccountListModel d) getField,
     int columnIndex,
     bool ascending,
   ) {
-    accountList.sort((a, b) {
-      // Sửa: Sắp xếp `accountList`
-      final aValue = getField(a);
-      final bValue = getField(b);
+    // Yêu cầu Data Source tự sắp xếp
+    _dataSource.sort(getField, ascending);
 
-      // Xử lý null an toàn
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null)
-        return ascending ? -1 : 1; // Đẩy null xuống dưới (hoặc trên)
-      if (bValue == null) return ascending ? 1 : -1;
-
-      return ascending
-          ? Comparable.compare(aValue, bValue)
-          : Comparable.compare(bValue, aValue);
-    });
-    // Gọi setState để rebuild lại bảng với dữ liệu đã sắp xếp
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
@@ -67,10 +72,18 @@ class _AccountListPageState extends State<AccountListPage> {
       },
       builder: (context, state) {
         if (state is AccountListSuccessState) {
-          accountList = state.accountList;
+          _totalRows = state.meta.total ?? 10;
+          _rowsPerPage = state.meta.pageSize ?? 10;
+          _currentPage = state.meta.current ?? 1;
           statusNames = state.statusNames;
+
+          // Tính toán offset (vị trí bắt đầu) của trang hiện tại
+          final pageOffset = (_currentPage - 1) * _rowsPerPage;
+
+          _dataSource.updateData(state.accountList, _totalRows, pageOffset);
         } else if (state is AccountListEmptyState) {
-          accountList = [];
+          _totalRows = 0;
+          _dataSource.updateData([], 0, 0);
           statusNames = [];
         }
         return Material(
@@ -194,7 +207,7 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  // --- WIDGET CON: BẢNG DỮ LIỆU (ĐÃ THAY THẾ BẰNG DATATABLE2) ---
+  // --- WIDGET CON: BẢNG DỮ LIỆU (DATATABLE2 THAY THẾ BẰNG PAGINATEDDATATABLE2) ---
   Widget _buildDataTable() {
     // SỬA LỖI 1: Bọc `Padding` trong `SizedBox` có chiều cao cố định
     return SizedBox(
@@ -202,191 +215,147 @@ class _AccountListPageState extends State<AccountListPage> {
           450, // <-- GÁN CHIỀU CAO CỐ ĐỊNH (giống như SizedBox(height: 400) cũ)
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        // Dùng ClipRRect để bo góc cho DataTable
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12.0),
-          child: DataTable2(
-            // --- Styling (Quan trọng) ---
-            columnSpacing: 12, // Khoảng cách giữa các cột
-            horizontalMargin: 24, // Padding ngang (trái/phải) của bảng
-            minWidth: 600, // Chiều rộng tối thiểu
-            dataRowHeight: 60, // Chiều cao của hàng
-            headingRowHeight: 56, // Chiều cao của header
 
-            // Màu Header (Màu tím)
-            headingRowColor: MaterialStateProperty.all(AppColors.tableHeader),
-            headingTextStyle: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+          // SỬA: Dùng PaginatedDataTable2
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              // Giữ icon và text màu trắng
+              iconTheme: const IconThemeData(color: Colors.white),
+              textTheme: Theme.of(context)
+                  .textTheme
+                  .apply(displayColor: Colors.white, bodyColor: Colors.white),
 
-            // Màu Data Row (Màu nền)
-            dataRowColor:
-                MaterialStateProperty.all(AppColors.containerBackground),
-            dataTextStyle: const TextStyle(color: AppColors.textWhite),
-
-            // Đường viền (Border)
-            dividerThickness: 0, // Tắt viền dọc mặc định
-
-            // SỬA LỖI 2: Sửa lại logic `border`
-            border: TableBorder(
-              // Giữ viền ngang bên trong (giống code cũ)
-              horizontalInside: BorderSide(
-                width: 0.5,
-                color: Colors.grey[800]!,
-                style: BorderStyle.solid,
+              // --- SỬA LỖI: DÙNG 'cardTheme' thay vì 'cardColor' ---
+              // 'cardColor' bị PaginatedDataTable2 bỏ qua,
+              // 'cardTheme' sẽ ép màu nền cho Card Paginator
+              cardTheme: CardTheme(
+                color: AppColors.containerBackground, // Màu nền đen
+                elevation: 0, // Tắt shadow của card
+                margin: EdgeInsets.zero, // Tắt margin của card
               ),
+              // --------------------------------------------------
+
+              // Set nền của dropdown (10, 20, 50) thành màu đen (inputBackground)
             ),
+            child: PaginatedDataTable2(
+              controller: _paginatorController, // Gán controller
 
-            // --- THÊM: LOGIC SẮP XẾP ---
-            sortColumnIndex: _sortColumnIndex,
-            sortAscending: _sortAscending,
-            // -------------------------
-            // --- THÊM: TÙY CHỈNH ICON SORT THEO YÊU CẦU ---
-            sortArrowIcon:
-                Icons.arrow_drop_down, // Icon đi xuống (sẽ tự động đảo ngược)
-            sortArrowIconColor: Colors.white, // Đảm bảo màu trắng
-            // ---------------------------------------------
+              // --- Styling (Giữ nguyên) ---
+              columnSpacing: 12,
+              horizontalMargin: 24,
+              minWidth: 600,
+              dataRowHeight: 60,
+              headingRowHeight: 56,
 
-            // --- THÊM: WIDGET KHI RỖNG (EMPTY) ---
-            empty: Center(
-              child: Container(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  'Không tìm thấy dữ liệu',
-                  style: TextStyle(
-                    color: AppColors.textHint,
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
+              headingRowDecoration: BoxDecoration(
+                color: AppColors.tableHeader,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12.0), // Khớp với ClipRRect cha
+                  topRight: Radius.circular(12.0), // Khớp với ClipRRect cha
+                ),
+              ),
+              headingTextStyle: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
+              dataTextStyle: const TextStyle(color: AppColors.textWhite),
+              dividerThickness: 0,
+              border: TableBorder(
+                horizontalInside: BorderSide(
+                  width: 0.5,
+                  color: Colors.grey[800]!,
+                  style: BorderStyle.solid,
+                ),
+              ),
+
+              // --- LOGIC SẮP XẾP (Giữ nguyên) ---
+              sortColumnIndex: _sortColumnIndex,
+              sortAscending: _sortAscending,
+              sortArrowIcon: Icons.arrow_drop_down,
+              sortArrowIconColor: Colors.white,
+
+              // --- WIDGET KHI RỖNG (EMPTY) ---
+              empty: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    'Không tìm thấy dữ liệu',
+                    style: TextStyle(
+                      color: AppColors.textHint,
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
               ),
+
+              // --- THÊM: LOGIC PHÂN TRANG ---
+              rowsPerPage: _rowsPerPage,
+              initialFirstRowIndex: (_currentPage - 1) * _rowsPerPage,
+              availableRowsPerPage: const [10, 20, 50],
+              // --- THÊM TÍNH NĂNG: ẨN PAGINATOR ---
+              // hidePaginator: _totalRows <= _rowsPerPage,
+
+              // Xử lý khi người dùng chọn trang khác
+              onPageChanged: (pageIndex) {
+                // pageIndex là chỉ số hàng bắt đầu (vd: 0, 10, 20)
+                int newPage = (pageIndex / _rowsPerPage).floor() + 1;
+
+                // Gọi BLoC để tải trang mới
+                accountListBloc.add(AccountListLoadEvent(
+                  current: newPage.toString(),
+                  // TODO: Thêm các giá trị filter (search, status...)
+                ));
+              },
+
+              // Xử lý khi người dùng đổi số hàng/trang
+              onRowsPerPageChanged: (newRowsPerPage) {
+                setState(() {
+                  _rowsPerPage = newRowsPerPage ?? 10;
+                });
+                // Gọi BLoC để tải lại từ trang 1
+                accountListBloc.add(AccountListLoadEvent(
+                  current: "1", // Luôn reset về trang 1
+                  // TODO: Thêm các giá trị filter
+                ));
+              },
+              // ------------------------------------
+
+              source: _dataSource, // Gán Data Source
+
+              // --- SỬA: Columns (Thêm cột Email) ---
+              columns: [
+                DataColumn2(
+                  label: Text('TÊN'),
+                  size: ColumnSize.L, // Tương đương flex: 3
+                  onSort: (columnIndex, ascending) {
+                    _sort<String>(
+                        (d) => d.username ?? '', columnIndex, ascending);
+                  },
+                ),
+                // THÊM: Cột Email (theo gợi ý trước)
+                DataColumn2(
+                  label: Text('EMAIL'),
+                  size: ColumnSize.L,
+                  onSort: (columnIndex, ascending) {
+                    _sort<String>((d) => d.email ?? '', columnIndex, ascending);
+                  },
+                ),
+                DataColumn2(
+                  label: Text('TRẠNG THÁI'),
+                  size: ColumnSize.M, // Tương đương flex: 2
+                  onSort: (columnIndex, ascending) {
+                    _sort<String>(
+                        (d) => d.statusCode ?? '', columnIndex, ascending);
+                  },
+                ),
+                DataColumn2(
+                  label: Text('CHỨC NĂNG'),
+                  size: ColumnSize.M, // Tương đương flex: 2
+                ),
+              ],
             ),
-            // --------------------------------
-
-            // --- Columns (Định nghĩa các cột) ---
-            columns: [
-              DataColumn2(
-                label: Text('TÊN'),
-                size: ColumnSize.L, // Tương đương flex: 3
-                // THÊM: onSort cho cột TÊN
-                onSort: (columnIndex, ascending) {
-                  _sort<String>(
-                      (d) => d.username as String, columnIndex, ascending);
-                },
-              ),
-              DataColumn2(
-                label: Text('EMAIL'),
-                size: ColumnSize.M, // Tương đương flex: 2
-                // THÊM: onSort cho cột SĐT
-                onSort: (columnIndex, ascending) {
-                  _sort<String>(
-                      (d) => d.email as String, columnIndex, ascending);
-                },
-              ),
-              DataColumn2(
-                label: Text('SĐT'),
-                size: ColumnSize.M, // Tương đương flex: 2
-                // THÊM: onSort cho cột SĐT
-                onSort: (columnIndex, ascending) {
-                  _sort<String>(
-                      (d) => d.phone as String, columnIndex, ascending);
-                },
-              ),
-              DataColumn2(
-                label: Text('TRẠNG THÁI'),
-                size: ColumnSize.M, // Tương đương flex: 2
-                // THÊM: onSort cho cột TRẠNG THÁI
-                onSort: (columnIndex, ascending) {
-                  _sort<String>(
-                      (d) => d.statusCode ?? '', columnIndex, ascending);
-                },
-              ),
-              DataColumn2(
-                label: Text('CHỨC NĂNG'),
-                size: ColumnSize.M, // Tương đương flex: 2
-                // Cột Chức năng thường không có Sắp xếp
-              ),
-            ],
-
-            // --- Rows (Dữ liệu) ---
-            // SỬA: Dùng `_dataList` (biến state) thay vì `mockData`
-            rows: accountList
-                .map(
-                  (data) => DataRow(
-                    cells: [
-                      // Cell 1: Tên
-                      DataCell(Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(data.avatar.toString()),
-                            radius: 18,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(data.username.toString()),
-                        ],
-                      )),
-
-                      // Cell 2: Email
-                      DataCell(Text(data.email.toString())),
-
-                      // Cell 3: SĐT
-                      DataCell(Text(data.phone.toString())),
-
-                      // Cell 4: Trạng thái (Dùng lại hàm _buildStatusChip)
-                      DataCell(_buildStatusChip(
-                          data.statusCode ?? "", data.statusName ?? "")),
-
-                      // Cell 5: Chức năng (Các nút bấm)
-                      DataCell(Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Colors.blueAccent),
-                            onPressed: () {
-                              // TODO: Xử lý sự kiện sửa
-                            },
-                            tooltip: "Chỉnh sửa",
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                color: Colors.redAccent),
-                            onPressed: () {
-                              // TODO: Xử lý sự kiện xóa
-                            },
-                            tooltip: "Xóa",
-                          ),
-                        ],
-                      )),
-                    ],
-                  ),
-                )
-                .toList(),
           ),
-        ),
-      ),
-    );
-  }
-
-  // --- WIDGET CON: CHIP "HOẠT ĐỘNG" (Vẫn giữ lại) ---
-  Widget _buildStatusChip(String statusCode, String statusName) {
-    bool isActive = false;
-    if (statusCode == "ENABLE") {
-      isActive = true;
-    } else {
-      isActive = false;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.activeStatus : Colors.grey,
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Text(
-        statusName,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
         ),
       ),
     );

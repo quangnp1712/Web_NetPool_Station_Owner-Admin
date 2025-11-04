@@ -10,14 +10,14 @@ sealed class AccountListEvent extends Equatable {
 
 class AccountListInitialEvent extends AccountListEvent {}
 
-class SearchEvent extends AccountListEvent {
+class AccountListLoadEvent extends AccountListEvent {
   String? search;
   String? statusCodes;
   String? roleIds;
   String? sorter;
   String? current;
   String? stationId;
-  SearchEvent({
+  AccountListLoadEvent({
     this.search,
     this.statusCodes,
     this.roleIds,
