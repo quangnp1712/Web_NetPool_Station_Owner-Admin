@@ -1,7 +1,9 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/bloc/account_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_model.dart';
 
 //! Account List - DS người chơi !//
 
@@ -14,12 +16,45 @@ class AccountListPage extends StatefulWidget {
 
 class _AccountListPageState extends State<AccountListPage> {
   final AccountListBloc accountListBloc = AccountListBloc();
+  List<AccountListModel> accountList = [];
+  List<String> statusNames = [];
+  bool _sortAscending = true;
+  int? _sortColumnIndex;
 
   @override
   void initState() {
     accountListBloc.add(AccountListInitialEvent());
     super.initState();
   }
+
+  // --- THÊM: HÀM SẮP XẾP (SORT) ---
+  void _sort<T extends Comparable>(
+    T? Function(AccountListModel d) getField, // Sửa: Chấp nhận AccountListModel
+    int columnIndex,
+    bool ascending,
+  ) {
+    accountList.sort((a, b) {
+      // Sửa: Sắp xếp `accountList`
+      final aValue = getField(a);
+      final bValue = getField(b);
+
+      // Xử lý null an toàn
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null)
+        return ascending ? -1 : 1; // Đẩy null xuống dưới (hoặc trên)
+      if (bValue == null) return ascending ? 1 : -1;
+
+      return ascending
+          ? Comparable.compare(aValue, bValue)
+          : Comparable.compare(bValue, aValue);
+    });
+    // Gọi setState để rebuild lại bảng với dữ liệu đã sắp xếp
+    setState(() {
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
+    });
+  }
+  // ----------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -31,50 +66,60 @@ class _AccountListPageState extends State<AccountListPage> {
         switch (state.runtimeType) {}
       },
       builder: (context, state) {
-        return ListView(
-          padding: const EdgeInsets.all(0.0),
-          children: [
-            Container(
-              // Thêm padding cho toàn bộ body
-              padding: const EdgeInsets.all(40.0),
-              color: AppColors.mainBackground, // Màu nền tối bên ngoài
-              alignment: Alignment.center,
-              child: Container(
-                // Đây là Container chính với hiệu ứng glow
-                decoration: BoxDecoration(
-                  color: AppColors.containerBackground,
-                  borderRadius: BorderRadius.circular(20.0),
-                  boxShadow: [
-                    // Áp dụng chính xác thông số Drop Shadow bạn đã cung cấp
-                    BoxShadow(
-                      color: AppColors.primaryGlow,
-                      blurRadius: 20.0,
-                      spreadRadius: 0.5,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // 1. Hàng Filter (Tìm kiếm, Dropdown, Button)
-                    _buildFilterBar(),
+        if (state is AccountListSuccessState) {
+          accountList = state.accountList;
+          statusNames = state.statusNames;
+        } else if (state is AccountListEmptyState) {
+          accountList = [];
+          statusNames = [];
+        }
+        return Material(
+          color: AppColors.mainBackground, // Màu nền tối bên ngoài
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(0.0),
+            children: [
+              Container(
+                // Thêm padding cho toàn bộ body
+                padding: const EdgeInsets.all(40.0),
+                // color: AppColors.mainBackground, // Đã chuyển lên Material
+                alignment: Alignment.center,
+                child: Container(
+                  // Đây là Container chính với hiệu ứng glow
+                  decoration: BoxDecoration(
+                    color: AppColors.containerBackground,
+                    borderRadius: BorderRadius.circular(20.0),
+                    boxShadow: [
+                      // Áp dụng chính xác thông số Drop Shadow bạn đã cung cấp
+                      BoxShadow(
+                        color: AppColors.primaryGlow,
+                        blurRadius: 20.0,
+                        spreadRadius: 0.5,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // 1. Hàng Filter (Tìm kiếm, Dropdown, Button)
+                      _buildFilterBar(),
 
-                    // 2. Bảng Dữ liệu
-                    _buildDataTable(),
-                  ],
+                      // 2. Bảng Dữ liệu (ĐÃ THAY THẾ)
+                      _buildDataTable(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // 3. Footer (Copyright)
-            _buildFooter(),
-          ],
+              // 3. Footer (Copyright)
+              _buildFooter(),
+            ],
+          ),
         );
       },
     );
   }
 
   // --- WIDGET CON: HÀNG FILTER ---
-  // --- WIDGET CON: HÀNG FILTER (ĐÃ SỬA) ---
   Widget _buildFilterBar() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -113,10 +158,12 @@ class _AccountListPageState extends State<AccountListPage> {
               ),
 
               // Dropdown "Tình trạng"
-              _buildDropdown("Tình trạng", ["Hoạt động", "Bị khóa"]),
+              statusNames.isNotEmpty
+                  ? _buildDropdown("Tình trạng", statusNames)
+                  : Container(),
 
               // Dropdown "Chức vụ"
-              _buildDropdown("Chức vụ", ["Admin", "Station Owner", "Player"]),
+              // _buildDropdown("Chức vụ", ["Admin", "Station Owner", "Player"]),
             ],
           ),
 
@@ -147,148 +194,187 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  // --- WIDGET CON: BẢNG DỮ LIỆU ---
+  // --- WIDGET CON: BẢNG DỮ LIỆU (ĐÃ THAY THẾ BẰNG DATATABLE2) ---
   Widget _buildDataTable() {
-    // SỬA: Bọc toàn bộ bảng trong Padding
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: ClipRRect(
-        // SỬA: Bo tròn cả 4 góc vì bảng không còn sát viền nữa
-        borderRadius: BorderRadius.circular(12.0),
-        child: Column(
-          children: [
-            // Header của Bảng
-            Container(
-              color: AppColors.tableHeader,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: const Row(
-                children: [
-                  Expanded(
-                      flex: 3,
-                      child: Text("TÊN",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold))),
-                  Expanded(
-                      flex: 2,
-                      child: Text("SĐT",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold))),
-                  Expanded(
-                      flex: 2,
-                      child: Text("TRẠNG THÁI",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold))),
-                  Expanded(
-                      flex: 2,
-                      child: Text("CHỨC NĂNG",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold))),
-                ],
+    // SỬA LỖI 1: Bọc `Padding` trong `SizedBox` có chiều cao cố định
+    return SizedBox(
+      height:
+          450, // <-- GÁN CHIỀU CAO CỐ ĐỊNH (giống như SizedBox(height: 400) cũ)
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        // Dùng ClipRRect để bo góc cho DataTable
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12.0),
+          child: DataTable2(
+            // --- Styling (Quan trọng) ---
+            columnSpacing: 12, // Khoảng cách giữa các cột
+            horizontalMargin: 24, // Padding ngang (trái/phải) của bảng
+            minWidth: 600, // Chiều rộng tối thiểu
+            dataRowHeight: 60, // Chiều cao của hàng
+            headingRowHeight: 56, // Chiều cao của header
+
+            // Màu Header (Màu tím)
+            headingRowColor: MaterialStateProperty.all(AppColors.tableHeader),
+            headingTextStyle: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
+
+            // Màu Data Row (Màu nền)
+            dataRowColor:
+                MaterialStateProperty.all(AppColors.containerBackground),
+            dataTextStyle: const TextStyle(color: AppColors.textWhite),
+
+            // Đường viền (Border)
+            dividerThickness: 0, // Tắt viền dọc mặc định
+
+            // SỬA LỖI 2: Sửa lại logic `border`
+            border: TableBorder(
+              // Giữ viền ngang bên trong (giống code cũ)
+              horizontalInside: BorderSide(
+                width: 0.5,
+                color: Colors.grey[800]!,
+                style: BorderStyle.solid,
               ),
             ),
 
-            // Các hàng dữ liệu (Data Rows)
-            // Bọc trong Container để có thể cuộn nếu có nhiều dữ liệu
-            SizedBox(
-              height: 400, // Giới hạn chiều cao và cho phép cuộn
-              // SỬA: Thêm màu nền cho phần body của bảng
+            // --- THÊM: LOGIC SẮP XẾP ---
+            sortColumnIndex: _sortColumnIndex,
+            sortAscending: _sortAscending,
+            // -------------------------
+            // --- THÊM: TÙY CHỈNH ICON SORT THEO YÊU CẦU ---
+            sortArrowIcon:
+                Icons.arrow_drop_down, // Icon đi xuống (sẽ tự động đảo ngược)
+            sortArrowIconColor: Colors.white, // Đảm bảo màu trắng
+            // ---------------------------------------------
+
+            // --- THÊM: WIDGET KHI RỖNG (EMPTY) ---
+            empty: Center(
               child: Container(
-                color: AppColors.containerBackground, // Thêm màu nền này
-                child: ListView.builder(
-                  itemCount: 4, // Số lượng hàng (giống như ảnh)
-                  itemBuilder: (context, index) {
-                    return _buildDataRow(
-                      name: "NGUYỄN PHƯƠNG QUANG",
-                      phone: "090xxxxxxx",
-                      isActive: true,
-                    );
-                  },
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  'Không tìm thấy dữ liệu',
+                  style: TextStyle(
+                    color: AppColors.textHint,
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
             ),
-          ],
+            // --------------------------------
+
+            // --- Columns (Định nghĩa các cột) ---
+            columns: [
+              DataColumn2(
+                label: Text('TÊN'),
+                size: ColumnSize.L, // Tương đương flex: 3
+                // THÊM: onSort cho cột TÊN
+                onSort: (columnIndex, ascending) {
+                  _sort<String>(
+                      (d) => d.username as String, columnIndex, ascending);
+                },
+              ),
+              DataColumn2(
+                label: Text('EMAIL'),
+                size: ColumnSize.M, // Tương đương flex: 2
+                // THÊM: onSort cho cột SĐT
+                onSort: (columnIndex, ascending) {
+                  _sort<String>(
+                      (d) => d.email as String, columnIndex, ascending);
+                },
+              ),
+              DataColumn2(
+                label: Text('SĐT'),
+                size: ColumnSize.M, // Tương đương flex: 2
+                // THÊM: onSort cho cột SĐT
+                onSort: (columnIndex, ascending) {
+                  _sort<String>(
+                      (d) => d.phone as String, columnIndex, ascending);
+                },
+              ),
+              DataColumn2(
+                label: Text('TRẠNG THÁI'),
+                size: ColumnSize.M, // Tương đương flex: 2
+                // THÊM: onSort cho cột TRẠNG THÁI
+                onSort: (columnIndex, ascending) {
+                  _sort<String>(
+                      (d) => d.statusCode ?? '', columnIndex, ascending);
+                },
+              ),
+              DataColumn2(
+                label: Text('CHỨC NĂNG'),
+                size: ColumnSize.M, // Tương đương flex: 2
+                // Cột Chức năng thường không có Sắp xếp
+              ),
+            ],
+
+            // --- Rows (Dữ liệu) ---
+            // SỬA: Dùng `_dataList` (biến state) thay vì `mockData`
+            rows: accountList
+                .map(
+                  (data) => DataRow(
+                    cells: [
+                      // Cell 1: Tên
+                      DataCell(Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(data.avatar.toString()),
+                            radius: 18,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(data.username.toString()),
+                        ],
+                      )),
+
+                      // Cell 2: Email
+                      DataCell(Text(data.email.toString())),
+
+                      // Cell 3: SĐT
+                      DataCell(Text(data.phone.toString())),
+
+                      // Cell 4: Trạng thái (Dùng lại hàm _buildStatusChip)
+                      DataCell(_buildStatusChip(
+                          data.statusCode ?? "", data.statusName ?? "")),
+
+                      // Cell 5: Chức năng (Các nút bấm)
+                      DataCell(Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined,
+                                color: Colors.blueAccent),
+                            onPressed: () {
+                              // TODO: Xử lý sự kiện sửa
+                            },
+                            tooltip: "Chỉnh sửa",
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.redAccent),
+                            onPressed: () {
+                              // TODO: Xử lý sự kiện xóa
+                            },
+                            tooltip: "Xóa",
+                          ),
+                        ],
+                      )),
+                    ],
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
   }
 
-  // --- WIDGET CON: MỘT HÀNG DỮ LIỆU ---
-  Widget _buildDataRow(
-      {required String name, required String phone, required bool isActive}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[800]!, width: 0.5),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Tên
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  // Thay bằng ảnh thật của bạn
-                  backgroundImage:
-                      NetworkImage("https://i.pravatar.cc/150?img=1"),
-                  radius: 18,
-                ),
-                const SizedBox(width: 12),
-                Text(name, style: const TextStyle(color: AppColors.textWhite)),
-              ],
-            ),
-          ),
-
-          // SĐT
-          Expanded(
-            flex: 2,
-            child:
-                Text(phone, style: const TextStyle(color: AppColors.textWhite)),
-          ),
-
-          // Trạng thái
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _buildStatusChip(isActive),
-            ),
-          ),
-
-          // Chức năng (Edit, Delete buttons)
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                IconButton(
-                  icon:
-                      const Icon(Icons.edit_outlined, color: Colors.blueAccent),
-                  onPressed: () {},
-                  tooltip: "Chỉnh sửa",
-                ),
-                IconButton(
-                  icon:
-                      const Icon(Icons.delete_outline, color: Colors.redAccent),
-                  onPressed: () {},
-                  tooltip: "Xóa",
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- WIDGET CON: CHIP "HOẠT ĐỘNG" ---
-  Widget _buildStatusChip(bool isActive) {
+  // --- WIDGET CON: CHIP "HOẠT ĐỘNG" (Vẫn giữ lại) ---
+  Widget _buildStatusChip(String statusCode, String statusName) {
+    bool isActive = false;
+    if (statusCode == "ENABLE") {
+      isActive = true;
+    } else {
+      isActive = false;
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       decoration: BoxDecoration(
@@ -296,7 +382,7 @@ class _AccountListPageState extends State<AccountListPage> {
         borderRadius: BorderRadius.circular(20.0),
       ),
       child: Text(
-        isActive ? "HOẠT ĐỘNG" : "BỊ KHÓA",
+        statusName,
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -306,7 +392,7 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  // --- WIDGET CON: TẠO DROPDOWN ---
+  // --- WIDGET CON: TẠO DROPDOWN (Vẫn giữ lại) ---
   Widget _buildDropdown(String hint, List<String> items) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -316,9 +402,9 @@ class _AccountListPageState extends State<AccountListPage> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          hint: Text(hint, style: const TextStyle(color: AppColors.textHint)),
+          hint: Text(hint, style: const TextStyle(color: AppColors.textWhite)),
           dropdownColor: AppColors.inputBackground,
-          icon: const Icon(Icons.arrow_drop_down, color: AppColors.textHint),
+          icon: const Icon(Icons.arrow_drop_down, color: AppColors.textWhite),
           items: items.map((String value) {
             return DropdownMenuItem<String>(
               value: value,

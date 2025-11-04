@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'account_list_bloc.dart';
 
 sealed class AccountListState extends Equatable {
@@ -19,7 +20,14 @@ class AccountList_LoadingState extends AccountListActionState {
   AccountList_LoadingState({required this.isLoading});
 }
 
-class AccountListSuccessState extends AccountListState {}
+class AccountListSuccessState extends AccountListState {
+  List<AccountListModel> accountList;
+  List<String> statusNames;
+  AccountListSuccessState({
+    required this.accountList,
+    required this.statusNames,
+  });
+}
 
 class AccountListEmptyState extends AccountListState {}
 

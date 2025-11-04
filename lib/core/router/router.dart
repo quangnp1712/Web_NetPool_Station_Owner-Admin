@@ -6,6 +6,8 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/pages/send_verify_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/pages/verify_email_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/bloc/account_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/pages/account_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/station_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/landing_page.dart';
@@ -17,6 +19,7 @@ class RouteGenerator {
   final LoginBloc loginPageBloc = LoginBloc();
   final RegisterBloc registerPageBloc = RegisterBloc();
   final ValidEmailBloc validEmailPageBloc = ValidEmailBloc();
+  final AccountListBloc accountListBloc = AccountListBloc();
 
   List<GetPage> routes() {
     return [
@@ -75,32 +78,6 @@ class RouteGenerator {
       ),
 
       // GetPage(
-      //   name: LandingNavBottomWidget.LandingNavBottomWidgetRoute,
-      //   page: () => BlocProvider<LandingNavigationBottomBloc>.value(
-      //       value: landingNavigationBottomBloc,
-      //       child: const LandingNavBottomWidget()),
-      // ),
-      // GetPage(
-      //   name: AuthenticationPage.AuthenticationPageRoute,
-      //   page: () => BlocProvider<AuthenticationBloc>.value(
-      //       value: authenticationBloc, child: AuthenticationPage()),
-      // ),
-      // GetPage(
-      //   name: ProfilePage.ProfilePageRoute,
-      //   page: () => BlocProvider<ProfilePageBloc>.value(
-      //       value: profilePageBloc, child: const ProfilePage()),
-      // ),
-      // GetPage(
-      //   name: ChangePassPage.ChangePassPageRoute,
-      //   page: () => BlocProvider<ChangePassPageBloc>.value(
-      //       value: changePassPageBloc, child: const ChangePassPage()),
-      // ),
-      // GetPage(
-      //   name: ChangeEmailPage.ChangeEmailPageRoute,
-      //   page: () => BlocProvider<ChangeEmailPageBloc>.value(
-      //       value: changeEmailPageBloc, child: const ChangeEmailPage()),
-      // ),
-      // GetPage(
       //   name: ShelterPage.ShelterPageRoute,
       //   page: () {
       //     callback(int index) {} // Hàm callback rỗng hoặc hàm cụ thể của bạn
@@ -108,22 +85,7 @@ class RouteGenerator {
       //         value: shelterPageBloc, child: ShelterPage(callback));
       //   },
       // ),
-      // GetPage(
-      //   name: HomePage.HomePageRoute,
-      //   page: () {
-      //     callback(int index) {} // Hàm callback rỗng hoặc hàm cụ thể của bạn
-      //     return BlocProvider<HomePageBloc>.value(
-      //         value: homePageBloc, child: HomePage(callback));
-      //   },
-      // ),
-      // GetPage(
-      //   name: MenuPage.MenuPageRoute,
-      //   page: () {
-      //     callback(int index) {} // Hàm callback rỗng hoặc hàm cụ thể của bạn
-      //     return BlocProvider<MenuPageBloc>.value(
-      //         value: menuPageBloc, child: MenuPage(callback));
-      //   },
-      // ),
+
       // GetPage(
       //   name: ShelterDetailPage.ShelterDetailPageRoute,
       //   page: () {

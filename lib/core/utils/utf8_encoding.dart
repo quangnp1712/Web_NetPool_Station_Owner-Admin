@@ -2,6 +2,13 @@ import 'dart:convert';
 
 class Utf8Encoding {
   String decode(String input) {
-    return utf8.decode(input.toString().runes.toList());
+    try {
+      String result = utf8.decode(input.toString().runes.toList());
+      return result;
+    } on FormatException {
+      return input;
+    } catch (e) {
+      return input;
+    }
   }
 }

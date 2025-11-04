@@ -13,6 +13,7 @@ class AccountListModel {
   String? email;
   String? statusCode;
   String? statusName;
+  bool? isActive;
 
   AccountListModel({
     this.accountId,

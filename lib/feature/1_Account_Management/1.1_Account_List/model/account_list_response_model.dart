@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
@@ -5,9 +6,11 @@ import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1
 
 class AccountListModelResponse extends BaseResponse {
   List<AccountListModel>? data;
+  ACLMetaModel? meta;
 
   AccountListModelResponse({
     this.data,
+    this.meta,
     status,
     success,
     errorCode,
@@ -35,6 +38,9 @@ class AccountListModelResponse extends BaseResponse {
               ),
             )
           : null,
+      meta: map['meta'] != null
+          ? ACLMetaModel.fromMap(map['meta'] as Map<String, dynamic>)
+          : null,
       status: map['status'] != null ? map['status'] as String : null,
       success: map['success'] != null ? map['success'] as bool : null,
       errorCode: map['errorCode'] as dynamic,
@@ -48,4 +54,36 @@ class AccountListModelResponse extends BaseResponse {
 
   factory AccountListModelResponse.fromJson(Map<String, dynamic> source) =>
       AccountListModelResponse.fromMap(source);
+}
+
+class ACLMetaModel {
+  int? pageSize;
+  int? current;
+  int? total;
+  ACLMetaModel({
+    this.pageSize,
+    this.current,
+    this.total,
+  });
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'pageSize': pageSize,
+      'current': current,
+      'total': total,
+    };
+  }
+
+  factory ACLMetaModel.fromMap(Map<String, dynamic> map) {
+    return ACLMetaModel(
+      pageSize: map['pageSize'] != null ? map['pageSize'] as int : null,
+      current: map['current'] != null ? map['current'] as int : null,
+      total: map['total'] != null ? map['total'] as int : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory ACLMetaModel.fromJson(Map<String, dynamic> source) =>
+      ACLMetaModel.fromMap(source);
 }

@@ -16,7 +16,6 @@ class SearchEvent extends AccountListEvent {
   String? roleIds;
   String? sorter;
   String? current;
-  String? pageSize;
   String? stationId;
   SearchEvent({
     this.search,
@@ -24,7 +23,8 @@ class SearchEvent extends AccountListEvent {
     this.roleIds,
     this.sorter,
     this.current,
-    this.pageSize,
     this.stationId,
   });
 }
+
+class RoleEvent extends AccountListEvent {}
