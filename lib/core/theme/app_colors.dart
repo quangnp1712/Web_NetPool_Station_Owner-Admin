@@ -23,5 +23,6 @@ class AppColors {
   static const Color tableHeader = Color(0xFF8630CB); // Nền header của bảng
   static const Color activeStatus = Color(0xFF2EBD59); // Màu xanh "Hoạt động"
   static const Color textWhite = Colors.white;
+  static const Color textBlack = Colors.black;
   static const Color textHint = Color(0xFF8A8A8E);
 }

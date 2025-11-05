@@ -6,7 +6,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 
 //! Register - station owner !//
 abstract class IRegisterRepository {
-  Future<Map<String, dynamic>> register(RegisterModel loginModel);
+  Future<Map<String, dynamic>> register(RegisterModel registerModel);
 }
 
 class RegisterRepository extends RegisterApi implements IRegisterRepository {

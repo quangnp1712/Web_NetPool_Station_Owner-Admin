@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
 
 class AccountListModelResponse extends BaseResponse {
   List<AccountListModel>? data;

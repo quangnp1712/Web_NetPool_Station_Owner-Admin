@@ -20,7 +20,7 @@ const dashboardPageRoute = "/dashboard";
 // QUẢN LÝ NGƯỜI CHƠI //
 const String accountParentName = "Quản lý Tài khoản Người chơi";
 const String accountListPageName = "Danh sách tài khoản";
-const accountListPageRoute = "/acc/list";
+const accountListPageRoute = "/player/list";
 
 // QUẢN LÝ ĐẶT LỊCH //
 const bookingPageName = "Booking";
@@ -60,9 +60,12 @@ const propertyPageRoute = "/property";
 const menuPageName = "Menu";
 const menuPageRoute = "/menu";
 
-// QUẢN LÝ STAFF - NHÂN VIÊN//
-const staffPageName = "Staff";
-const staffPageRoute = "/staff";
+// QUẢN LÝ ADMIN - NHÂN VIÊN//
+const String adminParentName = "Quản lý Tài khoản Nhân Viên";
+const String adminListPageName = "Danh sách Nhân viên";
+const String adminListPageRoute = "/admin/list";
+const String adminCreatePageName = "Tạo Nhân viên";
+const String adminCreatePageRoute = "/admin/create";
 
 // QUẢN LÝ PAYMENT - GIAO DỊCH//
 const paymentPageName = "Payment";

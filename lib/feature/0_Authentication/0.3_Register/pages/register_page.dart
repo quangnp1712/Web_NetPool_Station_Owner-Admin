@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/bloc/register_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Register - station owner !//
 class RegisterPage extends StatefulWidget {
@@ -36,6 +37,10 @@ class _RegisterPageState extends State<RegisterPage> {
         switch (state.runtimeType) {
           case RegisterSuccessState:
             Get.toNamed(validEmailPageRoute);
+            break;
+          case ShowSnackBarActionState:
+            final snackBarState = state as ShowSnackBarActionState;
+            ShowSnackBar(snackBarState.message, snackBarState.success);
             break;
         }
       },

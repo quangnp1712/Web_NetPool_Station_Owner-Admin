@@ -3,7 +3,7 @@ import 'package:web_netpool_station_owner_admin/core/network/exceptions/exceptio
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/api/login_api.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/model/login_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.2_Account_Create/api/account_create_api.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.2_Account_Create/api/account_create_api.dart';
 
 abstract class IAccountCreateRepository {
   Future<Map<String, dynamic>> create(LoginModel loginModel);

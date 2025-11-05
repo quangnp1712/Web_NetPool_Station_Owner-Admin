@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
 
 /// Lớp Nguồn dữ liệu (Data Source) cho PaginatedDataTable2
 /// Nó quản lý danh sách, sắp xếp, và tạo các hàng (rows)

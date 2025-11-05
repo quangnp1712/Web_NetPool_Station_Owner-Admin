@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: unused_local_variable, depend_on_referenced_packages
 
 import 'dart:async';
 import 'dart:convert';
@@ -8,11 +8,9 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
-import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_mock_data.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/model/account_list_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Management/1.1_Account_List/repository/account_list_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_mock_data.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/role/repository/role_repository.dart';
@@ -32,7 +30,7 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
   FutureOr<void> _accountListInitialEvent(
       AccountListInitialEvent event, Emitter<AccountListState> emit) {
     emit(AccountListInitial());
-    add(AccountListLoadEvent()); // truyền roleIds của player
+    add(RoleEvent()); // truyền roleIds của player
   }
 
   FutureOr<void> _roleEvent(
@@ -109,14 +107,16 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
       if (responseSuccess) {
         AccountListModelResponse accountListModelResponse =
             AccountListModelResponse.fromJson(responseBody);
-        List<AccountListModel> _accountList = [];
+        List<AccountListModel> accountList = [];
 
         emit(AccountList_LoadingState(isLoading: false));
         try {
           if (accountListModelResponse.data != null) {
             if (accountListModelResponse.data!.isNotEmpty) {
-              _accountList = accountListModelResponse.data!;
-              for (var _account in _accountList) {
+              accountList = accountListModelResponse.data!.where((account) {
+                return account.roleId == _rolePlayer.roleId;
+              }).toList();
+              for (var _account in accountList) {
                 _account.username =
                     Utf8Encoding().decode(_account.username.toString());
                 _account.email =
@@ -128,14 +128,15 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
               // 2. Dùng whereType<String>() để lọc bỏ null
               // 3. Dùng toSet() để loại bỏ trùng lặp
               // 4. Dùng toList() để chuyển về danh sách (List)
-              List<String> statusNames = _accountList
+
+              List<String> statusNames = accountList
                   .map((account) => account.statusName)
                   .whereType<String>()
                   .toSet()
                   .toList();
               ACLMetaModel metaModel = accountListModelResponse.meta!;
               emit(AccountListSuccessState(
-                  accountList: _accountList,
+                  accountList: accountList,
                   statusNames: statusNames,
                   meta: metaModel));
             }

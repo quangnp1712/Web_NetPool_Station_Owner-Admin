@@ -162,7 +162,40 @@ class SideMenu extends StatelessWidget {
                       }),
                 ],
               ),
+              //! Mục 5: Quản lý Admin - Nhaan vieen
+              CustomExpansionItem(
+                parentName: adminParentName,
+                icon: Icons.person_outline,
+                children: [
+                  //$ 5.1 Danh sách admin - con
+                  SideMenuChildItem(
+                    itemName: adminListPageName,
+                    onTap: () {
+                      if (!menuController.isActive(adminListPageName)) {
+                        menuController.changeActiveItemTo(adminListPageName,
+                            parentName: adminParentName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(adminListPageRoute);
+                      }
+                    },
+                  ),
 
+                  //$ 5.2 Tạo admin - con
+                  SideMenuChildItem(
+                    itemName: adminCreatePageName,
+                    onTap: () {
+                      if (!menuController.isActive(adminCreatePageName)) {
+                        menuController.changeActiveItemTo(adminCreatePageName,
+                            parentName: adminParentName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(adminCreatePageRoute);
+                      }
+                    },
+                  ),
+                ],
+              ),
               //! TEST
               SideMenuItem(
                 itemName: "TEST",
