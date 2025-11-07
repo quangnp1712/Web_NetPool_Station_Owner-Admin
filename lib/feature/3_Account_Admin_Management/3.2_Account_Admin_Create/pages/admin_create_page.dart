@@ -421,9 +421,12 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
           // icon: const Icon(Icons.arrow_drop_down, color: AppColors.textWhite),
           style: const TextStyle(color: AppColors.textWhite),
           dropdownColor: AppColors.inputBackground, // Nền của menu
+          hint: Text(
+            "Chọn Station ",
+            style:
+                const TextStyle(color: AppColors.textHint), // Đảm bảo màu đúng
+          ),
           decoration: InputDecoration(
-            hintText: "Chọn Station ",
-            hintStyle: const TextStyle(color: AppColors.tableHeader),
             filled: true,
             fillColor: AppColors.inputBackground,
             border: OutlineInputBorder(

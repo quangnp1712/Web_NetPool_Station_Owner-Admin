@@ -4,7 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/pages/account_list_page.dart';
-import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/station_list_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.1_Station_List/bloc/station_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.1_Station_List/pages/station_list_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.2_Staion_Create/bloc/station_create_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.2_Staion_Create/pages/station_create_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Account_Admin_Management/3.1_Account_Admin_List/bloc/admin_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Account_Admin_Management/3.1_Account_Admin_List/pages/admin_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Account_Admin_Management/3.2_Account_Admin_Create/bloc/admin_create_bloc.dart';
@@ -19,6 +22,8 @@ Route<dynamic> menuRoute(RouteSettings settings) {
   final AccountListBloc accountListBloc = AccountListBloc();
   final AdminListBloc adminListBloc = AdminListBloc();
   final AdminCreateBloc adminCreateBloc = AdminCreateBloc();
+  final StationListBloc stationListBloc = StationListBloc();
+  final StationCreateBloc stationCreateBloc = StationCreateBloc();
 
   switch (settings.name) {
     //! DASHBOARD $//
@@ -42,11 +47,25 @@ Route<dynamic> menuRoute(RouteSettings settings) {
 
     //! QUẢN LÝ STATION $//
     case stationListPageRoute:
-      return getPageRoute(const StationListPage());
+      return MaterialPageRoute(
+        builder: (context) {
+          return BlocProvider<StationListBloc>.value(
+            value: stationListBloc,
+            child: const StationListPage(),
+          );
+        },
+      );
     case stationCreatePageRoute:
-      return getPageRoute(const StationListPage());
+      return MaterialPageRoute(
+        builder: (context) {
+          return BlocProvider<StationCreateBloc>.value(
+            value: stationCreateBloc,
+            child: const StationCreatePage(),
+          );
+        },
+      );
     case stationUpdatePageRoute:
-      return getPageRoute(const StationListPage());
+      return getPageRoute(const AdminCreatePage());
 
     //! QUẢN LÝ STATION ADMIN $//
     case adminListPageRoute:

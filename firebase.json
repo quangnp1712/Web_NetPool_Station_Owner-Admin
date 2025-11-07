@@ -1,0 +1,22 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "realmen-2023",
+                    "appId": "1:557539940447:android:169816564ae36c801ea3ea",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "realmen-2023",
+                    "configurations": {
+                        "android": "1:557539940447:android:169816564ae36c801ea3ea",
+                        "web": "1:557539940447:web:777d4bdb85f781141ea3ea"
+                    }
+                }
+            }
+        }
+    }
+}

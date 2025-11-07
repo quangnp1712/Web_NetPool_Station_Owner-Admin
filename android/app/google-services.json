@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "557539940447",
+    "firebase_url": "https://realmen-2023-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "realmen-2023",
+    "storage_bucket": "realmen-2023.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557539940447:android:169816564ae36c801ea3ea",
+        "android_client_info": {
+          "package_name": "com.example.web_netpool_station_owner_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0-Ozhc5UuiFEYFpnmR9hFTAIGxEUJzvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

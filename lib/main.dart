@@ -1,3 +1,6 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,30 +19,43 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/bloc/account_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.1_Station_List/bloc/station_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Station_Management/2.2_Staion_Create/bloc/station_create_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Account_Admin_Management/3.1_Account_Admin_List/bloc/admin_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Account_Admin_Management/3.2_Account_Admin_Create/bloc/admin_create_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/404/error.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/pages/login_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/menu_controller.dart'
     as menu_controller;
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
+import 'package:web_netpool_station_owner_admin/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await SharedPreferencesHelper.instance.init();
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
-  // await FirebaseAppCheck.instance.activate(
-  //   androidProvider: AndroidProvider.playIntegrity,
-  // );
-  // _FBSignAnonymous();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+  );
+  _FBSignAnonymous();
   Get.put(menu_controller.MenuController());
   Get.put(NavigationController());
   SharedPreferencesHelper.clearAll();
   runApp(const MyApp());
+}
+
+Future<void> _FBSignAnonymous() async {
+  try {
+    UserCredential userCredential =
+        await FirebaseAuth.instance.signInAnonymously();
+    User? user = userCredential.user;
+    print('Đăng nhập ẩn danh thành công: ${user!.uid}');
+  } catch (e) {
+    print('Lỗi không xác định: $e');
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -61,6 +77,8 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => AccountListBloc()),
         BlocProvider(create: (_) => AdminListBloc()),
         BlocProvider(create: (_) => AdminCreateBloc()),
+        BlocProvider(create: (_) => StationListBloc()),
+        BlocProvider(create: (_) => StationCreateBloc()),
       ],
       child: GetMaterialApp(
         localizationsDelegates: const [
@@ -77,13 +95,7 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.purple,
-          textTheme: GoogleFonts.robotoTextTheme(Theme.of(context).textTheme)
-              .apply(bodyColor: Colors.white),
-          // Áp dụng style này cho TẤT CẢ DropdownButton (M2)
-          dropdownMenuTheme: DropdownMenuThemeData(
-            menuStyle: MenuStyle(
-                backgroundColor: WidgetStatePropertyAll(AppColors.bgCard)),
-          ),
+          textTheme: GoogleFonts.robotoTextTheme(),
         ),
         initialRoute: loginPageRoute,
 
