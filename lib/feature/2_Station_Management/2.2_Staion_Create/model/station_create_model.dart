@@ -35,18 +35,13 @@ class StationCreateModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'stationId': stationId,
       'avatar': avatar,
-      'stationCode': stationCode,
       'stationName': stationName,
       'address': address,
       'province': province,
       'commune': commune,
       'district': district,
       'hotline': hotline,
-      'statusCode': statusCode,
-      'statusName': statusName,
-      'metadata': metadata?.toMap(),
     };
   }
 

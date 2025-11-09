@@ -27,3 +27,5 @@ class AdminListLoadEvent extends AdminListEvent {
 }
 
 class RoleEvent extends AdminListEvent {}
+
+class GetStationIdEvent extends AdminListEvent {}

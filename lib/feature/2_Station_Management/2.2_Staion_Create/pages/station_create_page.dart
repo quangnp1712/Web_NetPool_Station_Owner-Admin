@@ -115,7 +115,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
       buildWhen: (previous, current) => current is! StationCreateActionState,
       listener: (context, state) {
         switch (state.runtimeType) {
-          case StationCreateSuccessState:
+          case StationCreateSuccessState _:
             stationCreateBloc.add(ResetFormEvent());
             break;
           case ShowSnackBarActionState:
@@ -163,7 +163,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
           _communeList = [];
 
           // file
-          // _base64Images.clear();
+          _base64Images = [];
 
           stationCreateBloc.add(GenerateCaptchaEvent());
         }
@@ -317,7 +317,11 @@ class _StationCreatePageState extends State<StationCreatePage> {
               hint: "09xx.xxx.xxx",
               controller: _hotlineController,
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+                FilteringTextInputFormatter.singleLineFormatter,
+              ],
               validator: (val) =>
                   (val?.isEmpty ?? true) ? "Vui lòng nhập SĐT" : null,
             ),
@@ -971,7 +975,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
           ),
           child: const Text(
-            "CẬP NHẬT THÔNG TIN STATION",
+            "TẠO STATION",
             style: TextStyle(
                 color: Colors.white, fontFamily: AppFonts.bold, fontSize: 16),
           ),

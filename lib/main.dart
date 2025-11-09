@@ -1,6 +1,7 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,9 +38,25 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-  );
+
+  try {
+    if (kIsWeb) {
+      // Chạy trên Web
+      await FirebaseAppCheck.instance.activate(
+        // Cung cấp reCAPTCHA v3 site key của bạn ở đây
+        // Bạn phải lấy key này từ Google Cloud Console (reCAPTCHA v3)
+        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY_HERE'),
+      );
+    } else {
+      // Chạy trên Android/iOS
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.appAttest, // (Nên thêm cho iOS)
+      );
+    }
+  } catch (e) {
+    print('Lỗi Firebase App Check: $e');
+  }
   _FBSignAnonymous();
   Get.put(menu_controller.MenuController());
   Get.put(NavigationController());

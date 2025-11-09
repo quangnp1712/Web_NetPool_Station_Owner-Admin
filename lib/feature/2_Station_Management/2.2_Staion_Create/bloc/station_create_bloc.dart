@@ -139,7 +139,7 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
           commune: event.commune,
           hotline: event.hotline,
           district: event.district,
-          avatar: event.avatar,
+          avatar: media.isNotEmpty ? media[0].url : null,
           media: media);
       var results =
           await StationCreateRepository().createStation(stationCreateModel);
@@ -150,7 +150,6 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       if (responseSuccess || responseStatus == 200) {
         emit(StationCreate_LoadingState(isLoading: false));
         emit(StationCreateSuccessState());
-
         emit(ShowSnackBarActionState(
             message: "Đăng ký thành công", success: responseSuccess));
       } else if (responseStatus == 400) {

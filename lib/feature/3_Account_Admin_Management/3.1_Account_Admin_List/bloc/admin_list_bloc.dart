@@ -21,6 +21,7 @@ class AdminListBloc extends Bloc<AdminListEvent, AdminListState> {
   AdminListBloc() : super(AdminListInitial()) {
     on<AdminListInitialEvent>(_AdminListInitialEvent);
     on<RoleEvent>(_roleEvent);
+    on<GetStationIdEvent>(_getStationIdEvent);
     on<AdminListLoadEvent>(_adminListLoadEvent);
   }
 
@@ -32,6 +33,44 @@ class AdminListBloc extends Bloc<AdminListEvent, AdminListState> {
 
   FutureOr<void> _roleEvent(
       RoleEvent event, Emitter<AdminListState> emit) async {
+    emit(AdminList_ChangeState());
+    emit(AdminList_LoadingState(isLoading: true));
+    try {
+      var results = await RoleRepository().roles();
+      var responseMessage = results['message'];
+      var responseStatus = results['status'];
+      var responseSuccess = results['success'];
+      var responseBody = results['body'];
+      if (responseSuccess) {
+        RoleModelResponse roleModelResponse =
+            RoleModelResponse.fromJson(responseBody);
+        if (roleModelResponse.data != null) {
+          for (var dataRole in roleModelResponse.data!) {
+            if (dataRole.roleCode == "STATION_ADMIN") {
+              _rolePlayer = dataRole;
+              break;
+            }
+          }
+        }
+        emit(AdminList_LoadingState(isLoading: false));
+        DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
+        add(AdminListLoadEvent(roleIds: _rolePlayer.roleId.toString()));
+      } else {
+        DebugLogger.printLog("$responseStatus - $responseMessage");
+
+        emit(AdminList_LoadingState(isLoading: false));
+        emit(ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại", success: responseSuccess));
+      }
+    } catch (e) {
+      emit(AdminList_LoadingState(isLoading: false));
+      emit(ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại", success: false));
+      DebugLogger.printLog(e.toString());
+    }
+  }
+  FutureOr<void> _getStationIdEvent(
+      GetStationIdEvent event, Emitter<AdminListState> emit) async {
     emit(AdminList_ChangeState());
     emit(AdminList_LoadingState(isLoading: true));
     try {

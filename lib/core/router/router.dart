@@ -27,10 +27,6 @@ class RouteGenerator {
         page: () => BlocProvider<LoginBloc>.value(
             value: loginPageBloc, child: LoginPage()),
       ),
-      // GetPage(
-      //   name: loginPageRoute,
-      //   page: () => LoginPage(),
-      // ),
 
       GetPage(
         name: registerPageRoute,
@@ -58,42 +54,8 @@ class RouteGenerator {
 
       GetPage(
         name: rootRoute, // "/"
-        page: () => LandingPage(), // Chỉ render LandingPage (layout) 1 LẦN
-        // Định nghĩa các trang con sẽ được render BÊN TRONG LandingPage
-        // children: [
-        //   GetPage(
-        //     name: dashboardPageRoute, // "/dashboard"
-        //     page: () => const DashboardPage(), // Chỉ render trang con
-        //   ),
-        //   GetPage(
-        //     name: accountListPageRoute,
-        //     page: () => const AccountListPage(),
-        //   ),
-        //   GetPage(
-        //     name: stationPageRoute,
-        //     page: () => const StationListPage(),
-        //   ),
-        // ],
+        page: () => LandingPage(),
       ),
-
-      // GetPage(
-      //   name: ShelterPage.ShelterPageRoute,
-      //   page: () {
-      //     callback(int index) {} // Hàm callback rỗng hoặc hàm cụ thể của bạn
-      //     return BlocProvider<ShelterPageBloc>.value(
-      //         value: shelterPageBloc, child: ShelterPage(callback));
-      //   },
-      // ),
-
-      // GetPage(
-      //   name: ShelterDetailPage.ShelterDetailPageRoute,
-      //   page: () {
-      //     final shelterPageBloc =
-      //         BlocProvider.of<ShelterPageBloc>(Get.context!);
-      //     final ShelterModel shelter = ShelterModel();
-      //     return ShelterDetailPage(bloc: shelterPageBloc, shelter: shelter);
-      //   },
-      // ),
     ];
   }
 }

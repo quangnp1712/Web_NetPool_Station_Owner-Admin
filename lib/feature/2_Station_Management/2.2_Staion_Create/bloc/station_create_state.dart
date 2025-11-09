@@ -20,7 +20,7 @@ class StationCreate_LoadingState extends StationCreateActionState {
   StationCreate_LoadingState({required this.isLoading});
 }
 
-class StationCreateSuccessState extends StationCreateState {}
+class StationCreateSuccessState extends StationCreateActionState {}
 
 class ShowSnackBarActionState extends StationCreateActionState {
   final String message;
