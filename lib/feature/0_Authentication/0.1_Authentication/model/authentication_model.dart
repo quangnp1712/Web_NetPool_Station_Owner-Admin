@@ -11,16 +11,17 @@ class AuthenticationModel {
   String? accessExpiredAt;
   String? refreshToken;
   String? refreshExpiredAt;
+  List<AuthStationsModel>? stations;
 
-  AuthenticationModel({
-    this.accountId,
-    this.email,
-    this.roleCode,
-    this.accessToken,
-    this.accessExpiredAt,
-    this.refreshToken,
-    this.refreshExpiredAt,
-  });
+  AuthenticationModel(
+      {this.accountId,
+      this.email,
+      this.roleCode,
+      this.accessToken,
+      this.accessExpiredAt,
+      this.refreshToken,
+      this.refreshExpiredAt,
+      this.stations});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -49,6 +50,13 @@ class AuthenticationModel {
       refreshExpiredAt: map['refreshExpiredAt'] != null
           ? map['refreshExpiredAt'] as String
           : null,
+      stations: map['stations'] != null
+          ? List<AuthStationsModel>.from(
+              (map['stations'] as List).map(
+                (x) => AuthStationsModel.fromMap(x as Map<String, dynamic>),
+              ),
+            )
+          : null,
     );
   }
 
@@ -56,4 +64,38 @@ class AuthenticationModel {
 
   factory AuthenticationModel.fromJson(Map<String, dynamic> source) =>
       AuthenticationModel.fromMap(source);
+}
+
+class AuthStationsModel {
+  String? stationId;
+  String? stationCode;
+  String? stationName;
+  AuthStationsModel({
+    this.stationId,
+    this.stationCode,
+    this.stationName,
+  });
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'stationId': stationId,
+      'stationCode': stationCode,
+      'stationName': stationName,
+    };
+  }
+
+  factory AuthStationsModel.fromMap(Map<String, dynamic> map) {
+    return AuthStationsModel(
+      stationId: map['stationId'] != null ? map['stationId'] as String : null,
+      stationCode:
+          map['stationCode'] != null ? map['stationCode'] as String : null,
+      stationName:
+          map['stationName'] != null ? map['stationName'] as String : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory AuthStationsModel.fromJson(Map<String, dynamic> source) =>
+      AuthStationsModel.fromMap(source);
 }

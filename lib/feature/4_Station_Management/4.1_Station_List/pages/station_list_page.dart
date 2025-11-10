@@ -2,27 +2,34 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/bloc/account_list_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/pages/account_data_source.dart';
+import 'package:web_netpool_station_owner_admin/feature/4_Station_Management/4.1_Station_List/bloc/station_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/4_Station_Management/4.1_Station_List/model/station_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/4_Station_Management/4.1_Station_List/pages/station_data_source.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/widget/list_widget/build_filter_bar.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/widget/list_widget/build_footer.dart';
 
-//! Account List - DS người chơi !//
+//! Station List - DS Station Station !//
 
-class AccountListPage extends StatefulWidget {
-  const AccountListPage({super.key});
+class StationListPage extends StatefulWidget {
+  const StationListPage({super.key});
 
   @override
-  State<AccountListPage> createState() => _AccountListPageState();
+  State<StationListPage> createState() => _StationListPageState();
 }
 
-class _AccountListPageState extends State<AccountListPage> {
-  final AccountListBloc accountListBloc = AccountListBloc();
-  // List<AccountListModel> accountList = [];
+class _StationListPageState extends State<StationListPage> {
+  final StationListBloc stationListBloc = StationListBloc();
+  // List<StationListModel> StationList = [];
   List<String> statusNames = [];
   bool _sortAscending = true;
   int? _sortColumnIndex;
+
+  // --- THÊM: Biến cho phân trang và Data Source ---
+  late StationDataSource _dataSource;
+  PaginatorController? _paginatorController;
+  int _totalRows = 0;
+  int _currentPage = 1;
+  int _rowsPerPage = 10;
   bool isLoading = true;
 
   // --- THÊM: Controllers và State cho Filter ---
@@ -31,32 +38,25 @@ class _AccountListPageState extends State<AccountListPage> {
   // String? _selectedRole; // (Tùy chọn cho "Chức vụ")
   // ------------------------------------------
 
-  // --- THÊM: Biến cho phân trang và Data Source ---
-  late AccountDataSource _dataSource;
-  PaginatorController? _paginatorController;
-  int _totalRows = 0;
-  int _currentPage = 1;
-  int _rowsPerPage = 10;
-
   @override
   void initState() {
     super.initState();
     // Khởi tạo Data Source với dữ liệu rỗng
-    _dataSource = AccountDataSource(context: context, initialData: []);
+    _dataSource = StationDataSource(context: context, initialData: []);
     _paginatorController = PaginatorController();
-    accountListBloc.add(AccountListInitialEvent());
+
+    stationListBloc.add(StationListInitialEvent());
   }
 
   @override
   void dispose() {
     _paginatorController?.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
   // --- THÊM: HÀM SẮP XẾP (SORT) ---
   void _sort<T extends Comparable>(
-    T? Function(AccountListModel d) getField,
+    T? Function(StationListModel d) getField,
     int columnIndex,
     bool ascending,
   ) {
@@ -72,15 +72,15 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AccountListBloc, AccountListState>(
-      bloc: accountListBloc,
-      listenWhen: (previous, current) => current is AccountListActionState,
-      buildWhen: (previous, current) => current is! AccountListActionState,
+    return BlocConsumer<StationListBloc, StationListState>(
+      bloc: stationListBloc,
+      listenWhen: (previous, current) => current is StationListActionState,
+      buildWhen: (previous, current) => current is! StationListActionState,
       listener: (context, state) {
         switch (state.runtimeType) {}
       },
       builder: (context, state) {
-        if (state is AccountListSuccessState) {
+        if (state is StationListSuccessState) {
           _totalRows = state.meta.total ?? 10;
           _rowsPerPage = state.meta.pageSize ?? 10;
           _currentPage = state.meta.current ?? 1;
@@ -90,14 +90,14 @@ class _AccountListPageState extends State<AccountListPage> {
           // Tính toán offset (vị trí bắt đầu) của trang hiện tại
           final pageOffset = (_currentPage - 1) * _rowsPerPage;
 
-          _dataSource.updateData(state.accountList, _totalRows, pageOffset);
-        } else if (state is AccountListEmptyState) {
+          _dataSource.updateData(state.stationList, _totalRows, pageOffset);
+        } else if (state is StationListEmptyState) {
           _totalRows = 0;
           _dataSource.updateData([], 0, 0);
           statusNames = [];
           isLoading = false;
         }
-        if (state is AccountList_LoadingState) {
+        if (state is StationList_LoadingState) {
           isLoading = state.isLoading;
         }
         return Material(
@@ -170,7 +170,7 @@ class _AccountListPageState extends State<AccountListPage> {
 
                         // Cấu hình Nút Tạo
                         createButtonConfig: CreateButtonConfig(
-                          text: "TẠO TÀI KHOẢN", // Text động
+                          text: "TẠO STATION", // Text động
                           onPressed: () {
                             // TODO: Xử lý sự kiện Tạo tài khoản
                             print("Bấm nút Tạo tài khoản");
@@ -294,8 +294,8 @@ class _AccountListPageState extends State<AccountListPage> {
                     int newPage = (pageIndex / _rowsPerPage).floor() + 1;
 
                     // Gọi BLoC để tải trang mới
-                    accountListBloc.add(
-                      AccountListLoadEvent(
+                    stationListBloc.add(
+                      StationListLoadEvent(
                         current: newPage.toString(),
                         // TODO: Thêm các giá trị filter (search, status...)
                       ),
@@ -308,8 +308,8 @@ class _AccountListPageState extends State<AccountListPage> {
                       _rowsPerPage = newRowsPerPage ?? 10;
                     });
                     // Gọi BLoC để tải lại từ trang 1
-                    accountListBloc.add(
-                      AccountListLoadEvent(
+                    stationListBloc.add(
+                      StationListLoadEvent(
                         current: "1", // Luôn reset về trang 1
                         // TODO: Thêm các giá trị filter
                       ),
@@ -318,26 +318,47 @@ class _AccountListPageState extends State<AccountListPage> {
 
                   // ------------------------------------
                   source: _dataSource, // Gán Data Source
-                  // --- SỬA: Columns (Thêm cột Email) ---
+
                   columns: [
                     DataColumn2(
-                      label: Text('TÊN'),
+                      label: Text('TÊN STATION'),
                       size: ColumnSize.L, // Tương đương flex: 3
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.username ?? '',
+                          (d) => d.stationName ?? '',
                           columnIndex,
                           ascending,
                         );
                       },
                     ),
-                    // THÊM: Cột Email (theo gợi ý trước)
                     DataColumn2(
-                      label: Text('EMAIL'),
+                      label: Text('HOTLINE'),
+                      size: ColumnSize.S,
+                      onSort: (columnIndex, ascending) {
+                        _sort<String>(
+                          (d) => d.hotline ?? '',
+                          columnIndex,
+                          ascending,
+                        );
+                      },
+                    ),
+                    DataColumn2(
+                      label: Text('QUẬN/HUYỆN'),
                       size: ColumnSize.L,
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.email ?? '',
+                          (d) => d.district ?? '',
+                          columnIndex,
+                          ascending,
+                        );
+                      },
+                    ),
+                    DataColumn2(
+                      label: Text('THÀNH PHỐ/TỈNH'),
+                      size: ColumnSize.L,
+                      onSort: (columnIndex, ascending) {
+                        _sort<String>(
+                          (d) => d.province ?? '',
                           columnIndex,
                           ascending,
                         );
@@ -345,10 +366,10 @@ class _AccountListPageState extends State<AccountListPage> {
                     ),
                     DataColumn2(
                       label: Text('TRẠNG THÁI'),
-                      size: ColumnSize.M, // Tương đương flex: 2
+                      size: ColumnSize.S, // Tương đương flex: 2
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.statusName ?? '',
+                          (d) => d.statusCode ?? '',
                           columnIndex,
                           ascending,
                         );

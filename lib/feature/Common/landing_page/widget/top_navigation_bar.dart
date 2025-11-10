@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/menu_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/station_selector_dropdown.dart';
 
-AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
+AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key,
+        String? _roleName, String? _username) =>
     AppBar(
       toolbarHeight: 80.0,
       leadingWidth: !ResponsiveWidget.isSmallScreen(context) ? 300 : null,
@@ -52,7 +55,7 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
                   //     EdgeInsets.only(top: 40, left: 24, bottom: 20),
                   child: Text(
                     breadcrumbText, // <-- SỬA Ở ĐÂY
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.bgLight,
                       fontSize: 22,
                       fontFamily: 'SegoeUI Italic Bold',
@@ -62,6 +65,10 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
               },
             ),
           ),
+          Spacer(),
+          StationSelectorDropdown(),
+          const SizedBox(width: 16),
+
           Stack(
             children: [
               IconButton(
@@ -115,9 +122,25 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key) =>
           const SizedBox(
             width: 16,
           ),
-          Text(
-            "Santos Enoque",
-            style: TextStyle(color: lightGrey, fontFamily: 'SegoeUI'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                _username ?? "",
+                style: TextStyle(
+                    color: AppColors.textWhite,
+                    fontFamily: 'SegoeUI',
+                    fontSize: 18),
+              ),
+              Text(
+                _roleName ?? "",
+                style: TextStyle(
+                    color: AppColors.textHint,
+                    fontFamily: 'SegoeUI',
+                    fontSize: 14),
+              ),
+            ],
           ),
         ],
       ),

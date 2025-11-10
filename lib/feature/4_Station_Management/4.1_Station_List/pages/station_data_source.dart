@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/4_Station_Management/4.1_Station_List/model/station_list_model.dart';
 
 /// Lớp Nguồn dữ liệu (Data Source) cho PaginatedDataTable2
 /// Nó quản lý danh sách, sắp xếp, và tạo các hàng (rows)
-class AccountDataSource extends DataTableSource {
-  List<AccountListModel> _accountList = []; // Sửa: Dữ liệu của trang hiện tại
+class StationDataSource extends DataTableSource {
+  List<StationListModel> _stationList = []; // Sửa: Dữ liệu của trang hiện tại
   final BuildContext context;
 
   // --- THÊM: Biến cho phân trang ---
@@ -13,18 +13,18 @@ class AccountDataSource extends DataTableSource {
   int _pageOffset = 0; // Vị trí bắt đầu của trang hiện tại
   // -------------------------------
 
-  AccountDataSource({
+  StationDataSource({
     required this.context,
-    required List<AccountListModel> initialData,
+    required List<StationListModel> initialData,
   }) {
-    _accountList = initialData;
+    _stationList = initialData;
   }
 
   /// Cập nhật dữ liệu (ví dụ: khi BLoC load xong)
   // SỬA: Thêm totalRows và pageOffset
   void updateData(
-      List<AccountListModel> newList, int totalRows, int pageOffset) {
-    _accountList = newList;
+      List<StationListModel> newList, int totalRows, int pageOffset) {
+    _stationList = newList;
     _totalRows = totalRows;
     _pageOffset = pageOffset;
     notifyListeners(); // Thông báo cho DataTable2 biết dữ liệu đã thay đổi
@@ -32,11 +32,11 @@ class AccountDataSource extends DataTableSource {
 
   /// Hàm sắp xếp (đã chuyển vào đây)
   void sort<T extends Comparable>(
-    T? Function(AccountListModel d) getField,
+    T? Function(StationListModel d) getField,
     bool ascending,
   ) {
-    _accountList.sort((a, b) {
-      // Sửa: Sắp xếp _accountList
+    _stationList.sort((a, b) {
+      // Sửa: Sắp xếp _StationList
       final aValue = getField(a);
       final bValue = getField(b);
 
@@ -82,7 +82,8 @@ class AccountDataSource extends DataTableSource {
     final int localIndex = index - _pageOffset;
 
     // Nếu index không thuộc trang này, trả về null (DataTable2 sẽ hiển thị loading)
-    if (localIndex < 0 || localIndex >= _accountList.length) {
+    if (localIndex < 0 || localIndex >= _stationList.length) {
+      // Trả về một hàng trống (với chiều cao) để giữ layout
       return DataRow.byIndex(
           index: index,
           color: WidgetStateProperty.all(
@@ -92,16 +93,18 @@ class AccountDataSource extends DataTableSource {
             DataCell(Container()),
             DataCell(Container()),
             DataCell(Container()),
+            DataCell(Container()),
+            DataCell(Container()),
           ]);
     }
 
-    final data = _accountList[localIndex];
+    final data = _stationList[localIndex];
 
     // Đây là logic tạo DataCell của bạn
     return DataRow(
       color: WidgetStateProperty.all(AppColors.bgCard),
       cells: [
-        // Cell 1: Tên
+        // Cell 1: Tên station
         DataCell(Row(
           children: [
             CircleAvatar(
@@ -109,15 +112,29 @@ class AccountDataSource extends DataTableSource {
               radius: 18,
             ),
             const SizedBox(width: 12),
-            Text(data.username.toString()),
+            Expanded(
+              child: Text(
+                data.stationName.toString(),
+                overflow: TextOverflow.ellipsis, // Tùy chọn: Thêm ...
+                maxLines: 2, // Tùy chọn: Tối đa 2 dòng
+              ),
+            ),
           ],
         )),
-        // Cell 2: SĐT (Thêm Email theo gợi ý trước)
-        DataCell(Text(data.email.toString())),
-        // Cell 3: Trạng thái
+
+        // Cell 2: Hotline
+        DataCell(Text(data.hotline.toString())),
+
+        // Cell 3: district
+        DataCell(Text(data.district.toString())),
+
+        // Cell 4: province
+        DataCell(Text(data.province.toString())),
+
+        // Cell 5: Trạng thái
         DataCell(
             _buildStatusChip(data.statusCode ?? "", data.statusName ?? "")),
-        // Cell 4: Chức năng
+        // Cell 6: Chức năng
         DataCell(Row(
           children: [
             IconButton(

@@ -28,13 +28,17 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
   }
 
   FutureOr<void> _accountListInitialEvent(
-      AccountListInitialEvent event, Emitter<AccountListState> emit) {
+    AccountListInitialEvent event,
+    Emitter<AccountListState> emit,
+  ) {
     emit(AccountListInitial());
     add(RoleEvent()); // truyền roleIds của player
   }
 
   FutureOr<void> _roleEvent(
-      RoleEvent event, Emitter<AccountListState> emit) async {
+    RoleEvent event,
+    Emitter<AccountListState> emit,
+  ) async {
     emit(AccountList_ChangeState());
     emit(AccountList_LoadingState(isLoading: true));
     try {
@@ -44,8 +48,9 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
       var responseSuccess = results['success'];
       var responseBody = results['body'];
       if (responseSuccess) {
-        RoleModelResponse roleModelResponse =
-            RoleModelResponse.fromJson(responseBody);
+        RoleModelResponse roleModelResponse = RoleModelResponse.fromJson(
+          responseBody,
+        );
         if (roleModelResponse.data != null) {
           for (var dataRole in roleModelResponse.data!) {
             if (dataRole.roleCode == "PLAYER") {
@@ -54,29 +59,36 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
             }
           }
         }
-        emit(AccountList_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
         add(AccountListLoadEvent(roleIds: _rolePlayer.roleId.toString()));
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
 
-        emit(AccountList_LoadingState(isLoading: false));
-        emit(ShowSnackBarActionState(
-            message: "Lỗi! Vui lòng thử lại", success: responseSuccess));
+        emit(
+          ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại",
+            success: responseSuccess,
+          ),
+        );
       }
     } catch (e) {
-      emit(AccountList_LoadingState(isLoading: false));
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(
+        ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại",
+          success: false,
+        ),
+      );
       DebugLogger.printLog(e.toString());
     }
   }
 
   FutureOr<void> _accountListLoadEvent(
-      AccountListLoadEvent event, Emitter<AccountListState> emit) async {
+    AccountListLoadEvent event,
+    Emitter<AccountListState> emit,
+  ) async {
     emit(AccountList_ChangeState());
-
     emit(AccountList_LoadingState(isLoading: true));
+
     try {
       String? search = event.search ?? "";
 
@@ -109,38 +121,59 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
             AccountListModelResponse.fromJson(responseBody);
         List<AccountListModel> accountList = [];
 
-        emit(AccountList_LoadingState(isLoading: false));
         try {
           if (accountListModelResponse.data != null) {
             if (accountListModelResponse.data!.isNotEmpty) {
               accountList = accountListModelResponse.data!.where((account) {
                 return account.roleId == _rolePlayer.roleId;
               }).toList();
-              for (var _account in accountList) {
-                _account.username =
-                    Utf8Encoding().decode(_account.username.toString());
-                _account.email =
-                    Utf8Encoding().decode(_account.email.toString());
-                _account.statusName =
-                    Utf8Encoding().decode(_account.statusName.toString());
-              }
-              // 1. Dùng map() để lấy tất cả statusName (bao gồm cả null và trùng lặp)
-              // 2. Dùng whereType<String>() để lọc bỏ null
-              // 3. Dùng toSet() để loại bỏ trùng lặp
-              // 4. Dùng toList() để chuyển về danh sách (List)
+              if (accountList.isEmpty) {
+                emit(AccountList_ChangeState());
+                emit(AccountListEmptyState());
+                return;
+              } else {
+                for (var _account in accountList) {
+                  _account.username = Utf8Encoding().decode(
+                    _account.username.toString(),
+                  );
+                  _account.email = Utf8Encoding().decode(
+                    _account.email.toString(),
+                  );
+                  _account.statusName = Utf8Encoding().decode(
+                    _account.statusName.toString(),
+                  );
+                }
+                // 1. Dùng map() để lấy tất cả statusName (bao gồm cả null và trùng lặp)
+                // 2. Dùng whereType<String>() để lọc bỏ null
+                // 3. Dùng toSet() để loại bỏ trùng lặp
+                // 4. Dùng toList() để chuyển về danh sách (List)
 
-              List<String> statusNames = accountList
-                  .map((account) => account.statusName)
-                  .whereType<String>()
-                  .toSet()
-                  .toList();
-              ACLMetaModel metaModel = accountListModelResponse.meta!;
-              emit(AccountListSuccessState(
-                  accountList: accountList,
-                  statusNames: statusNames,
-                  meta: metaModel));
+                List<String> statusNames = accountList
+                    .map((account) => account.statusName)
+                    .whereType<String>()
+                    .toSet()
+                    .toList();
+                ACLMetaModel metaModel = accountListModelResponse.meta!;
+                try {
+                  // if (metaModel.current! >= 0) {
+                  //   metaModel.current = metaModel.current! + 1;
+                  // }
+                } catch (e) {}
+                emit(AccountList_ChangeState());
+                emit(
+                  AccountListSuccessState(
+                    accountList: accountList,
+                    statusNames: statusNames,
+                    meta: metaModel,
+                  ),
+                );
+                return;
+              }
             }
           }
+
+          emit(AccountList_ChangeState());
+          emit(AccountListEmptyState());
         } catch (e) {
           emit(AccountListEmptyState());
           DebugLogger.printLog(e.toString());
@@ -148,15 +181,24 @@ class AccountListBloc extends Bloc<AccountListEvent, AccountListState> {
         DebugLogger.printLog("$responseStatus - $responseMessage - thành công");
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
-
-        emit(AccountList_LoadingState(isLoading: false));
-        emit(ShowSnackBarActionState(
-            message: "Lỗi! Vui lòng thử lại", success: responseSuccess));
+        emit(AccountListEmptyState());
+        emit(
+          ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại",
+            success: responseSuccess,
+          ),
+        );
       }
     } catch (e) {
+      emit(AccountListEmptyState());
+
       emit(AccountList_LoadingState(isLoading: false));
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(
+        ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại",
+          success: false,
+        ),
+      );
       DebugLogger.printLog(e.toString());
     }
   }

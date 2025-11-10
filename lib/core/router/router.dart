@@ -12,7 +12,7 @@ import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/landing_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/pages/register_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/pages/login_page.dart';
-import 'package:web_netpool_station_owner_admin/feature/Dashboard/dashboard.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Dashboard/dashboard.dart';
 
 class RouteGenerator {
   final LoginBloc loginPageBloc = LoginBloc();

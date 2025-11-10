@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Login !//
@@ -25,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -41,7 +44,9 @@ class _LoginPageState extends State<LoginPage> {
       listener: (context, state) {
         switch (state.runtimeType) {
           case LoginSuccessState:
-            // Get.toNamed(rootRoute);
+            final authenticationModel =
+                (state as LoginSuccessState).authenticationModel;
+            Get.put(UserSessionController());
             Get.offAllNamed(rootRoute);
             break;
 
@@ -55,6 +60,10 @@ class _LoginPageState extends State<LoginPage> {
         if (state is LoginInitial) {
           emailController.text = state.email ?? "";
         }
+        if (state is Login_LoadingState) {
+          isLoading = state.isLoading;
+        }
+
         return Scaffold(
           body: Stack(
             fit: StackFit.expand,
@@ -353,49 +362,6 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                           const SizedBox(height: 30),
-                          // FORGOT PASSWORD
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // 1. Liên kết "Quên mật khẩu" (Sát trái)
-                              MouseRegion(
-                                // THÊM: Thay đổi con trỏ chuột khi hover
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    ShowSnackBar("Thành công", true);
-                                  },
-                                  child: Text(
-                                    'snack success',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.blueAccent,
-                                      fontFamily: 'SegoeUI',
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // 2. Liên kết "Xác thực email" (Sát phải)
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    ShowSnackBar("Lỗi", false);
-                                  },
-                                  child: Text(
-                                    'snackbar fail',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.blueAccent,
-                                      fontFamily: 'SegoeUI',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
                         ],
                       ),
                     ),
@@ -432,6 +398,26 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );

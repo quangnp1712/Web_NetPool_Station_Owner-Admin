@@ -2,24 +2,24 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/bloc/account_list_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/pages/account_data_source.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Account_Admin_Management/9.1_Account_Admin_List/bloc/admin_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Account_Admin_Management/9.1_Account_Admin_List/model/admin_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Account_Admin_Management/9.1_Account_Admin_List/pages/admin_data_source.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/widget/list_widget/build_filter_bar.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/widget/list_widget/build_footer.dart';
 
-//! Account List - DS người chơi !//
+//! Admin List - DS Station Admin !//
 
-class AccountListPage extends StatefulWidget {
-  const AccountListPage({super.key});
+class AdminListPage extends StatefulWidget {
+  const AdminListPage({super.key});
 
   @override
-  State<AccountListPage> createState() => _AccountListPageState();
+  State<AdminListPage> createState() => _AdminListPageState();
 }
 
-class _AccountListPageState extends State<AccountListPage> {
-  final AccountListBloc accountListBloc = AccountListBloc();
-  // List<AccountListModel> accountList = [];
+class _AdminListPageState extends State<AdminListPage> {
+  final AdminListBloc adminListBloc = AdminListBloc();
+  // List<AdminListModel> AdminList = [];
   List<String> statusNames = [];
   bool _sortAscending = true;
   int? _sortColumnIndex;
@@ -32,7 +32,7 @@ class _AccountListPageState extends State<AccountListPage> {
   // ------------------------------------------
 
   // --- THÊM: Biến cho phân trang và Data Source ---
-  late AccountDataSource _dataSource;
+  late AdminDataSource _dataSource;
   PaginatorController? _paginatorController;
   int _totalRows = 0;
   int _currentPage = 1;
@@ -42,9 +42,9 @@ class _AccountListPageState extends State<AccountListPage> {
   void initState() {
     super.initState();
     // Khởi tạo Data Source với dữ liệu rỗng
-    _dataSource = AccountDataSource(context: context, initialData: []);
+    _dataSource = AdminDataSource(context: context, initialData: []);
     _paginatorController = PaginatorController();
-    accountListBloc.add(AccountListInitialEvent());
+    adminListBloc.add(AdminListInitialEvent());
   }
 
   @override
@@ -56,7 +56,7 @@ class _AccountListPageState extends State<AccountListPage> {
 
   // --- THÊM: HÀM SẮP XẾP (SORT) ---
   void _sort<T extends Comparable>(
-    T? Function(AccountListModel d) getField,
+    T? Function(AdminListModel d) getField,
     int columnIndex,
     bool ascending,
   ) {
@@ -72,15 +72,15 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AccountListBloc, AccountListState>(
-      bloc: accountListBloc,
-      listenWhen: (previous, current) => current is AccountListActionState,
-      buildWhen: (previous, current) => current is! AccountListActionState,
+    return BlocConsumer<AdminListBloc, AdminListState>(
+      bloc: adminListBloc,
+      listenWhen: (previous, current) => current is AdminListActionState,
+      buildWhen: (previous, current) => current is! AdminListActionState,
       listener: (context, state) {
         switch (state.runtimeType) {}
       },
       builder: (context, state) {
-        if (state is AccountListSuccessState) {
+        if (state is AdminListSuccessState) {
           _totalRows = state.meta.total ?? 10;
           _rowsPerPage = state.meta.pageSize ?? 10;
           _currentPage = state.meta.current ?? 1;
@@ -90,14 +90,14 @@ class _AccountListPageState extends State<AccountListPage> {
           // Tính toán offset (vị trí bắt đầu) của trang hiện tại
           final pageOffset = (_currentPage - 1) * _rowsPerPage;
 
-          _dataSource.updateData(state.accountList, _totalRows, pageOffset);
-        } else if (state is AccountListEmptyState) {
+          _dataSource.updateData(state.AdminList, _totalRows, pageOffset);
+        } else if (state is AdminListEmptyState) {
           _totalRows = 0;
           _dataSource.updateData([], 0, 0);
           statusNames = [];
           isLoading = false;
         }
-        if (state is AccountList_LoadingState) {
+        if (state is AdminList_LoadingState) {
           isLoading = state.isLoading;
         }
         return Material(
@@ -179,7 +179,7 @@ class _AccountListPageState extends State<AccountListPage> {
                       ),
 
                       // 2. Bảng Dữ liệu (ĐÃ THAY THẾ)
-                      _buildDataTable(isLoading),
+                      _buildDataTable(),
                     ],
                   ),
                 ),
@@ -194,7 +194,7 @@ class _AccountListPageState extends State<AccountListPage> {
   }
 
   // --- WIDGET CON: BẢNG DỮ LIỆU (DATATABLE2 THAY THẾ BẰNG PAGINATEDDATATABLE2) ---
-  Widget _buildDataTable(bool isLoading) {
+  Widget _buildDataTable() {
     // SỬA LỖI 1: Bọc `Padding` trong `SizedBox` có chiều cao cố định
     return SizedBox(
       height:
@@ -209,10 +209,9 @@ class _AccountListPageState extends State<AccountListPage> {
             data: Theme.of(context).copyWith(
               // Giữ icon và text màu trắng
               iconTheme: const IconThemeData(color: Colors.white),
-              textTheme: Theme.of(context).textTheme.apply(
-                    displayColor: Colors.white,
-                    bodyColor: Colors.white,
-                  ),
+              textTheme: Theme.of(context)
+                  .textTheme
+                  .apply(displayColor: Colors.white, bodyColor: Colors.white),
 
               // --- SỬA LỖI: DÙNG 'cardTheme' thay vì 'cardColor' ---
               // 'cardColor' bị PaginatedDataTable2 bỏ qua,
@@ -230,6 +229,7 @@ class _AccountListPageState extends State<AccountListPage> {
               children: [
                 PaginatedDataTable2(
                   controller: _paginatorController, // Gán controller
+
                   // --- Styling (Giữ nguyên) ---
                   columnSpacing: 12,
                   horizontalMargin: 24,
@@ -245,9 +245,7 @@ class _AccountListPageState extends State<AccountListPage> {
                     ),
                   ),
                   headingTextStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      color: Colors.white, fontWeight: FontWeight.bold),
                   dataTextStyle: const TextStyle(color: AppColors.textWhite),
                   dividerThickness: 0,
                   border: TableBorder(
@@ -294,12 +292,10 @@ class _AccountListPageState extends State<AccountListPage> {
                     int newPage = (pageIndex / _rowsPerPage).floor() + 1;
 
                     // Gọi BLoC để tải trang mới
-                    accountListBloc.add(
-                      AccountListLoadEvent(
-                        current: newPage.toString(),
-                        // TODO: Thêm các giá trị filter (search, status...)
-                      ),
-                    );
+                    adminListBloc.add(AdminListLoadEvent(
+                      current: newPage.toString(),
+                      // TODO: Thêm các giá trị filter (search, status...)
+                    ));
                   },
 
                   // Xử lý khi người dùng đổi số hàng/trang
@@ -308,16 +304,15 @@ class _AccountListPageState extends State<AccountListPage> {
                       _rowsPerPage = newRowsPerPage ?? 10;
                     });
                     // Gọi BLoC để tải lại từ trang 1
-                    accountListBloc.add(
-                      AccountListLoadEvent(
-                        current: "1", // Luôn reset về trang 1
-                        // TODO: Thêm các giá trị filter
-                      ),
-                    );
+                    adminListBloc.add(AdminListLoadEvent(
+                      current: "1", // Luôn reset về trang 1
+                      // TODO: Thêm các giá trị filter
+                    ));
                   },
-
                   // ------------------------------------
+
                   source: _dataSource, // Gán Data Source
+
                   // --- SỬA: Columns (Thêm cột Email) ---
                   columns: [
                     DataColumn2(
@@ -325,10 +320,7 @@ class _AccountListPageState extends State<AccountListPage> {
                       size: ColumnSize.L, // Tương đương flex: 3
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.username ?? '',
-                          columnIndex,
-                          ascending,
-                        );
+                            (d) => d.username ?? '', columnIndex, ascending);
                       },
                     ),
                     // THÊM: Cột Email (theo gợi ý trước)
@@ -337,10 +329,7 @@ class _AccountListPageState extends State<AccountListPage> {
                       size: ColumnSize.L,
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.email ?? '',
-                          columnIndex,
-                          ascending,
-                        );
+                            (d) => d.email ?? '', columnIndex, ascending);
                       },
                     ),
                     DataColumn2(
@@ -348,10 +337,7 @@ class _AccountListPageState extends State<AccountListPage> {
                       size: ColumnSize.M, // Tương đương flex: 2
                       onSort: (columnIndex, ascending) {
                         _sort<String>(
-                          (d) => d.statusName ?? '',
-                          columnIndex,
-                          ascending,
-                        );
+                            (d) => d.statusCode ?? '', columnIndex, ascending);
                       },
                     ),
                     DataColumn2(

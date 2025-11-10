@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: camel_case_types
 
 part of 'login_bloc.dart';
@@ -20,13 +21,18 @@ class ShowRegisterState extends LoginActionState {}
 
 class Login_ChangeState extends LoginActionState {}
 
-class Login_LoadingState extends LoginActionState {
+class Login_LoadingState extends LoginState {
   final bool isLoading;
 
   Login_LoadingState({required this.isLoading});
 }
 
-class LoginSuccessState extends LoginActionState {}
+class LoginSuccessState extends LoginActionState {
+  AuthenticationModel authenticationModel;
+  LoginSuccessState({
+    required this.authenticationModel,
+  });
+}
 
 class ShowSnackBarActionState extends LoginActionState {
   final String message;

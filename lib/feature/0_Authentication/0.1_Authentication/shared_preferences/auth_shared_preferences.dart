@@ -42,4 +42,21 @@ class AuthenticationPref {
   static String getPassword() {
     return SharedPreferencesHelper.preferences.getString("password") ?? "";
   }
+
+  static Future<void> setEmail(String email) async {
+    await SharedPreferencesHelper.preferences.setString("email", email);
+  }
+
+  static String getEmail() {
+    return SharedPreferencesHelper.preferences.getString("email") ?? "";
+  }
+
+  static Future<void> setStationsJson(List<String> stations) async {
+    await SharedPreferencesHelper.preferences
+        .setStringList("stations", stations);
+  }
+
+  static List<String> getStationsJson() {
+    return SharedPreferencesHelper.preferences.getStringList("stations") ?? [];
+  }
 }

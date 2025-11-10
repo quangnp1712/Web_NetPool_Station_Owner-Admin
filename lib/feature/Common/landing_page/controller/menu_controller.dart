@@ -5,6 +5,7 @@ import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_helper.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/repository/landing_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
@@ -44,14 +45,9 @@ class MenuController extends GetxController {
       var responseSuccess = results['success'];
       var responseBody = results['body'];
 
-      if (responseSuccess) {
-        SharedPreferencesHelper.clearAll();
-        Get.toNamed(loginPageRoute);
-      } else {
-        SharedPreferencesHelper.clearAll();
-        Get.toNamed(loginPageRoute);
-        DebugLogger.printLog("$responseMessage - đăng xuất");
-      }
+      SharedPreferencesHelper.clearAll();
+      Get.toNamed(loginPageRoute);
+      Get.delete<UserSessionController>();
       ShowSnackBar("Đăng xuất thành công", true);
     } catch (e) {
       ShowSnackBar("Lỗi! Vui lòng thử lại", false);

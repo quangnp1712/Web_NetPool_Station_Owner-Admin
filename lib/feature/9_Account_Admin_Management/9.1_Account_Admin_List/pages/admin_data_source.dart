@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/1_Account_Player_Management/1.1_Account_List/model/account_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Account_Admin_Management/9.1_Account_Admin_List/model/admin_list_model.dart';
 
 /// Lớp Nguồn dữ liệu (Data Source) cho PaginatedDataTable2
 /// Nó quản lý danh sách, sắp xếp, và tạo các hàng (rows)
-class AccountDataSource extends DataTableSource {
-  List<AccountListModel> _accountList = []; // Sửa: Dữ liệu của trang hiện tại
+class AdminDataSource extends DataTableSource {
+  List<AdminListModel> _AdminList = []; // Sửa: Dữ liệu của trang hiện tại
   final BuildContext context;
 
   // --- THÊM: Biến cho phân trang ---
@@ -13,18 +13,17 @@ class AccountDataSource extends DataTableSource {
   int _pageOffset = 0; // Vị trí bắt đầu của trang hiện tại
   // -------------------------------
 
-  AccountDataSource({
+  AdminDataSource({
     required this.context,
-    required List<AccountListModel> initialData,
+    required List<AdminListModel> initialData,
   }) {
-    _accountList = initialData;
+    _AdminList = initialData;
   }
 
   /// Cập nhật dữ liệu (ví dụ: khi BLoC load xong)
   // SỬA: Thêm totalRows và pageOffset
-  void updateData(
-      List<AccountListModel> newList, int totalRows, int pageOffset) {
-    _accountList = newList;
+  void updateData(List<AdminListModel> newList, int totalRows, int pageOffset) {
+    _AdminList = newList;
     _totalRows = totalRows;
     _pageOffset = pageOffset;
     notifyListeners(); // Thông báo cho DataTable2 biết dữ liệu đã thay đổi
@@ -32,11 +31,11 @@ class AccountDataSource extends DataTableSource {
 
   /// Hàm sắp xếp (đã chuyển vào đây)
   void sort<T extends Comparable>(
-    T? Function(AccountListModel d) getField,
+    T? Function(AdminListModel d) getField,
     bool ascending,
   ) {
-    _accountList.sort((a, b) {
-      // Sửa: Sắp xếp _accountList
+    _AdminList.sort((a, b) {
+      // Sửa: Sắp xếp _AdminList
       final aValue = getField(a);
       final bValue = getField(b);
 
@@ -82,20 +81,11 @@ class AccountDataSource extends DataTableSource {
     final int localIndex = index - _pageOffset;
 
     // Nếu index không thuộc trang này, trả về null (DataTable2 sẽ hiển thị loading)
-    if (localIndex < 0 || localIndex >= _accountList.length) {
-      return DataRow.byIndex(
-          index: index,
-          color: WidgetStateProperty.all(
-              AppColors.containerBackground), // Giữ màu nền
-          cells: [
-            DataCell(Container()),
-            DataCell(Container()),
-            DataCell(Container()),
-            DataCell(Container()),
-          ]);
+    if (localIndex < 0 || localIndex >= _AdminList.length) {
+      return null;
     }
 
-    final data = _accountList[localIndex];
+    final data = _AdminList[localIndex];
 
     // Đây là logic tạo DataCell của bạn
     return DataRow(
