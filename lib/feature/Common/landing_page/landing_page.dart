@@ -5,18 +5,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
-import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
-import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
-import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/user_session_controller.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/shared_preferences/landing_page_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/side_menu.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/top_navigation_bar.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/repository/role_repository.dart';
 
 class LandingPage extends StatefulWidget {
   LandingPage({super.key});
@@ -30,7 +23,7 @@ class _LandingPageState extends State<LandingPage> {
   @override
   Widget build(BuildContext context) {
     if (!Get.isRegistered<UserSessionController>()) {
-      Get.put(UserSessionController());
+      Get.put(UserSessionController(), permanent: true);
     }
     final sessionController = Get.find<UserSessionController>();
 

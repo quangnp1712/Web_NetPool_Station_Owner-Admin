@@ -19,12 +19,6 @@ PageRoute getPageRoute(Widget child) {
 }
 
 Route<dynamic> menuRoute(RouteSettings settings) {
-  final AccountListBloc accountListBloc = AccountListBloc();
-  final AdminListBloc adminListBloc = AdminListBloc();
-  final AdminCreateBloc adminCreateBloc = AdminCreateBloc();
-  final StationListBloc stationListBloc = StationListBloc();
-  final StationCreateBloc stationCreateBloc = StationCreateBloc();
-
   switch (settings.name) {
     //! DASHBOARD $//
     case dashboardPageRoute:
@@ -38,7 +32,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
           // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AccountListBloc>.value(
             // Lấy BLoC instance đã tồn tại
-            value: accountListBloc,
+            value: BlocProvider.of<AccountListBloc>(context),
             // Cung cấp nó cho trang con
             child: const AccountListPage(),
           );
@@ -50,7 +44,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) {
           return BlocProvider<StationListBloc>.value(
-            value: stationListBloc,
+            value: BlocProvider.of<StationListBloc>(context),
             child: const StationListPage(),
           );
         },
@@ -59,7 +53,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) {
           return BlocProvider<StationCreateBloc>.value(
-            value: stationCreateBloc,
+            value: BlocProvider.of<StationCreateBloc>(context),
             child: const StationCreatePage(),
           );
         },
@@ -75,7 +69,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
           // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AdminListBloc>.value(
             // Lấy BLoC instance đã tồn tại
-            value: adminListBloc,
+            value: BlocProvider.of<AdminListBloc>(context),
             // Cung cấp nó cho trang con
             child: const AdminListPage(),
           );
@@ -88,7 +82,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
           // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AdminCreateBloc>.value(
             // Lấy BLoC instance đã tồn tại
-            value: adminCreateBloc,
+            value: BlocProvider.of<AdminCreateBloc>(context),
             // Cung cấp nó cho trang con
             child: const AdminCreatePage(),
           );
