@@ -39,6 +39,7 @@ class CommonFilterBar extends StatelessWidget {
   final void Function(String) onSearchSubmitted;
   final List<FilterDropdownConfig> dropdowns;
   final CreateButtonConfig? createButtonConfig;
+  final VoidCallback? onResetPressed;
 
   const CommonFilterBar({
     super.key,
@@ -47,6 +48,7 @@ class CommonFilterBar extends StatelessWidget {
     required this.onSearchSubmitted,
     this.dropdowns = const [], // Mặc định là list rỗng (không có dropdown)
     this.createButtonConfig, // Mặc định là null (không có nút tạo)
+    this.onResetPressed, // THÊM
   });
 
   @override
@@ -110,28 +112,48 @@ class CommonFilterBar extends StatelessWidget {
             ),
           ),
 
-          // --- 3. Nút Tạo (Tùy chọn) ---
-          if (createButtonConfig != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: ElevatedButton.icon(
-                onPressed: createButtonConfig!.onPressed, // Dùng config
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: Text(
-                  createButtonConfig!.text, // Dùng config
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGlow,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+          // --- 3. Nhóm bên phải (Nút Reset và Tạo) ---
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // --- THÊM: Nút Reset (Tùy chọn) ---
+              if (onResetPressed != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh, color: AppColors.textHint),
+                    tooltip: "Reset bộ lọc",
+                    onPressed: onResetPressed,
+                    iconSize: 28, // Làm cho icon to hơn một chút
+                    padding: const EdgeInsets.all(12), // Tăng vùng bấm
                   ),
                 ),
-              ),
-            ),
+              // ------------------------------------
+
+              // --- Nút Tạo (Tùy chọn) ---
+              if (createButtonConfig != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: createButtonConfig!.onPressed,
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: Text(
+                      createButtonConfig!.text,
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGlow,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          )
         ],
       ),
     );

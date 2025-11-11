@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/router/menu_router.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
-import 'package:web_netpool_station_owner_admin/feature/0_Dashboard/dashboard.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Dashboard/dashboard.dart';
 
 /// Controller này quản lý (State) của Local Navigator (Navigator lồng nhau).
 /// Nó giữ GlobalKey để điều khiển Navigator đó từ bên ngoài (ví dụ: từ SideMenu).
