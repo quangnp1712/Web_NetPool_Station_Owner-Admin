@@ -64,6 +64,9 @@ class _LoginPageState extends State<LoginPage> {
         if (state is Login_LoadingState) {
           isLoading = state.isLoading;
         }
+        if (state is ShowSnackBarActionState) {
+          isLoading = false;
+        }
 
         return Scaffold(
           body: Stack(

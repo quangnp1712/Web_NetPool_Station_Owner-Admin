@@ -19,7 +19,8 @@ class UserSessionController extends GetxController {
   // --- SỬA: State cho Bộ chọn Station ---
   // (Giờ đây dùng StationInfoModel từ login_data_model.dart)
   var stationList = <AuthStationsModel>[].obs;
-  var activeStationId = "".obs; // SỬA: stationId là String
+  var activeStationId = Rxn<String>();
+  // SỬA: stationId là String
   // ------------------------------------
 
   @override
@@ -34,6 +35,7 @@ class UserSessionController extends GetxController {
       // 1. Tải dữ liệu
       final role = await _getRole();
       final user = AuthenticationPref.getEmail();
+      final String roleCode = AuthenticationPref.getRoleCode();
       final List<String> stationJsonList = AuthenticationPref.getStationsJson();
 
 // 3. Parse (phân tích) danh sách Station từ JSON
@@ -47,9 +49,8 @@ class UserSessionController extends GetxController {
       username.value = user;
       stationList.value = stations; // Lấy từ constructor
 
-      // 3. Tự động chọn station đầu tiên
-      if (stationList.isNotEmpty) {
-        activeStationId.value = stationList[0].stationId!; // Sửa: Dùng String
+      if (roleCode == "STATION_ADMIN" && stationList.isNotEmpty) {
+        activeStationId.value = stationList[0].stationId;
       }
     } catch (e) {
       DebugLogger.printLog("Lỗi tải UserSession: $e");
@@ -86,12 +87,12 @@ class UserSessionController extends GetxController {
   }
 
   // --- SỬA: Hàm thay đổi Station (dùng String) ---
-  void changeActiveStation(String newStationId) {
-    // SỬA: Dùng String
+  void changeActiveStation(String? newStationId) {
+    // SỬA: Dùng String?
     if (activeStationId.value != newStationId) {
-      activeStationId.value = newStationId;
+      activeStationId.value = newStationId!;
       // (Lưu ID mới này vào SharedPreferences nếu bạn muốn)
-      LandingPageSharedPref.setActiveStation(newStationId);
+      // LandingPageSharedPref.setActiveStation(newStationId);
     }
   }
   // --------------------------------
