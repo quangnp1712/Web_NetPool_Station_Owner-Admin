@@ -44,10 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       listener: (context, state) {
         switch (state.runtimeType) {
           case LoginSuccessState:
-            final authenticationModel =
-                (state as LoginSuccessState).authenticationModel;
             Get.put(UserSessionController(), permanent: true);
-
             Get.offAllNamed(rootRoute);
             break;
 

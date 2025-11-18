@@ -79,6 +79,10 @@ class StationListBloc extends Bloc<StationListEvent, StationListState> {
 
               final List<String> stationJsonList =
                   AuthenticationPref.getStationsJson();
+              if (stationJsonList.isEmpty) {
+                emit(StationListEmptyState());
+                return;
+              }
 
               // 3. Chuyển đổi danh sách JSON string thành một Set<String> các ID
               final Set<String> ownedStationIds = stationJsonList

@@ -80,6 +80,15 @@ class UserSessionController extends GetxController {
       if (roleCode == "STATION_ADMIN" && stationList.isNotEmpty) {
         activeStationId.value = stationList[0].stationId;
       }
+      try {
+        List<String>? stationJsonList =
+            _stations.map((s) => s.toJson()).toList();
+
+        AuthenticationPref.setStationsJson(stationJsonList.toList());
+      } catch (e) {
+        AuthenticationPref.setStationsJson([]);
+        DebugLogger.printLog("Lỗi: $e");
+      }
     } catch (e) {
       DebugLogger.printLog("Lỗi tải UserSession: $e");
       // (Xử lý lỗi)
