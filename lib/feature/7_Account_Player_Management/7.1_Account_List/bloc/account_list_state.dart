@@ -1,11 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, prefer_const_constructors_in_immutables, camel_case_types
 part of 'account_list_bloc.dart';
 
-sealed class AccountListState extends Equatable {
+sealed class AccountListState {
   const AccountListState();
-
-  @override
-  List<Object> get props => [];
 }
 
 final class AccountListInitial extends AccountListState {}

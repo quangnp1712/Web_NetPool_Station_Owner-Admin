@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
@@ -24,6 +25,8 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
 
   TextEditingController codeController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  bool isLoading = false;
+
   @override
   void initState() {
     validEmailPageBloc.add(ValidEmailInitialEvent());
@@ -47,6 +50,9 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
       builder: (context, state) {
         if (state is ValidEmailInitial) {
           emailController.text = state.email ?? "";
+        }
+        if (state is ValidEmail_LoadingState) {
+          isLoading = state.isLoading;
         }
         return Scaffold(
           body: Stack(
@@ -130,6 +136,7 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                               fontFamily: 'SegoeUI SemiBold',
                             ),
                             decoration: InputDecoration(
+                              labelText: 'Email',
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               filled: true,
@@ -167,6 +174,7 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                               fontFamily: 'SegoeUI SemiBold',
                             ),
                             decoration: InputDecoration(
+                              labelText: 'OTP',
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               filled: true,
@@ -245,7 +253,7 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Register Button
+                          // Gửi lại OTP Button
                           SizedBox(
                             width: double.infinity,
                             height: 48,
@@ -259,8 +267,8 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                                 shadowColor: Colors.transparent,
                               ),
                               onPressed: () {
-                                validEmailPageBloc
-                                    .add(SendValidCodeEvent(email: ""));
+                                validEmailPageBloc.add(SendValidCodeEvent(
+                                    email: emailController.text.toString()));
                               },
                               child: Ink(
                                 decoration: BoxDecoration(
@@ -281,7 +289,42 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          // quay lại
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // 1. Liên kết "Quên mật khẩu" (Sát trái)
+                              MouseRegion(
+                                // THÊM: Thay đổi con trỏ chuột khi hover
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final previousRoute = Get.routing
+                                        .previous; // Route vừa rời đi/trc đó
+                                    if (previousRoute == registerPageRoute) {
+                                      Get.toNamed(loginPageRoute);
+                                    } else if (previousRoute == "") {
+                                      Get.toNamed(loginPageRoute);
+                                    } else {
+                                      Get.back();
+                                    }
+                                  },
+                                  child: Text(
+                                    '< Quay lại',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
+                                  ),
+                                ),
+                              ),
 
+                              // 2. Liên kết "Xác thực email" (Sát phải)
+                              Container(),
+                            ],
+                          ),
                           const SizedBox(height: 30),
                         ],
                       ),
@@ -319,6 +362,26 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                   ],
                 ),
               ),
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );

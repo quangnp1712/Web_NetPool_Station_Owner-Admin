@@ -3,11 +3,8 @@
 
 part of 'admin_create_bloc.dart';
 
-sealed class AdminCreateState extends Equatable {
+sealed class AdminCreateState {
   const AdminCreateState();
-
-  @override
-  List<Object> get props => [];
 }
 
 final class AdminCreateInitial extends AdminCreateState {}

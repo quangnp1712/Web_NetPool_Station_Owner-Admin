@@ -37,33 +37,71 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
     on<UpdateFullAddressEvent>(_updateFullAddressEvent);
   }
   FutureOr<void> _stationCreateInitialEvent(
-      StationCreateInitialEvent event, Emitter<StationCreateState> emit) {
-    emit(StationCreateInitial());
-    add(LoadProvincesEvent());
-    add(GenerateCaptchaEvent());
-    // thêm lấy ds station
+      StationCreateInitialEvent event, Emitter<StationCreateState> emit) async {
+    emit(StationCreate_ChangeState());
+    emit(StationCreateInitial(isLoading: true));
+
+    try {
+      _generateCaptcha();
+      var results = await CityRepository().getProvinces();
+      var responseMessage = results['message'];
+      var responseStatus = results['status'];
+      var responseSuccess = results['success'];
+      var responseBody = results['body'];
+      if (responseSuccess || responseStatus == 200) {
+        List<ProvinceModel> provincesList = (responseBody as List)
+            .map((e) => ProvinceModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        provincesList.map((name) => Utf8Encoding().decode(name as String));
+
+        emit(StationCreate_ChangeState());
+
+        emit(StationCreateInitialState(
+          isLoadingProvinces: false,
+          provincesList: provincesList,
+          captchaText: _captchaText,
+          isCaptchaVerified: false,
+          isVerifyingCaptcha: false,
+          isClearCaptchaController: true,
+        ));
+      } else {
+        emit(StationCreate_ChangeState());
+        emit(LoadProvincesState(isLoadingProvinces: false));
+        DebugLogger.printLog("Lỗi tải Tỉnh/TP");
+        emit(GenerateCaptchaState(
+            captchaText: _captchaText,
+            isCaptchaVerified: false,
+            isVerifyingCaptcha: false,
+            isClearCaptchaController: true));
+      }
+    } catch (e) {
+      emit(StationCreate_ChangeState());
+      DebugLogger.printLog(e.toString());
+      emit(ShowSnackBarActionState(
+          message: "Lỗi! Vui lòng thử lại", success: false));
+    }
   }
 
   final Random _random = Random();
   FutureOr<void> _generateCaptchaEvent(
       GenerateCaptchaEvent event, Emitter<StationCreateState> emit) async {
     emit(StationCreate_ChangeState());
-    emit(StationCreate_LoadingState(isLoading: true));
+    emit(StationCreateInitial(isLoading: true));
 
     try {
       _generateCaptcha();
       //setState
       // Reset lại trạng thái xác thực
+      emit(StationCreate_ChangeState());
+
       emit(GenerateCaptchaState(
           captchaText: _captchaText,
           isCaptchaVerified: false,
           isVerifyingCaptcha: false,
           isClearCaptchaController: true));
-      emit(StationCreate_ChangeState());
-      emit(StationCreate_LoadingState(isLoading: false));
     } catch (e) {
       emit(StationCreate_ChangeState());
-      emit(StationCreate_LoadingState(isLoading: false));
+
       DebugLogger.printLog(e.toString());
       emit(ShowSnackBarActionState(
           message: "Lỗi! Vui lòng thử lại", success: false));
@@ -110,7 +148,7 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       }
     } catch (e) {
       emit(StationCreate_ChangeState());
-      emit(StationCreate_LoadingState(isLoading: false));
+
       DebugLogger.printLog(e.toString());
       emit(ShowSnackBarActionState(
           message: "Lỗi! Vui lòng thử lại", success: false));
@@ -127,7 +165,8 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       SubmitStationCreateEvent event, Emitter<StationCreateState> emit) async {
     emit(StationCreate_ChangeState());
 
-    emit(StationCreate_LoadingState(isLoading: true));
+    emit(StationCreateInitial(isLoading: true));
+
     try {
       List<MediaModel> media = event.media != null
           ? await _uploadImagesToFirebase(event.media!)
@@ -148,34 +187,32 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       var responseSuccess = results['success'];
       var responseBody = results['body'];
       if (responseSuccess || responseStatus == 200) {
-        emit(StationCreate_LoadingState(isLoading: false));
         emit(StationCreateSuccessState());
         emit(ShowSnackBarActionState(
             message: "Đăng ký thành công", success: responseSuccess));
-      } else if (responseStatus == 400) {
-        emit(StationCreate_LoadingState(isLoading: false));
+      } else if (responseStatus == 409) {
         emit(ShowSnackBarActionState(
             message: responseMessage, success: responseSuccess));
+        DebugLogger.printLog("$responseStatus - $responseMessage");
       } else if (responseStatus == 404) {
-        emit(StationCreate_LoadingState(isLoading: false));
         emit(ShowSnackBarActionState(
             message: responseMessage, success: responseSuccess));
+        DebugLogger.printLog("$responseStatus - $responseMessage");
       } else if (responseStatus == 401) {
-        emit(StationCreate_LoadingState(isLoading: false));
-
         emit(ShowSnackBarActionState(
             message: responseMessage, success: responseSuccess));
+        DebugLogger.printLog("$responseStatus - $responseMessage");
       } else {
-        emit(StationCreate_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage");
         emit(ShowSnackBarActionState(
             message: "Lỗi! Vui lòng thử lại", success: false));
       }
+      emit(StationCreateFailState());
     } catch (e) {
-      emit(StationCreate_LoadingState(isLoading: false));
       DebugLogger.printLog(e.toString());
       emit(ShowSnackBarActionState(
           message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(StationCreateFailState());
     }
   }
 

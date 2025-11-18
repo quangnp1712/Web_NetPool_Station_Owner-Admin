@@ -1,3 +1,5 @@
+// ignore_for_file: type_literal_in_constant_pattern
+
 import 'dart:convert';
 import 'dart:math';
 import 'package:file_picker/file_picker.dart';
@@ -12,6 +14,7 @@ import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_text_styles.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/bloc/station_create_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/city_controller/city_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Station Create - Tạo Station Station !//
@@ -72,6 +75,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
   bool _isLoadingProvinces = false;
   bool _isLoadingDistricts = false;
   bool _isLoadingCommunes = false;
+  bool isLoading = true;
 
   // --- THÊM: State cho Upload Ảnh ---
   List<String> _base64Images = []; // Dạng: "data:image/png;base64,..."
@@ -115,16 +119,33 @@ class _StationCreatePageState extends State<StationCreatePage> {
       buildWhen: (previous, current) => current is! StationCreateActionState,
       listener: (context, state) {
         switch (state.runtimeType) {
-          case StationCreateSuccessState _:
+          case StationCreateSuccessState:
+            Get.find<UserSessionController>().loadData();
             stationCreateBloc.add(ResetFormEvent());
+            isLoading = false;
             break;
           case ShowSnackBarActionState:
             final snackBarState = state as ShowSnackBarActionState;
             ShowSnackBar(snackBarState.message, snackBarState.success);
+            isLoading = false;
             break;
         }
       },
       builder: (context, state) {
+        // Lấy isLoading TỪ THUỘC TÍNH (PROPERTY)
+        isLoading = state.isLoading;
+
+        if (state is StationCreateInitialState) {
+          _captchaText = state.captchaText;
+          _isCaptchaVerified = state.isCaptchaVerified;
+          _isVerifyingCaptcha = state.isVerifyingCaptcha;
+          _isLoadingProvinces = state.isLoadingProvinces;
+          _provinceList = state.provincesList ?? [];
+          if (state.isClearCaptchaController) {
+            _captchaController.clear();
+          }
+        }
+
         if (state is GenerateCaptchaState) {
           _captchaText = state.captchaText;
           _isCaptchaVerified = state.isCaptchaVerified;
@@ -235,38 +256,70 @@ class _StationCreatePageState extends State<StationCreatePage> {
             province: _selectedProvince,
           ));
         }
+        if (state is StationCreate_LoadingState) {
+          isLoading = state.isLoading;
+        }
+        if (state is StationCreateFailState) {
+          // isLoading = state.isLoading;
+          stationCreateBloc.add(GenerateCaptchaEvent());
+        }
 
         return Material(
           color: AppColors.mainBackground, // Màu nền tối bên ngoài
-          child: ListView(
-            //  Cho phép cuộn nếu form quá dài trên màn hình nhỏ
-            // physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(0.0),
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Container(
-                // Thêm padding cho toàn bộ body
-                padding: const EdgeInsets.all(40.0),
-                alignment: Alignment.center,
-                child: Container(
-                  // Đây là Container chính với hiệu ứng glow
-                  decoration: BoxDecoration(
-                    color: AppColors.containerBackground,
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryGlow,
-                        blurRadius: 20.0,
-                        spreadRadius: 0.5,
-                        offset: const Offset(0, 4),
+              ListView(
+                //  Cho phép cuộn nếu form quá dài trên màn hình nhỏ
+                // physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(0.0),
+                children: [
+                  Container(
+                    // Thêm padding cho toàn bộ body
+                    padding: const EdgeInsets.all(40.0),
+                    alignment: Alignment.center,
+                    child: Container(
+                      // Đây là Container chính với hiệu ứng glow
+                      decoration: BoxDecoration(
+                        color: AppColors.containerBackground,
+                        borderRadius: BorderRadius.circular(20.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryGlow,
+                            blurRadius: 20.0,
+                            spreadRadius: 0.5,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
+                      //  Thay Column cũ bằng Form mới
+                      child: _buildCreateForm(),
+                    ),
                   ),
-                  //  Thay Column cũ bằng Form mới
-                  child: _buildCreateForm(),
-                ),
+                  // 3. Footer (Copyright)
+                  _buildFooter(),
+                ],
               ),
-              // 3. Footer (Copyright)
-              _buildFooter(),
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );

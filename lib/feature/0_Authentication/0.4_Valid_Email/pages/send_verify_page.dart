@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
@@ -23,6 +24,7 @@ class _SendValidPageState extends State<SendValidPage> {
   final ValidEmailBloc validEmailBloc = ValidEmailBloc();
 
   TextEditingController emailController = TextEditingController();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,9 @@ class _SendValidPageState extends State<SendValidPage> {
         }
       },
       builder: (context, state) {
+        if (state is ValidEmail_LoadingState) {
+          isLoading = state.isLoading;
+        }
         return Scaffold(
           body: Stack(
             fit: StackFit.expand,
@@ -205,7 +210,42 @@ class _SendValidPageState extends State<SendValidPage> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          // quay lại
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // 1. Liên kết "Quên mật khẩu" (Sát trái)
+                              MouseRegion(
+                                // THÊM: Thay đổi con trỏ chuột khi hover
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final previousRoute = Get.routing
+                                        .previous; // Route vừa rời đi/trc đó
+                                    if (previousRoute == registerPageRoute) {
+                                      Get.toNamed(loginPageRoute);
+                                    } else if (previousRoute == "") {
+                                      Get.toNamed(loginPageRoute);
+                                    } else {
+                                      Get.back();
+                                    }
+                                  },
+                                  child: Text(
+                                    '< Quay lại',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blueAccent,
+                                      fontFamily: 'SegoeUI',
+                                    ),
+                                  ),
+                                ),
+                              ),
 
+                              // 2. Liên kết "Xác thực email" (Sát phải)
+                              Container(),
+                            ],
+                          ),
                           const SizedBox(height: 30),
                         ],
                       ),
@@ -243,6 +283,26 @@ class _SendValidPageState extends State<SendValidPage> {
                   ],
                 ),
               ),
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );

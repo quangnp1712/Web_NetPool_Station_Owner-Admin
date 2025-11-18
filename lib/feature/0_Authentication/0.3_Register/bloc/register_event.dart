@@ -1,11 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'register_bloc.dart';
 
-sealed class RegisterEvent extends Equatable {
+sealed class RegisterEvent {
   const RegisterEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class RegisterInitialEvent extends RegisterEvent {}

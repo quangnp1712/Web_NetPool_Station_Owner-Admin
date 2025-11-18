@@ -1,11 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'station_list_bloc.dart';
 
-sealed class StationListEvent extends Equatable {
+sealed class StationListEvent {
   const StationListEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class StationListInitialEvent extends StationListEvent {}

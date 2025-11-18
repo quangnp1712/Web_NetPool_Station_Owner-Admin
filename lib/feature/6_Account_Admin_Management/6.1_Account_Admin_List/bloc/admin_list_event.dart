@@ -1,10 +1,7 @@
 part of 'admin_list_bloc.dart';
 
-sealed class AdminListEvent extends Equatable {
+sealed class AdminListEvent {
   const AdminListEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class AdminListInitialEvent extends AdminListEvent {}

@@ -1,10 +1,7 @@
 part of 'valid_email_bloc.dart';
 
-sealed class ValidEmailEvent extends Equatable {
+sealed class ValidEmailEvent {
   const ValidEmailEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class ValidEmailInitialEvent extends ValidEmailEvent {}

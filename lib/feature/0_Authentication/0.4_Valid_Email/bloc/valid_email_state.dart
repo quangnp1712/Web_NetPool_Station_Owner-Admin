@@ -1,10 +1,7 @@
 part of 'valid_email_bloc.dart';
 
-sealed class ValidEmailState extends Equatable {
+sealed class ValidEmailState {
   const ValidEmailState();
-
-  @override
-  List<Object> get props => [];
 }
 
 final class ValidEmailInitial extends ValidEmailState {
@@ -18,7 +15,7 @@ class ShowRegisterState extends ValidEmailActionState {}
 
 class ValidEmail_ChangeState extends ValidEmailActionState {}
 
-class ValidEmail_LoadingState extends ValidEmailActionState {
+class ValidEmail_LoadingState extends ValidEmailState {
   final bool isLoading;
 
   ValidEmail_LoadingState({required this.isLoading});

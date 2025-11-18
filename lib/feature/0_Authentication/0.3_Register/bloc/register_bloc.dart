@@ -52,12 +52,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
         emit(ShowSnackBarActionState(
             message: "Đăng ký thành công", success: responseSuccess));
-      } else if (responseStatus == 404) {
-        emit(Register_LoadingState(isLoading: false));
-
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
-      } else if (responseStatus == 401) {
+      } else if (responseStatus == 409) {
         emit(Register_LoadingState(isLoading: false));
 
         emit(ShowSnackBarActionState(

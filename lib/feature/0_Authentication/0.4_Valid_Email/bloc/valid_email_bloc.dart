@@ -116,14 +116,15 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
       } else if (responseStatus == 404) {
         emit(ValidEmail_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: "Email hoặc mật khẩu không đúng",
-        //     success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Mã OTP không đúng", success: responseSuccess));
+        DebugLogger.printLog("$responseStatus - $responseMessage");
       } else if (responseStatus == 401) {
         emit(ValidEmail_LoadingState(isLoading: false));
 
-        // emit(ShowSnackBarActionState(
-        //     message: responseMessage, success: responseSuccess));
+        emit(ShowSnackBarActionState(
+            message: "Lỗi! Vui lòng thử lại", success: responseSuccess));
+        DebugLogger.printLog("$responseStatus - $responseMessage");
       } else {
         emit(ValidEmail_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage");

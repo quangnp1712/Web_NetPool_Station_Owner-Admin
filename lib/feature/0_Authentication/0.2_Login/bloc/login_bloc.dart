@@ -71,18 +71,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               AuthenticationPref.setAccessToken(
                   authenticationModelResponse.data?.accessToken.toString() ??
                       "");
+              AuthenticationPref.setUsername(
+                  authenticationModelResponse.data?.username.toString() ?? "");
               AuthenticationPref.setAccessExpiredAt(authenticationModelResponse
                       .data?.accessExpiredAt
                       .toString() ??
                   "");
               AuthenticationPref.setPassword(event.password.toString());
               AuthenticationPref.setEmail(event.email.toString());
-              List<String>? stationJsonList = authenticationModelResponse
-                  .data?.stations!
-                  .map((s) => s.toJson())
-                  .toList();
-
-              AuthenticationPref.setStationsJson(stationJsonList ?? []);
 
               emit(Login_LoadingState(isLoading: false));
               emit(LoginSuccessState(

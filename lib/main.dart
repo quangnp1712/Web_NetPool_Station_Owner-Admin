@@ -107,9 +107,10 @@ class _MyAppState extends State<MyApp> {
         ],
         getPages: RouteGenerator().routes(),
         unknownRoute: GetPage(
-            name: '/not-found',
-            page: () => const PageNotFound(),
-            transition: getXTransition.Transition.fadeIn),
+          name: '/not-found',
+          page: () => const PageNotFound(),
+          transition: getXTransition.Transition.fadeIn,
+        ),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.purple,

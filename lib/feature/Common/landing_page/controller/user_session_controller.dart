@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/account_info_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_stations_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/repository/authentication_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/shared_preferences/landing_page_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_response_model.dart';
@@ -27,27 +30,52 @@ class UserSessionController extends GetxController {
   void onInit() {
     super.onInit();
     // onInit() được gọi 1 lần duy nhất khi controller được put()
-    _loadData();
+    loadData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> loadData() async {
     try {
+      isLoading.value = true;
+      List<AuthStationsModel> _stations = [];
+
       // 1. Tải dữ liệu
-      final role = await _getRole();
-      final user = AuthenticationPref.getEmail();
       final String roleCode = AuthenticationPref.getRoleCode();
-      final List<String> stationJsonList = AuthenticationPref.getStationsJson();
+      final user = AuthenticationPref.getUsername();
+      final int accountId = AuthenticationPref.getAcountId();
 
-// 3. Parse (phân tích) danh sách Station từ JSON
-      List<AuthStationsModel> stations = stationJsonList
-          .map((jsonString) =>
-              AuthStationsModel.fromJson(jsonDecode(jsonString)))
-          .toList();
+      // 2. Tải Tên Role (Bất đồng bộ)
+      final roleNameResult = await _getRole(roleCode);
 
+      // 3. Tải TOÀN BỘ danh sách Station (Master List)
+      final stationsResult =
+          await AuthenticationRepository().listStationStationOwner(accountId);
+      var responseMessage = stationsResult['message'];
+      var responseStatus = stationsResult['status'];
+      var responseSuccess = stationsResult['success'];
+      var responseBody = stationsResult['body'];
+
+      // 4. Xử lý kết quả Station
+      if (responseSuccess) {
+        AccountInfoModelResponse stationResponse =
+            AccountInfoModelResponse.fromJson(stationsResult['body']);
+
+        if (stationResponse.data != null) {
+          if (stationResponse.data!.stations != null) {
+            for (var station in stationResponse.data!.stations!) {
+              // Decode UTF-8
+              station.stationName =
+                  Utf8Encoding().decode(station.stationName ?? "");
+            }
+          }
+        }
+        _stations = stationResponse.data!.stations ?? [];
+      } else {
+        DebugLogger.printLog("$responseStatus - $responseMessage");
+      }
       // 2. Cập nhật state
-      roleName.value = role;
+      roleName.value = roleNameResult;
       username.value = user;
-      stationList.value = stations; // Lấy từ constructor
+      stationList.value = _stations; // Lấy từ constructor
 
       if (roleCode == "STATION_ADMIN" && stationList.isNotEmpty) {
         activeStationId.value = stationList[0].stationId;
@@ -62,7 +90,7 @@ class UserSessionController extends GetxController {
   }
 
   // (Hàm _getRole của bạn, được chuyển từ LandingPage vào đây)
-  Future<String> _getRole() async {
+  Future<String> _getRole(String roleCodeAuthPref) async {
     try {
       var results = await RoleRepository().roles();
       var responseSuccess = results['success'];
@@ -70,7 +98,7 @@ class UserSessionController extends GetxController {
       if (responseSuccess) {
         RoleModelResponse roleModelResponse =
             RoleModelResponse.fromJson(responseBody);
-        String roleCodeAuthPref = AuthenticationPref.getRoleCode();
+
         if (roleModelResponse.data != null) {
           for (var dataRole in roleModelResponse.data!) {
             if (dataRole.roleCode == roleCodeAuthPref) {
@@ -79,10 +107,10 @@ class UserSessionController extends GetxController {
           }
         }
       }
-      return "";
+      return roleCodeAuthPref;
     } catch (e) {
       DebugLogger.printLog(e.toString());
-      return "";
+      return roleCodeAuthPref;
     }
   }
 
@@ -92,7 +120,7 @@ class UserSessionController extends GetxController {
     if (activeStationId.value != newStationId) {
       activeStationId.value = newStationId!;
       // (Lưu ID mới này vào SharedPreferences nếu bạn muốn)
-      // LandingPageSharedPref.setActiveStation(newStationId);
+      LandingPageSharedPref.setActiveStation(newStationId);
     }
   }
   // --------------------------------

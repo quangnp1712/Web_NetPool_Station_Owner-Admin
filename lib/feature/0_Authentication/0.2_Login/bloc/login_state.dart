@@ -3,11 +3,8 @@
 
 part of 'login_bloc.dart';
 
-sealed class LoginState extends Equatable {
+sealed class LoginState {
   const LoginState();
-
-  @override
-  List<Object> get props => [];
 }
 
 final class LoginInitial extends LoginState {

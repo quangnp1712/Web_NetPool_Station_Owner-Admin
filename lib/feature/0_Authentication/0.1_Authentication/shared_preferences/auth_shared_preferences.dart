@@ -9,6 +9,14 @@ class AuthenticationPref {
     return SharedPreferencesHelper.preferences.getInt("accountId") ?? 0;
   }
 
+  static Future<void> setUsername(String username) async {
+    await SharedPreferencesHelper.preferences.setString("username", username);
+  }
+
+  static String getUsername() {
+    return SharedPreferencesHelper.preferences.getString("username") ?? "";
+  }
+
   static Future<void> setAccessToken(String token) async {
     await SharedPreferencesHelper.preferences.setString("accessToken", token);
   }

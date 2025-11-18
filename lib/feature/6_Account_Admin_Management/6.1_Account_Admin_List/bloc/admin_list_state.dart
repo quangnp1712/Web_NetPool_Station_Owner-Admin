@@ -1,10 +1,7 @@
 part of 'admin_list_bloc.dart';
 
-sealed class AdminListState extends Equatable {
+sealed class AdminListState {
   const AdminListState();
-
-  @override
-  List<Object> get props => [];
 }
 
 final class AdminListInitial extends AdminListState {}

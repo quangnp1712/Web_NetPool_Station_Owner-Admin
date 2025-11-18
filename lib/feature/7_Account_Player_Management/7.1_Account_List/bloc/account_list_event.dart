@@ -1,11 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, must_be_immutable
 part of 'account_list_bloc.dart';
 
-sealed class AccountListEvent extends Equatable {
+sealed class AccountListEvent {
   const AccountListEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class AccountListInitialEvent extends AccountListEvent {}
