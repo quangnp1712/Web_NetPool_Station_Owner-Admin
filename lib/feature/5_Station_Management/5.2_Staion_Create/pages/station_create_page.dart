@@ -1,5 +1,6 @@
 // ignore_for_file: type_literal_in_constant_pattern
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:file_picker/file_picker.dart';
@@ -82,10 +83,21 @@ class _StationCreatePageState extends State<StationCreatePage> {
   bool _isPickingImage = false;
   // --------------------------------
 
+  // [THÊM] Timer cho debounce search
+  Timer? _debounce;
+  // [THÊM] FocusNode bền vững cho Autocomplete
+  late final FocusNode _addressFocusNode;
+  // --------------------------------
+
   @override
   void initState() {
     super.initState();
+
+    // [THÊM] Khởi tạo FocusNode
+    _addressFocusNode = FocusNode();
+
     stationCreateBloc.add(StationCreateInitialEvent());
+
     _addressController.addListener(() {
       // 2. Gửi sự kiện UpdateFullAddressEvent
       stationCreateBloc.add(UpdateFullAddressEvent(
@@ -106,6 +118,8 @@ class _StationCreatePageState extends State<StationCreatePage> {
     _captchaController.dispose();
     stationCreateBloc.close();
     _fullAddressController.dispose();
+    _debounce?.cancel();
+    _addressFocusNode.dispose();
 
     super.dispose();
   }
@@ -141,6 +155,9 @@ class _StationCreatePageState extends State<StationCreatePage> {
         _selectedCommune = state.selectedCommune;
         _selectedDistrict = state.selectedDistrict;
         _isLoadingCommunes = state.isLoadingCommunes;
+        _captchaText = state.captchaText;
+        _isCaptchaVerified = state.isCaptchaVerified;
+        _isVerifyingCaptcha = state.isVerifyingCaptcha;
 
         if (state.isClearCaptchaController) {
           _captchaController.clear();
@@ -259,7 +276,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
                         ],
                       ),
                       //  Thay Column cũ bằng Form mới
-                      child: _buildCreateForm(),
+                      child: _buildCreateForm(state),
                     ),
                   ),
                   // 3. Footer (Copyright)
@@ -294,7 +311,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
   }
 
   // --- WIDGET MỚI: FORM TẠO TÀI KHOẢN ---
-  Widget _buildCreateForm() {
+  Widget _buildCreateForm(StationCreateState state) {
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Form(
@@ -420,16 +437,19 @@ class _StationCreatePageState extends State<StationCreatePage> {
                                   },
                           )),
                           const SizedBox(width: 24),
+                          // Expanded(
+                          //     child: _buildTextFormField(
+                          //   label: "Địa chỉ chi tiết (Số nhà, đường)",
+                          //   hint: "483 Thống Nhất",
+                          //   controller: _addressController,
+                          //   // (Listener trong initState đã xử lý onChanged)
+                          //   validator: (val) => (val?.isEmpty ?? true)
+                          //       ? "Vui lòng nhập địa chỉ"
+                          //       : null,
+                          // )),
                           Expanded(
-                              child: _buildTextFormField(
-                            label: "Địa chỉ chi tiết (Số nhà, đường)",
-                            hint: "483 Thống Nhất",
-                            controller: _addressController,
-                            // (Listener trong initState đã xử lý onChanged)
-                            validator: (val) => (val?.isEmpty ?? true)
-                                ? "Vui lòng nhập địa chỉ"
-                                : null,
-                          )),
+                              child: _buildAddressAutocompleteField(
+                                  context, state)),
                         ],
                       ),
                     ],
@@ -490,15 +510,16 @@ class _StationCreatePageState extends State<StationCreatePage> {
                               },
                       ),
                       const SizedBox(height: 24),
-                      _buildTextFormField(
-                        label: "Địa chỉ chi tiết (Số nhà, đường)",
-                        hint: "483 Thống Nhất",
-                        controller: _addressController,
-                        // (Listener trong initState đã xử lý onChanged)
-                        validator: (val) => (val?.isEmpty ?? true)
-                            ? "Vui lòng nhập địa chỉ"
-                            : null,
-                      )
+                      // _buildTextFormField(
+                      //   label: "Địa chỉ chi tiết (Số nhà, đường)",
+                      //   hint: "483 Thống Nhất",
+                      //   controller: _addressController,
+                      //   // (Listener trong initState đã xử lý onChanged)
+                      //   validator: (val) => (val?.isEmpty ?? true)
+                      //       ? "Vui lòng nhập địa chỉ"
+                      //       : null,
+                      // )
+                      _buildAddressAutocompleteField(context, state),
                     ],
                   );
                 }
@@ -525,6 +546,118 @@ class _StationCreatePageState extends State<StationCreatePage> {
         ),
       ),
     );
+  }
+
+  // [THÊM MỚI] Widget Autocomplete cho địa chỉ chi tiết
+  Widget _buildAddressAutocompleteField(
+      BuildContext context, StationCreateState state) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text("Địa chỉ chi tiết (Số nhà, đường)",
+          style: TextStyle(color: AppColors.textWhite, fontSize: 16)),
+      const SizedBox(height: 8),
+      RawAutocomplete<String>(
+        textEditingController: _addressController,
+        focusNode: _addressFocusNode,
+
+        // 1. Options Builder: Logic lấy danh sách hiển thị
+        // Ở đây ta trả về list từ Bloc State, nhưng trigger event tìm kiếm
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty) {
+            stationCreateBloc.add(ClearAddressSuggestionsEvent());
+            return const Iterable<String>.empty();
+          }
+
+          // Debounce: Đợi 500ms sau khi ngừng gõ mới gọi API
+          if (_debounce?.isActive ?? false) _debounce!.cancel();
+          _debounce = Timer(const Duration(milliseconds: 100), () {
+            stationCreateBloc
+                .add(SearchAddressSuggestionEvent(textEditingValue.text));
+          });
+
+          // Trả về danh sách hiện tại trong state (Bloc sẽ update list này sau khi API trả về)
+          return state.addressSuggestions;
+        },
+
+        // 2. UI của ô nhập liệu (giữ nguyên design cũ)
+        fieldViewBuilder: (BuildContext context,
+            TextEditingController fieldTextEditingController,
+            FocusNode fieldFocusNode,
+            VoidCallback onFieldSubmitted) {
+          return TextFormField(
+            controller: fieldTextEditingController,
+            focusNode: fieldFocusNode,
+            style: const TextStyle(color: AppColors.textWhite),
+            decoration: InputDecoration(
+                hintText: "Ví dụ: 483 Thống Nhất",
+                hintStyle: const TextStyle(color: AppColors.textHint),
+                filled: true,
+                fillColor: AppColors.inputBackground,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.textHint)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.textHint)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                        color: AppColors.primaryGlow, width: 2)),
+                // Hiển thị loading nhỏ khi đang tìm
+                suffixIcon: state.isLoadingAddressSuggestions
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white)))
+                    : null),
+            validator: (val) =>
+                (val?.isEmpty ?? true) ? "Vui lòng nhập địa chỉ" : null,
+          );
+        },
+
+        // 3. UI của danh sách gợi ý (Overlay)
+        optionsViewBuilder: (BuildContext context,
+            AutocompleteOnSelected<String> onSelected,
+            Iterable<String> options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              elevation: 4.0,
+              color: AppColors.inputBackground, // Màu nền dark
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: 300, // Độ rộng của popup (hoặc dùng constraints)
+                constraints: const BoxConstraints(maxHeight: 200),
+                decoration: BoxDecoration(
+                    border: Border.all(
+                        color: AppColors.primaryGlow.withOpacity(0.5)),
+                    borderRadius: BorderRadius.circular(8)),
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final String option = options.elementAt(index);
+                    return InkWell(
+                      onTap: () => onSelected(option),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(option,
+                            style: const TextStyle(
+                                color: AppColors.textWhite) // Màu chữ trắng
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   // --- SỬA: WIDGET CON: Hình ảnh ---

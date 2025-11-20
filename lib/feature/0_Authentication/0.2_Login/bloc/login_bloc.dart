@@ -13,8 +13,8 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Aut
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/model/login_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/repository/login_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/shared_preferences/login_shared_preferences.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/repository/role_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/role/models/role_response_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/role/repository/role_repository.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';

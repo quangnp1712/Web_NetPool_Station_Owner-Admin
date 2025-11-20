@@ -1,12 +1,15 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/models/autocomplete_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/meta/model/meta_model.dart';
 
-class RoleModelResponse extends BaseResponse {
-  List<RoleModel>? data;
+class AutocompleteModelResponse extends BaseResponse {
+  List<AutocompleteModel>? data;
+  MetaModel? meta;
 
-  RoleModelResponse({
+  AutocompleteModelResponse({
     this.data,
     status,
     success,
@@ -26,12 +29,12 @@ class RoleModelResponse extends BaseResponse {
     };
   }
 
-  factory RoleModelResponse.fromMap(Map<String, dynamic> map) {
-    return RoleModelResponse(
+  factory AutocompleteModelResponse.fromMap(Map<String, dynamic> map) {
+    return AutocompleteModelResponse(
       data: map['data'] != null
-          ? List<RoleModel>.from(
+          ? List<AutocompleteModel>.from(
               (map['data'] as List).map(
-                (x) => RoleModel.fromMap(x as Map<String, dynamic>),
+                (x) => AutocompleteModel.fromMap(x as Map<String, dynamic>),
               ),
             )
           : null,
@@ -46,6 +49,6 @@ class RoleModelResponse extends BaseResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory RoleModelResponse.fromJson(Map<String, dynamic> source) =>
-      RoleModelResponse.fromMap(source);
+  factory AutocompleteModelResponse.fromJson(Map<String, dynamic> source) =>
+      AutocompleteModelResponse.fromMap(source);
 }

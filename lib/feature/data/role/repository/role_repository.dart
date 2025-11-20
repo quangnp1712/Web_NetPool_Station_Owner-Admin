@@ -2,7 +2,7 @@ import 'package:web_netpool_station_owner_admin/core/network/exceptions/app_exce
 import 'package:web_netpool_station_owner_admin/core/network/exceptions/exception_handlers.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:web_netpool_station_owner_admin/feature/Common/role/api/role_api.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/role/api/role_api.dart';
 
 abstract class IRoleRepository {
   Future<Map<String, dynamic>> roles();

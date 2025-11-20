@@ -54,6 +54,11 @@ class StationCreateState extends Equatable {
   final bool isCaptchaVerified;
   final bool isClearCaptchaController;
 
+  // [THÊM] Loading và List gợi ý địa chỉ
+  final bool isLoadingAddressSuggestions;
+  final List<String> addressSuggestions;
+  // final List<AutocompleteModel> addressSuggestions;
+
   const StationCreateState({
     this.blocState = StationCreateBlocState.Initial,
     this.stationCreateStatus = StationCreateStatus.initial,
@@ -75,6 +80,8 @@ class StationCreateState extends Equatable {
     this.isVerifyingCaptcha = false,
     this.isCaptchaVerified = false,
     this.isClearCaptchaController = false,
+    this.isLoadingAddressSuggestions = false,
+    this.addressSuggestions = const [],
   });
 
   // Hàm copyWith quan trọng để cập nhật state
@@ -99,6 +106,9 @@ class StationCreateState extends Equatable {
     bool? isVerifyingCaptcha,
     bool? isCaptchaVerified,
     bool? isClearCaptchaController,
+    bool? isLoadingAddressSuggestions,
+    List<String>? addressSuggestions,
+    // List<AutocompleteModel>? addressSuggestions,
   }) {
     return StationCreateState(
       blocState: blocState ?? StationCreateBlocState.Initial,
@@ -123,6 +133,9 @@ class StationCreateState extends Equatable {
       isCaptchaVerified: isCaptchaVerified ?? this.isCaptchaVerified,
       isClearCaptchaController:
           isClearCaptchaController ?? this.isClearCaptchaController,
+      isLoadingAddressSuggestions:
+          isLoadingAddressSuggestions ?? this.isLoadingAddressSuggestions,
+      addressSuggestions: addressSuggestions ?? this.addressSuggestions,
     );
   }
 
@@ -148,5 +161,7 @@ class StationCreateState extends Equatable {
         isVerifyingCaptcha,
         isCaptchaVerified,
         isClearCaptchaController,
+        isLoadingAddressSuggestions,
+        addressSuggestions,
       ];
 }

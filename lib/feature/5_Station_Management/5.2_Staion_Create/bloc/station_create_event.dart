@@ -111,3 +111,10 @@ class UpdateFullAddressEvent extends StationCreateEvent {
     this.province,
   });
 }
+
+class SearchAddressSuggestionEvent extends StationCreateEvent {
+  final String query;
+  SearchAddressSuggestionEvent(this.query);
+}
+
+class ClearAddressSuggestionsEvent extends StationCreateEvent {}

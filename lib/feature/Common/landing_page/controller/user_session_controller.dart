@@ -9,8 +9,8 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Aut
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/repository/authentication_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/shared_preferences/landing_page_shared_pref.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/models/role_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/role/repository/role_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/role/models/role_response_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/role/repository/role_repository.dart';
 
 class UserSessionController extends GetxController {
   UserSessionController();

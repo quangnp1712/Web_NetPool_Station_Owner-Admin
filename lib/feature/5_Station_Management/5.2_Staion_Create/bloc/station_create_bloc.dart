@@ -11,6 +11,9 @@ import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/model/station_create_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/repository/station_create_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/models/autocomplete_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/models/autocomplete_response_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/repository/autocomplete_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/city_controller/city_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/city_controller/city_repository.dart';
 
@@ -35,6 +38,9 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
     on<SelectedDistrictEvent>(_selectedDistrictEvent);
     on<SelectedCommuneEvent>(_selectedCommuneEvent);
     on<UpdateFullAddressEvent>(_updateFullAddressEvent);
+
+    on<SearchAddressSuggestionEvent>(_searchAddressSuggestionEvent);
+    on<ClearAddressSuggestionsEvent>(_clearAddressSuggestionsEvent);
   }
   FutureOr<void> _stationCreateInitialEvent(
       StationCreateInitialEvent event, Emitter<StationCreateState> emit) async {
@@ -310,6 +316,65 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       ));
       DebugLogger.printLog(e.toString());
     }
+  }
+
+  Future<void> _searchAddressSuggestionEvent(SearchAddressSuggestionEvent event,
+      Emitter<StationCreateState> emit) async {
+    if (event.query.isEmpty) {
+      emit(state.copyWith(addressSuggestions: []));
+      return;
+    }
+
+    // Không set loading toàn màn hình, chỉ update list ngầm
+    emit(state.copyWith(isLoadingAddressSuggestions: true));
+
+    try {
+      List<AutocompleteModel> autocompletes = [];
+      // Giả lập delay API BE
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // var results = await AutocompleteRepository().autocomplete(event.query);
+      // var responseMessage = results['message'];
+      // var responseStatus = results['status'];
+      // var responseSuccess = results['success'];
+      // var responseBody = results['body'];
+      // if (responseSuccess || responseStatus == 200) {
+      //   AutocompleteModelResponse autocompleteModelResponse =
+      //       AutocompleteModelResponse.fromJson(responseBody);
+      //   if (autocompleteModelResponse.data != null ||
+      //       autocompleteModelResponse.data!.isNotEmpty) {
+      //     if (autocompleteModelResponse.data!.isNotEmpty) {
+      //       autocompletes = autocompleteModelResponse.data!;
+      //     }
+      //   }
+      // }
+
+      // Giả lập kết quả trả về từ BE (Chỉ lấy phần Số nhà + Tên đường)
+      // API thực tế sẽ lấy query + provinceId + districtId để search chính xác hơn
+      final List<String> mockResults = [
+        "${event.query} Nguyễn Văn Lượng",
+        "${event.query} Quang Trung",
+        "${event.query}/2A Phan Văn Trị",
+        "${event.query} Lê Đức Thọ",
+        "Hẻm ${event.query} Thống Nhất",
+      ];
+
+      emit(state.copyWith(
+          addressSuggestions: mockResults, isLoadingAddressSuggestions: false));
+      // emit(state.copyWith(
+      //       addressSuggestions: autocompletes,
+      //       isLoadingAddressSuggestions: false));
+    } catch (e) {
+      emit(state.copyWith(
+          addressSuggestions: [], isLoadingAddressSuggestions: false));
+      DebugLogger.printLog("Lỗi $e");
+    }
+  }
+
+  FutureOr<void> _clearAddressSuggestionsEvent(
+      ClearAddressSuggestionsEvent event,
+      Emitter<StationCreateState> emit) async {
+    emit(state.copyWith(addressSuggestions: []));
   }
 
   void _generateCaptcha() {
