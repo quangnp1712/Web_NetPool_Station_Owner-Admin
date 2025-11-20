@@ -1,3 +1,6 @@
+// ignore_for_file: type_literal_in_constant_pattern
+
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,8 +9,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_text_styles.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_stations_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.2_Account_Admin_Create/bloc/admin_create_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.2_Account_Admin_Create/model/admin_create_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
 //! Admin Create - Tạo Station Admin !//
@@ -57,12 +61,17 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
   // --- THÊM: State cho Station Dropdown ---
   int? _selectedStationId;
   // (Bạn sẽ load danh sách này từ BLoC/API)
-  final List<StationModel> _stationList = [
-    StationModel(id: 1, name: "Station Bida Quận 1"),
-    StationModel(id: 2, name: "Station Net Cầu Giấy"),
-    StationModel(id: 3, name: "Station PlayStation 5"),
-  ];
+  List<AuthStationsModel> _stationList = [];
   // ---------------------------------------
+
+  // Trạng thái loading
+  bool isLoading = true;
+
+  // --- THÊM: State cho Upload Ảnh ---
+  String? _base64Avatar; // Dạng: "data:image/png;base64,..."
+  bool _isPickingImage = false;
+  // --------------------------------
+
   @override
   void initState() {
     super.initState();
@@ -100,6 +109,18 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
         }
       },
       builder: (context, state) {
+        if (state is AdminCreate_State) {
+          isLoading = state.isLoading ?? isLoading;
+          _stationList = state.stations ?? [];
+          _captchaText = state.captchaText ?? _captchaText;
+          _isCaptchaVerified = state.isCaptchaVerified ?? _isCaptchaVerified;
+          _isVerifyingCaptcha = state.isVerifyingCaptcha ?? _isVerifyingCaptcha;
+          if (state.isClearCaptchaController != null) {
+            if (state.isClearCaptchaController!) {
+              _captchaController.clear();
+            }
+          }
+        }
         if (state is GenerateCaptchaState) {
           _captchaText = state.captchaText;
           _isCaptchaVerified = state.isCaptchaVerified;
@@ -131,43 +152,82 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
           _phoneController.clear();
           _identificationController.clear();
           _selectedStationId = null;
-
+          _base64Avatar = null;
           adminCreateBloc.add(GenerateCaptchaEvent());
         }
         if (state is SelectedStationIdState) {
           _selectedStationId = state.newValue;
         }
+        if (state is AdminCreateFail_State) {
+          isLoading = false;
+          adminCreateBloc.add(GenerateCaptchaEvent());
+        }
+
+        // xử lý ảnh
+        if (state is IsPickingImageState) {
+          _isPickingImage = state.isPickingImage;
+        }
+        if (state is PickingImagesState) {
+          _isPickingImage = state.isPickingImage;
+          _base64Avatar = state.base64Images;
+        }
+
         return Material(
           color: AppColors.mainBackground, // Màu nền tối bên ngoài
-          child: ListView(
-            //  Cho phép cuộn nếu form quá dài trên màn hình nhỏ
-            // physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(0.0),
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Container(
-                // Thêm padding cho toàn bộ body
-                padding: const EdgeInsets.all(40.0),
-                alignment: Alignment.center,
-                child: Container(
-                  // Đây là Container chính với hiệu ứng glow
-                  decoration: BoxDecoration(
-                    color: AppColors.containerBackground,
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryGlow,
-                        blurRadius: 20.0,
-                        spreadRadius: 0.5,
-                        offset: const Offset(0, 4),
+              ListView(
+                //  Cho phép cuộn nếu form quá dài trên màn hình nhỏ
+                // physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(0.0),
+                children: [
+                  Container(
+                    // Thêm padding cho toàn bộ body
+                    padding: const EdgeInsets.all(40.0),
+                    alignment: Alignment.center,
+                    child: Container(
+                      // Đây là Container chính với hiệu ứng glow
+                      decoration: BoxDecoration(
+                        color: AppColors.containerBackground,
+                        borderRadius: BorderRadius.circular(20.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryGlow,
+                            blurRadius: 20.0,
+                            spreadRadius: 0.5,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
+                      //  Thay Column cũ bằng Form mới
+                      child: _buildCreateForm(),
+                    ),
                   ),
-                  //  Thay Column cũ bằng Form mới
-                  child: _buildCreateForm(),
-                ),
+                  // 3. Footer (Copyright)
+                  _buildFooter(),
+                ],
               ),
-              // 3. Footer (Copyright)
-              _buildFooter(),
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );
@@ -445,14 +505,21 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          items: _stationList.map((StationModel station) {
+          items: _stationList.map((AuthStationsModel station) {
             return DropdownMenuItem<int>(
-              value: station.id,
-              child: Text(station.name),
+              value: int.tryParse(station.stationId ?? ""),
+              child: Text(station.stationName ?? ""),
             );
           }).toList(),
           onChanged: (int? newValue) {
+            if (newValue == null) return;
+
             adminCreateBloc.add(SelectedStationIdEvent(newValue: newValue));
+          },
+          validator: (val) {
+            // Validator cho T?
+            if (val == null) return "Vui lòng chọn Station";
+            return null;
           },
           // (Tùy chọn: Thêm validator)
           // validator: (value) => value == null ? 'Vui lòng chọn Station' : null,
@@ -462,49 +529,72 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
   }
   // ---------------------------------------------
 
-  // --- WIDGET CON: Avatar ---
+  // --- SỬA: WIDGET CON: Avatar ---
   Widget _buildAvatarUploader() {
+    // Giải mã ảnh Base64 (nếu có)
+    ImageProvider? backgroundImage;
+    if (_base64Avatar != null) {
+      try {
+        final String base64String = _base64Avatar!.split(',').last;
+        backgroundImage = MemoryImage(base64Decode(base64String));
+      } catch (e) {
+        print("Lỗi ảnh: $e");
+      }
+    }
+
+    // SỬA: Dùng Row và căn chỉnh các thành phần bên trong
     return Row(
       children: [
-        Stack(
-          clipBehavior: Clip.none,
+        // Cụm Avatar và Nút (không dùng Stack để tránh lỗi hit-test)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end, // Căn đáy
           children: [
             // Avatar Circle
-            const CircleAvatar(
+            CircleAvatar(
               radius: 50,
               backgroundColor: AppColors.inputBackground,
-              child: Icon(
-                Icons.person,
-                size: 60,
-                color: AppColors.textHint,
-              ),
-              // backgroundImage: NetworkImage("..."), // (Tùy chọn)
+              backgroundImage: backgroundImage,
+              child: backgroundImage == null
+                  ? const Icon(
+                      Icons.person,
+                      size: 60,
+                      color: AppColors.textHint,
+                    )
+                  : null,
             ),
 
-            // Nút "Tải lên"
-            Positioned(
-              bottom: 0,
-              right: -100,
-              child: TextButton.icon(
-                onPressed: () {
-                  // TODO: Xử lý tải ảnh
-                },
-                icon: const Icon(Icons.photo_camera,
-                    color: AppColors.textHint, size: 16),
-                label: const Text(
-                  "Tải lên mốc ảnh",
-                  style: TextStyle(color: AppColors.textHint, fontSize: 12),
+            // Nút "Tải lên" (Nằm bên cạnh, không phải đè lên)
+            TextButton.icon(
+              onPressed: () {
+                if (!_isPickingImage) {
+                  adminCreateBloc
+                      .add(PickAvatarEvent(isPickingImage: _isPickingImage));
+                }
+              },
+              icon: _isPickingImage
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.textHint))
+                  : const Icon(Icons.photo_camera,
+                      color: AppColors.textHint, size: 16),
+              label: Text(
+                _isPickingImage
+                    ? "Đang tải..."
+                    : (_base64Avatar == null
+                        ? "Tải lên ảnh đại diện"
+                        : "Thay đổi ảnh"),
+                style: const TextStyle(color: AppColors.textHint, fontSize: 12),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.containerBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: AppColors.textHint.withOpacity(0.5)),
                 ),
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.containerBackground,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    side:
-                        BorderSide(color: AppColors.textHint.withOpacity(0.5)),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
             ),
           ],
@@ -737,12 +827,17 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
           onPressed: () {
             if (_isCaptchaVerified) {
               if (_formKey.currentState!.validate()) {
+                setState(() {
+                  _isCaptchaVerified = false;
+                });
                 adminCreateBloc.add(SubmitAdminCreateEvent(
                     email: _emailController.text,
                     password: _passwordController.text,
                     identification: _identificationController.text,
                     phone: _phoneController.text,
-                    username: _usernameController.text));
+                    username: _usernameController.text,
+                    stationId: _selectedStationId.toString(),
+                    avatar: _base64Avatar));
               }
             }
           },

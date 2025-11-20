@@ -1,179 +1,152 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, constant_identifier_names
 part of 'station_create_bloc.dart';
 
-sealed class StationCreateState {
-  final bool isLoading;
-  const StationCreateState({this.isLoading = false});
+enum StationCreateStatus {
+  initial,
+  loading,
+  success,
+  failure,
 }
 
-final class StationCreateInitial extends StationCreateState {
-  const StationCreateInitial({super.isLoading});
+enum StationCreateBlocState {
+  Initial,
+  StationCreateSuccessState,
+  StationCreateFailState,
+  ResetFormState,
+  RemoveImageState,
+  SelectedProvinceState,
+  SelectedDistrictState,
+  SelectedCommuneState,
+  LoadDistrictsState,
+  LoadCommunesState
 }
 
-abstract class StationCreateActionState extends StationCreateState {
-  StationCreateActionState({super.isLoading});
-}
+class StationCreateState extends Equatable {
+  // --- Chia State kiểu cũ ---
+  final StationCreateBlocState blocState;
 
-class StationCreateInitialState extends StationCreateState {
-  bool isLoadingProvinces;
-  List<ProvinceModel>? provincesList;
-  String captchaText;
-  bool isCaptchaVerified;
-  bool isVerifyingCaptcha;
-  bool isClearCaptchaController;
-  StationCreateInitialState({
-    required this.isLoadingProvinces,
-    this.provincesList,
-    required this.captchaText,
-    required this.isCaptchaVerified,
-    required this.isVerifyingCaptcha,
-    required this.isClearCaptchaController,
-  }) : super(isLoading: false);
-}
+  // --- General Loading & Status ---
+  final StationCreateStatus stationCreateStatus;
+  final String message; // Dùng để chứa lỗi hoặc thông báo thành công
 
-class StationCreate_ChangeState extends StationCreateActionState {}
+  // --- Data Lists ---
+  final List<ProvinceModel> provincesList;
+  final List<DistrictModel> districtList;
+  final List<CommuneModel> communeList;
+  final List<String> base64Images;
 
-class StationCreate_LoadingState extends StationCreateState {
-  final bool isLoading;
+  // --- Form Selections & Inputs ---
+  final int? selectedStationId;
+  final ProvinceModel? selectedProvince;
+  final DistrictModel? selectedDistrict;
+  final CommuneModel? selectedCommune;
+  final String fullAddressController;
 
-  StationCreate_LoadingState({required this.isLoading});
-}
+  // --- Specific Loadings (Loading cục bộ cho từng dropdown) ---
+  final bool isLoadingProvinces;
+  final bool isLoadingDistricts;
+  final bool isLoadingCommunes;
+  final bool isPickingImage;
 
-class StationCreateSuccessState extends StationCreateActionState {
-  StationCreateSuccessState() : super(isLoading: false);
-}
+  // --- Captcha State ---
+  final String captchaText;
+  final bool isVerifyingCaptcha;
+  final bool isCaptchaVerified;
+  final bool isClearCaptchaController;
 
-class StationCreateFailState extends StationCreateState {
-  StationCreateFailState() : super(isLoading: false);
-}
+  const StationCreateState({
+    this.blocState = StationCreateBlocState.Initial,
+    this.stationCreateStatus = StationCreateStatus.initial,
+    this.message = '',
+    this.provincesList = const [],
+    this.districtList = const [],
+    this.communeList = const [],
+    this.base64Images = const [],
+    this.selectedStationId,
+    this.selectedProvince,
+    this.selectedDistrict,
+    this.selectedCommune,
+    this.fullAddressController = '',
+    this.isLoadingProvinces = false,
+    this.isLoadingDistricts = false,
+    this.isLoadingCommunes = false,
+    this.isPickingImage = false,
+    this.captchaText = '',
+    this.isVerifyingCaptcha = false,
+    this.isCaptchaVerified = false,
+    this.isClearCaptchaController = false,
+  });
 
-class ShowSnackBarActionState extends StationCreateActionState {
-  final String message;
-  final bool success;
+  // Hàm copyWith quan trọng để cập nhật state
+  StationCreateState copyWith({
+    StationCreateBlocState? blocState,
+    StationCreateStatus? stationCreateStatus,
+    String? message,
+    List<ProvinceModel>? provincesList,
+    List<DistrictModel>? districtList,
+    List<CommuneModel>? communeList,
+    List<String>? base64Images,
+    int? selectedStationId,
+    ProvinceModel? selectedProvince,
+    DistrictModel? selectedDistrict,
+    CommuneModel? selectedCommune,
+    String? fullAddressController,
+    bool? isLoadingProvinces,
+    bool? isLoadingDistricts,
+    bool? isLoadingCommunes,
+    bool? isPickingImage,
+    String? captchaText,
+    bool? isVerifyingCaptcha,
+    bool? isCaptchaVerified,
+    bool? isClearCaptchaController,
+  }) {
+    return StationCreateState(
+      blocState: blocState ?? StationCreateBlocState.Initial,
+      stationCreateStatus: stationCreateStatus ?? StationCreateStatus.initial,
+      message: message ?? this.message,
+      provincesList: provincesList ?? this.provincesList,
+      districtList: districtList ?? this.districtList,
+      communeList: communeList ?? this.communeList,
+      base64Images: base64Images ?? this.base64Images,
+      selectedStationId: selectedStationId ?? this.selectedStationId,
+      selectedProvince: selectedProvince ?? this.selectedProvince,
+      selectedDistrict: selectedDistrict ?? this.selectedDistrict,
+      selectedCommune: selectedCommune ?? this.selectedCommune,
+      fullAddressController:
+          fullAddressController ?? this.fullAddressController,
+      isLoadingProvinces: isLoadingProvinces ?? this.isLoadingProvinces,
+      isLoadingDistricts: isLoadingDistricts ?? this.isLoadingDistricts,
+      isLoadingCommunes: isLoadingCommunes ?? this.isLoadingCommunes,
+      isPickingImage: isPickingImage ?? this.isPickingImage,
+      captchaText: captchaText ?? this.captchaText,
+      isVerifyingCaptcha: isVerifyingCaptcha ?? this.isVerifyingCaptcha,
+      isCaptchaVerified: isCaptchaVerified ?? this.isCaptchaVerified,
+      isClearCaptchaController:
+          isClearCaptchaController ?? this.isClearCaptchaController,
+    );
+  }
 
-  ShowSnackBarActionState({required this.success, required this.message})
-      : super(isLoading: false);
-}
-
-class GenerateCaptchaState extends StationCreateState {
-  String captchaText;
-  bool isCaptchaVerified;
-  bool isVerifyingCaptcha;
-  bool isClearCaptchaController;
-  GenerateCaptchaState({
-    required this.captchaText,
-    required this.isCaptchaVerified,
-    required this.isVerifyingCaptcha,
-    required this.isClearCaptchaController,
-  }) : super(isLoading: false);
-}
-
-class HandleVerifyCaptchaState extends StationCreateState {
-  String? captchaText;
-  bool? isCaptchaVerified;
-  bool? isVerifyingCaptcha;
-  bool? isClearCaptchaController;
-  HandleVerifyCaptchaState({
-    this.captchaText,
-    this.isCaptchaVerified,
-    this.isVerifyingCaptcha,
-    this.isClearCaptchaController,
-  }) : super(isLoading: false);
-}
-
-class LoadingCaptchaState extends StationCreateState {
-  bool isVerifyingCaptcha;
-
-  LoadingCaptchaState({
-    required this.isVerifyingCaptcha,
-  }) : super(isLoading: false);
-}
-
-class ResetFormState extends StationCreateState {}
-
-class SelectedStationIdState extends StationCreateState {
-  int? newValue;
-  SelectedStationIdState({
-    this.newValue,
-  }) : super(isLoading: false);
-}
-
-class IsPickingImageState extends StationCreateState {
-  bool isPickingImage;
-  IsPickingImageState({
-    required this.isPickingImage,
-  }) : super(isLoading: false);
-}
-
-class PickingImagesState extends StationCreateState {
-  bool isPickingImage;
-  List<String> base64Images;
-  PickingImagesState({
-    required this.isPickingImage,
-    required this.base64Images,
-  }) : super(isLoading: false);
-}
-
-class RemoveImageState extends StationCreateState {
-  List<String> base64Images;
-  RemoveImageState({
-    required this.base64Images,
-  }) : super(isLoading: false);
-}
-
-class SelectedProvinceState extends StationCreateState {
-  ProvinceModel? newValue;
-  SelectedProvinceState({this.newValue}) : super(isLoading: false);
-}
-
-class SelectedDistrictState extends StationCreateState {
-  DistrictModel? newValue;
-  SelectedDistrictState({this.newValue}) : super(isLoading: false);
-}
-
-class SelectedCommuneState extends StationCreateState {
-  CommuneModel? newValue;
-  SelectedCommuneState({this.newValue}) : super(isLoading: false);
-}
-
-class LoadProvincesState extends StationCreateState {
-  bool isLoadingProvinces;
-  List<ProvinceModel>? provincesList;
-  LoadProvincesState({
-    required this.isLoadingProvinces,
-    this.provincesList,
-  }) : super(isLoading: false);
-}
-
-class LoadDistrictsState extends StationCreateState {
-  bool isLoadingDistricts;
-  List<DistrictModel>? districtList;
-  List<CommuneModel>? communeList;
-  DistrictModel? selectedDistrictCode;
-  CommuneModel? selectedCommuneCode;
-  LoadDistrictsState({
-    required this.isLoadingDistricts,
-    this.districtList,
-    this.communeList,
-    this.selectedDistrictCode,
-    this.selectedCommuneCode,
-  }) : super(isLoading: false);
-}
-
-class LoadCommunesState extends StationCreateState {
-  bool isLoadingCommunes;
-  List<CommuneModel>? communeList;
-  CommuneModel? selectedCommuneCode;
-  LoadCommunesState({
-    required this.isLoadingCommunes,
-    this.communeList,
-    this.selectedCommuneCode,
-  }) : super(isLoading: false);
-}
-
-class UpdateFullAddressState extends StationCreateState {
-  String fullAddressController;
-  UpdateFullAddressState({
-    required this.fullAddressController,
-  }) : super(isLoading: false);
+  @override
+  List<Object?> get props => [
+        blocState,
+        stationCreateStatus,
+        message,
+        provincesList,
+        districtList,
+        communeList,
+        base64Images,
+        selectedStationId,
+        selectedProvince,
+        selectedDistrict,
+        selectedCommune,
+        fullAddressController,
+        isLoadingProvinces,
+        isLoadingDistricts,
+        isLoadingCommunes,
+        isPickingImage,
+        captchaText,
+        isVerifyingCaptcha,
+        isCaptchaVerified,
+        isClearCaptchaController,
+      ];
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:web_netpool_station_owner_admin/core/router/auth_middleware.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/bloc/register_bloc.dart';
@@ -26,27 +27,32 @@ class RouteGenerator {
         name: loginPageRoute,
         page: () => BlocProvider<LoginBloc>.value(
             value: loginPageBloc, child: LoginPage()),
+        middlewares: [EnsureNotAuthMiddleware()],
       ),
 
       GetPage(
         name: registerPageRoute,
         page: () => BlocProvider<RegisterBloc>.value(
             value: registerPageBloc, child: RegisterPage()),
+        middlewares: [EnsureNotAuthMiddleware()],
       ),
 
       GetPage(
         name: validEmailPageRoute,
         page: () => BlocProvider<ValidEmailBloc>.value(
             value: validEmailPageBloc, child: ValidEmailPage()),
+        middlewares: [EnsureNotAuthMiddleware()],
       ),
       GetPage(
         name: sendValidCodePageRoute,
         page: () => BlocProvider<ValidEmailBloc>.value(
             value: validEmailPageBloc, child: SendValidPage()),
+        middlewares: [EnsureNotAuthMiddleware()],
       ),
       GetPage(
         name: HomePage.HomePageRoute,
         page: () => const HomePage(),
+        middlewares: [EnsureAuthMiddleware()],
       ),
 
       // MENU //
@@ -55,6 +61,7 @@ class RouteGenerator {
       GetPage(
         name: rootRoute, // "/"
         page: () => LandingPage(),
+        middlewares: [EnsureAuthMiddleware()],
       ),
     ];
   }

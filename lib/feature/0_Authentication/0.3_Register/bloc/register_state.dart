@@ -12,7 +12,7 @@ class ShowRegisterState extends RegisterActionState {}
 
 class Register_ChangeState extends RegisterActionState {}
 
-class Register_LoadingState extends RegisterActionState {
+class Register_LoadingState extends RegisterState {
   final bool isLoading;
 
   Register_LoadingState({required this.isLoading});

@@ -115,59 +115,37 @@ class _StationCreatePageState extends State<StationCreatePage> {
     // Đây là layout gốc của AccountListPage
     return BlocConsumer<StationCreateBloc, StationCreateState>(
       bloc: stationCreateBloc,
-      listenWhen: (previous, current) => current is StationCreateActionState,
-      buildWhen: (previous, current) => current is! StationCreateActionState,
       listener: (context, state) {
-        switch (state.runtimeType) {
-          case StationCreateSuccessState:
-            Get.find<UserSessionController>().loadData();
-            stationCreateBloc.add(ResetFormEvent());
-            isLoading = false;
-            break;
-          case ShowSnackBarActionState:
-            final snackBarState = state as ShowSnackBarActionState;
-            ShowSnackBar(snackBarState.message, snackBarState.success);
-            isLoading = false;
-            break;
+        if (state.stationCreateStatus == StationCreateStatus.failure) {
+          ShowSnackBar(state.message, false);
+        }
+        if (state.stationCreateStatus == StationCreateStatus.success) {
+          ShowSnackBar(state.message, true);
+        }
+        if (state.blocState ==
+            StationCreateBlocState.StationCreateSuccessState) {
+          Get.find<UserSessionController>().loadData();
+          stationCreateBloc.add(ResetFormEvent());
         }
       },
       builder: (context, state) {
-        // Lấy isLoading TỪ THUỘC TÍNH (PROPERTY)
-        isLoading = state.isLoading;
+        _isPickingImage = state.isPickingImage;
+        _base64Images.addAll(state.base64Images);
+        _selectedProvince = state.selectedProvince;
+        _fullAddressController.text = state.fullAddressController;
+        _isLoadingProvinces = state.isLoadingProvinces;
+        _provinceList = state.provincesList ?? [];
+        _isLoadingDistricts = state.isLoadingDistricts;
+        _districtList = state.districtList ?? [];
+        _communeList = state.communeList ?? [];
+        _selectedCommune = state.selectedCommune;
+        _selectedDistrict = state.selectedDistrict;
+        _isLoadingCommunes = state.isLoadingCommunes;
 
-        if (state is StationCreateInitialState) {
-          _captchaText = state.captchaText;
-          _isCaptchaVerified = state.isCaptchaVerified;
-          _isVerifyingCaptcha = state.isVerifyingCaptcha;
-          _isLoadingProvinces = state.isLoadingProvinces;
-          _provinceList = state.provincesList ?? [];
-          if (state.isClearCaptchaController) {
-            _captchaController.clear();
-          }
+        if (state.isClearCaptchaController) {
+          _captchaController.clear();
         }
-
-        if (state is GenerateCaptchaState) {
-          _captchaText = state.captchaText;
-          _isCaptchaVerified = state.isCaptchaVerified;
-          _isVerifyingCaptcha = state.isVerifyingCaptcha;
-          if (state.isClearCaptchaController) {
-            _captchaController.clear();
-          }
-        }
-        if (state is LoadingCaptchaState) {
-          if (state.isVerifyingCaptcha) {
-            _isVerifyingCaptcha = state.isVerifyingCaptcha;
-          }
-        }
-        if (state is HandleVerifyCaptchaState) {
-          if (state.isVerifyingCaptcha != null) {
-            _isVerifyingCaptcha = state.isVerifyingCaptcha!;
-          }
-          if (state.isCaptchaVerified != null) {
-            _isCaptchaVerified = state.isCaptchaVerified!;
-          }
-        }
-        if (state is ResetFormState) {
+        if (state.blocState == StationCreateBlocState.ResetFormState) {
           _formKey.currentState?.reset();
 
           //  Reset controllers mới
@@ -188,36 +166,27 @@ class _StationCreatePageState extends State<StationCreatePage> {
 
           stationCreateBloc.add(GenerateCaptchaEvent());
         }
-        if (state is SelectedStationIdState) {
-          // _selectedStationId = state.newValue;
-        }
-        if (state is IsPickingImageState) {
-          _isPickingImage = state.isPickingImage;
-        }
-        if (state is PickingImagesState) {
-          _isPickingImage = state.isPickingImage;
-          _base64Images.addAll(state.base64Images);
-        }
-        if (state is RemoveImageState) {
+
+        if (state.blocState == StationCreateBlocState.RemoveImageState) {
           _base64Images = [];
           _base64Images = state.base64Images;
         }
-        if (state is SelectedProvinceState) {
-          _selectedProvince = state.newValue;
+        if (state.blocState == StationCreateBlocState.SelectedProvinceState) {
+          _selectedProvince = state.selectedProvince;
           if (_selectedProvince != null) {
             stationCreateBloc
                 .add(LoadDistrictsEvent(provinceCode: _selectedProvince!.code));
           }
         }
-        if (state is SelectedDistrictState) {
-          _selectedDistrict = state.newValue;
+        if (state.blocState == StationCreateBlocState.SelectedDistrictState) {
+          _selectedDistrict = state.selectedDistrict;
           if (_selectedDistrict != null) {
             stationCreateBloc
                 .add(LoadCommunesEvent(districtCode: _selectedDistrict!.code));
           }
         }
-        if (state is SelectedCommuneState) {
-          _selectedCommune = state.newValue;
+        if (state.blocState == StationCreateBlocState.SelectedCommuneState) {
+          _selectedCommune = state.selectedCommune;
           stationCreateBloc.add(UpdateFullAddressEvent(
             address: _addressController.text,
             commune: _selectedCommune,
@@ -225,19 +194,13 @@ class _StationCreatePageState extends State<StationCreatePage> {
             province: _selectedProvince,
           ));
         }
-        if (state is UpdateFullAddressState) {
-          _fullAddressController.text = state.fullAddressController;
-        }
-        if (state is LoadProvincesState) {
-          _isLoadingProvinces = state.isLoadingProvinces;
-          _provinceList = state.provincesList ?? [];
-        }
-        if (state is LoadDistrictsState) {
+
+        if (state.blocState == StationCreateBlocState.LoadDistrictsState) {
           _isLoadingDistricts = state.isLoadingDistricts;
           _districtList = state.districtList ?? [];
           _communeList = state.communeList ?? [];
-          _selectedCommune = state.selectedCommuneCode;
-          _selectedDistrict = state.selectedDistrictCode;
+          _selectedCommune = state.selectedCommune;
+          _selectedDistrict = state.selectedDistrict;
           stationCreateBloc.add(UpdateFullAddressEvent(
             address: _addressController.text,
             commune: null, // Reset
@@ -245,10 +208,11 @@ class _StationCreatePageState extends State<StationCreatePage> {
             province: _selectedProvince,
           ));
         }
-        if (state is LoadCommunesState) {
+
+        if (state.blocState == StationCreateBlocState.LoadCommunesState) {
           _isLoadingCommunes = state.isLoadingCommunes;
           _communeList = state.communeList ?? [];
-          _selectedCommune = state.selectedCommuneCode;
+          _selectedCommune = state.selectedCommune;
           stationCreateBloc.add(UpdateFullAddressEvent(
             address: _addressController.text,
             commune: null, // Reset
@@ -256,10 +220,12 @@ class _StationCreatePageState extends State<StationCreatePage> {
             province: _selectedProvince,
           ));
         }
-        if (state is StationCreate_LoadingState) {
-          isLoading = state.isLoading;
+        if (state.stationCreateStatus == StationCreateStatus.loading) {
+          isLoading = true;
+        } else {
+          isLoading = false;
         }
-        if (state is StationCreateFailState) {
+        if (state.blocState == StationCreateBlocState.StationCreateFailState) {
           // isLoading = state.isLoading;
           stationCreateBloc.add(GenerateCaptchaEvent());
         }

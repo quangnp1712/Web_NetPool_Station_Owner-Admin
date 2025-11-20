@@ -241,7 +241,7 @@ class _ValidEmailPageState extends State<ValidEmailPage> {
                                 child: Container(
                                   alignment: Alignment.center,
                                   child: Text(
-                                    'Xác nhận',
+                                    'Xác thực Email',
                                     style: const TextStyle(
                                       fontSize: 22,
                                       color: Colors.white,

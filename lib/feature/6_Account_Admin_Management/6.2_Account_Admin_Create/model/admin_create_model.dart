@@ -49,9 +49,4 @@ class AdminCreateModel {
       AdminCreateModel.fromMap(source);
 }
 
-class StationModel {
-  final int id;
-  final String name;
-  StationModel({required this.id, required this.name});
-}
 // ------------------------------------------

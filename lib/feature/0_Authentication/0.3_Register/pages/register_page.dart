@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/bloc/register_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
 
@@ -19,6 +20,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final FocusNode _formFocusNode = FocusNode();
 
   final RegisterBloc registerPageBloc = RegisterBloc();
+
+  bool isLoading = false;
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -45,6 +48,9 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       },
       builder: (context, state) {
+        if (state is Register_LoadingState) {
+          isLoading = state.isLoading;
+        }
         return Scaffold(
           body: Stack(
             fit: StackFit.expand,
@@ -515,6 +521,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   )
                 ],
               ),
+
+              // --- WIDGET LOADING TRONG STACK ---
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.containerBackground.withOpacity(
+                        0.8,
+                      ), // Màu nền mờ
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryGlow,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ------------------------------------
             ],
           ),
         );

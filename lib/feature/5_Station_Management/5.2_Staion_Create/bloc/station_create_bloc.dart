@@ -20,7 +20,7 @@ part 'station_create_state.dart';
 class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
   String _captchaText = "";
 
-  StationCreateBloc() : super(StationCreateInitial()) {
+  StationCreateBloc() : super(StationCreateState()) {
     on<StationCreateInitialEvent>(_stationCreateInitialEvent);
     on<GenerateCaptchaEvent>(_generateCaptchaEvent);
     on<HandleVerifyCaptchaEvent>(_handleVerifyCaptchaEvent);
@@ -38,90 +38,50 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
   }
   FutureOr<void> _stationCreateInitialEvent(
       StationCreateInitialEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(StationCreateInitial(isLoading: true));
-
-    try {
-      _generateCaptcha();
-      var results = await CityRepository().getProvinces();
-      var responseMessage = results['message'];
-      var responseStatus = results['status'];
-      var responseSuccess = results['success'];
-      var responseBody = results['body'];
-      if (responseSuccess || responseStatus == 200) {
-        List<ProvinceModel> provincesList = (responseBody as List)
-            .map((e) => ProvinceModel.fromJson(e as Map<String, dynamic>))
-            .toList();
-        provincesList.map((name) => Utf8Encoding().decode(name as String));
-
-        emit(StationCreate_ChangeState());
-
-        emit(StationCreateInitialState(
-          isLoadingProvinces: false,
-          provincesList: provincesList,
-          captchaText: _captchaText,
-          isCaptchaVerified: false,
-          isVerifyingCaptcha: false,
-          isClearCaptchaController: true,
-        ));
-      } else {
-        emit(StationCreate_ChangeState());
-        emit(LoadProvincesState(isLoadingProvinces: false));
-        DebugLogger.printLog("Lỗi tải Tỉnh/TP");
-        emit(GenerateCaptchaState(
-            captchaText: _captchaText,
-            isCaptchaVerified: false,
-            isVerifyingCaptcha: false,
-            isClearCaptchaController: true));
-      }
-    } catch (e) {
-      emit(StationCreate_ChangeState());
-      DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
-    }
+    emit(state.copyWith(
+      stationCreateStatus: StationCreateStatus.initial,
+      blocState: StationCreateBlocState.Initial,
+    ));
+    add(GenerateCaptchaEvent());
+    add(LoadProvincesEvent());
   }
 
   final Random _random = Random();
   FutureOr<void> _generateCaptchaEvent(
       GenerateCaptchaEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(StationCreateInitial(isLoading: true));
-
     try {
       _generateCaptcha();
       //setState
       // Reset lại trạng thái xác thực
-      emit(StationCreate_ChangeState());
-
-      emit(GenerateCaptchaState(
+      emit(state.copyWith(
           captchaText: _captchaText,
           isCaptchaVerified: false,
           isVerifyingCaptcha: false,
           isClearCaptchaController: true));
     } catch (e) {
-      emit(StationCreate_ChangeState());
-
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(state.copyWith(
+        stationCreateStatus: StationCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
     }
   }
 
   FutureOr<void> _handleVerifyCaptchaEvent(
       HandleVerifyCaptchaEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-
     try {
       if (event.captcha == "") {
         // (Tùy chọn: hiển thị snackbar lỗi "Vui lòng nhập mã")
-        emit(ShowSnackBarActionState(
-            message: "Vui lòng nhập mã", success: false));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.failure,
+          message: "Vui lòng nhập mã",
+        ));
       } else {
         // _isVerifyingCaptcha - Loading
 
-        emit(LoadingCaptchaState(isVerifyingCaptcha: true));
-
+        emit(state.copyWith(
+          isVerifyingCaptcha: true,
+        ));
         // --- Giả lập gọi API kiểm tra captcha ---
         await Future.delayed(const Duration(seconds: 1));
 
@@ -132,40 +92,45 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
           // setState(() {
           //   _isCaptchaVerified = true;
           // });
-          emit(HandleVerifyCaptchaState(
-              isVerifyingCaptcha: false, isCaptchaVerified: true));
+          emit(state.copyWith(
+            isVerifyingCaptcha: false,
+            isCaptchaVerified: true,
+          ));
         } else {
           // (Tùy chọn: hiển thị snackbar lỗi "Mã xác thực không đúng")
-          emit(ShowSnackBarActionState(
-              message: "Mã xác thực không đúng", success: false));
+          emit(state.copyWith(
+            stationCreateStatus: StationCreateStatus.failure,
+            message: "Mã xác thực không đúng",
+          ));
+
           _generateCaptcha(); //  Tạo mã mới nếu sai
-          emit(GenerateCaptchaState(
-              captchaText: _captchaText,
-              isCaptchaVerified: false,
-              isVerifyingCaptcha: false,
-              isClearCaptchaController: true));
+          emit(state.copyWith(
+            captchaText: _captchaText,
+            isCaptchaVerified: false,
+            isVerifyingCaptcha: false,
+            isClearCaptchaController: true,
+          ));
         }
       }
     } catch (e) {
-      emit(StationCreate_ChangeState());
-
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(state.copyWith(
+        stationCreateStatus: StationCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
     }
   }
 
   FutureOr<void> _resetFormEvent(
       ResetFormEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(ResetFormState());
+    emit(state.copyWith(
+      blocState: StationCreateBlocState.ResetFormState,
+    ));
   }
 
   FutureOr<void> _submitStationCreateEvent(
       SubmitStationCreateEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-
-    emit(StationCreateInitial(isLoading: true));
+    emit(state.copyWith(stationCreateStatus: StationCreateStatus.loading));
 
     try {
       List<MediaModel> media = event.media != null
@@ -187,32 +152,54 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       var responseSuccess = results['success'];
       var responseBody = results['body'];
       if (responseSuccess || responseStatus == 200) {
-        emit(StationCreateSuccessState());
-        emit(ShowSnackBarActionState(
-            message: "Đăng ký thành công", success: responseSuccess));
+        emit(state.copyWith(
+          blocState: StationCreateBlocState.StationCreateSuccessState,
+        ));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.success,
+          message: "Đăng ký thành công",
+        ));
+
+        return;
       } else if (responseStatus == 409) {
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.failure,
+          message: responseMessage,
+        ));
+
         DebugLogger.printLog("$responseStatus - $responseMessage");
       } else if (responseStatus == 404) {
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.failure,
+          message: responseMessage,
+        ));
         DebugLogger.printLog("$responseStatus - $responseMessage");
       } else if (responseStatus == 401) {
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.failure,
+          message: responseMessage,
+        ));
         DebugLogger.printLog("$responseStatus - $responseMessage");
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
-        emit(ShowSnackBarActionState(
-            message: "Lỗi! Vui lòng thử lại", success: false));
+        emit(state.copyWith(
+          stationCreateStatus: StationCreateStatus.failure,
+          message: "Lỗi! Vui lòng thử lại",
+        ));
       }
-      emit(StationCreateFailState());
+      emit(state.copyWith(
+        blocState: StationCreateBlocState.StationCreateFailState,
+      ));
     } catch (e) {
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
-      emit(StationCreateFailState());
+      emit(state.copyWith(
+        stationCreateStatus: StationCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
+
+      emit(state.copyWith(
+        blocState: StationCreateBlocState.StationCreateFailState,
+      ));
     }
   }
 
@@ -262,10 +249,8 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
 
   FutureOr<void> _pickImagesEvent(
       PickImagesEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
     if (event.isPickingImage) return; // Chống spam
-
-    emit(IsPickingImageState(isPickingImage: true));
+    emit(state.copyWith(isPickingImage: true));
 
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -286,32 +271,43 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
         }
 
         // Cập nhật state: Lấy danh sách cũ + thêm danh sách mới
-
-        emit(
-            PickingImagesState(base64Images: newImages, isPickingImage: false));
+        emit(state.copyWith(
+          base64Images: newImages,
+          isPickingImage: false,
+        ));
       } else {
         // Người dùng không chọn gì
-        emit(IsPickingImageState(isPickingImage: false));
+        emit(state.copyWith(isPickingImage: false));
       }
     } catch (e) {
-      emit(ShowSnackBarActionState(message: "Lỗi chọn ảnh", success: false));
-      emit(IsPickingImageState(isPickingImage: false));
+      emit(state.copyWith(
+        stationCreateStatus: StationCreateStatus.failure,
+        message: "Lỗi chọn ảnh",
+      ));
+
+      emit(state.copyWith(
+        isPickingImage: false,
+      ));
       DebugLogger.printLog(e.toString());
     }
   }
 
   FutureOr<void> _removeImageEvent(
       RemoveImageEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
     try {
       List<String> currentImages = event.base64Images;
       // Xóa ảnh tại vị trí index
       currentImages.removeAt(event.imageIndex);
       // Emit state mới
-      emit(RemoveImageState(base64Images: currentImages));
+      emit(state.copyWith(
+        blocState: StationCreateBlocState.RemoveImageState,
+        base64Images: currentImages,
+      ));
     } catch (e) {
-      emit(
-          ShowSnackBarActionState(message: "Lỗi chọn ảnh: $e", success: false));
+      emit(state.copyWith(
+        stationCreateStatus: StationCreateStatus.failure,
+        message: "Lỗi chọn ảnh: $e",
+      ));
       DebugLogger.printLog(e.toString());
     }
   }
@@ -327,8 +323,9 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
 
   FutureOr<void> _loadProvincesEvent(
       LoadProvincesEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(LoadProvincesState(isLoadingProvinces: true));
+    emit(state.copyWith(
+      isLoadingProvinces: true,
+    ));
     try {
       var results = await CityRepository().getProvinces();
       var responseMessage = results['message'];
@@ -341,25 +338,23 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
             .toList();
         provincesList.map((name) => Utf8Encoding().decode(name as String));
 
-        emit(StationCreate_ChangeState());
-        emit(LoadProvincesState(
+        emit(state.copyWith(
             isLoadingProvinces: false, provincesList: provincesList));
       } else {
-        emit(StationCreate_ChangeState());
-        emit(LoadProvincesState(isLoadingProvinces: false));
+        emit(state.copyWith(
+          isLoadingProvinces: false,
+        ));
         DebugLogger.printLog("Lỗi tải Tỉnh/TP");
       }
     } catch (e) {
-      emit(StationCreate_ChangeState());
-      emit(LoadProvincesState(isLoadingProvinces: false));
+      emit(state.copyWith(isLoadingProvinces: false));
       DebugLogger.printLog("Lỗi tải Tỉnh/TP: $e");
     }
   }
 
   FutureOr<void> _loadDistrictsEvent(
       LoadDistrictsEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(LoadDistrictsState(isLoadingDistricts: true));
+    emit(state.copyWith(isLoadingDistricts: true));
     try {
       var results = await CityRepository().getDistricts(event.provinceCode);
       var responseMessage = results['message'];
@@ -372,42 +367,41 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
             .toList();
         districtsList.map((name) => Utf8Encoding().decode(name as String));
 
-        emit(StationCreate_ChangeState());
-        emit(LoadDistrictsState(
+        emit(state.copyWith(
+          blocState: StationCreateBlocState.LoadDistrictsState,
           isLoadingDistricts: false,
           districtList: districtsList,
           communeList: [],
-          selectedCommuneCode: null,
-          selectedDistrictCode: null,
+          selectedCommune: null,
+          selectedDistrict: null,
         ));
       } else {
-        emit(StationCreate_ChangeState());
-        emit(LoadDistrictsState(
+        emit(state.copyWith(
           isLoadingDistricts: false,
           districtList: [],
           communeList: [],
-          selectedCommuneCode: null,
-          selectedDistrictCode: null,
+          selectedCommune: null,
+          selectedDistrict: null,
         ));
+
         DebugLogger.printLog("Lỗi tải Quận/Huyện");
       }
     } catch (e) {
-      emit(StationCreate_ChangeState());
-      emit(LoadDistrictsState(
+      emit(state.copyWith(
         isLoadingDistricts: false,
         districtList: [],
         communeList: [],
-        selectedCommuneCode: null,
-        selectedDistrictCode: null,
+        selectedCommune: null,
+        selectedDistrict: null,
       ));
+
       DebugLogger.printLog("Lỗi tải Quận/Huyện: $e");
     }
   }
 
   FutureOr<void> _loadCommunesEvent(
       LoadCommunesEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(LoadCommunesState(isLoadingCommunes: true));
+    emit(state.copyWith(isLoadingCommunes: true));
     try {
       var results = await CityRepository().getCommunes(event.districtCode);
       var responseMessage = results['message'];
@@ -420,53 +414,55 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
             .toList();
         communesList.map((name) => Utf8Encoding().decode(name as String));
 
-        emit(StationCreate_ChangeState());
-        emit(LoadCommunesState(
+        emit(state.copyWith(
+          blocState: StationCreateBlocState.LoadCommunesState,
           isLoadingCommunes: false,
           communeList: communesList,
-          selectedCommuneCode: null,
+          selectedCommune: null,
         ));
       } else {
-        emit(StationCreate_ChangeState());
-        emit(LoadCommunesState(
+        emit(state.copyWith(
           isLoadingCommunes: false,
           communeList: [],
-          selectedCommuneCode: null,
+          selectedCommune: null,
         ));
+
         DebugLogger.printLog("Lỗi tải Quận/Huyện");
       }
     } catch (e) {
-      emit(StationCreate_ChangeState());
-      emit(LoadCommunesState(
+      emit(state.copyWith(
         isLoadingCommunes: false,
         communeList: [],
-        selectedCommuneCode: null,
+        selectedCommune: null,
       ));
+
       DebugLogger.printLog("Lỗi tải Quận/Huyện: $e");
     }
   }
 
   FutureOr<void> _selectedProvinceEvent(
       SelectedProvinceEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(SelectedProvinceState(newValue: event.newValue));
+    emit(state.copyWith(
+        blocState: StationCreateBlocState.SelectedProvinceState,
+        selectedProvince: event.newValue));
   }
 
   FutureOr<void> _selectedDistrictEvent(
       SelectedDistrictEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(SelectedDistrictState(newValue: event.newValue));
+    emit(state.copyWith(
+        blocState: StationCreateBlocState.SelectedDistrictState,
+        selectedDistrict: event.newValue));
   }
 
   FutureOr<void> _selectedCommuneEvent(
       SelectedCommuneEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
-    emit(SelectedCommuneState(newValue: event.newValue));
+    emit(state.copyWith(
+        blocState: StationCreateBlocState.SelectedCommuneState,
+        selectedCommune: event.newValue));
   }
 
   FutureOr<void> _updateFullAddressEvent(
       UpdateFullAddressEvent event, Emitter<StationCreateState> emit) async {
-    emit(StationCreate_ChangeState());
     try {
       final String address =
           event.address != null ? event.address!.trim().toString() : "";
@@ -478,7 +474,9 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       final fullAddress = [address, commune, district, province]
           .where((s) => s.isNotEmpty)
           .join(', ');
-      emit(UpdateFullAddressState(fullAddressController: fullAddress));
-    } catch (e) {}
+      emit(state.copyWith(fullAddressController: fullAddress));
+    } catch (e) {
+      DebugLogger.printLog("Lỗi: $e");
+    }
   }
 }

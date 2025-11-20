@@ -50,7 +50,10 @@ class MenuController extends GetxController {
       Get.delete<UserSessionController>();
       ShowSnackBar("Đăng xuất thành công", true);
     } catch (e) {
-      ShowSnackBar("Lỗi! Vui lòng thử lại", false);
+      SharedPreferencesHelper.clearAll();
+      Get.toNamed(loginPageRoute);
+      Get.delete<UserSessionController>();
+      DebugLogger.printLog("Lỗi! $e");
     }
   }
 }

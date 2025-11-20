@@ -17,7 +17,7 @@ class AdminCreateRepository extends AdminCreateApi
       AdminCreateModel adminCreateModel, String stationId) async {
     try {
       final String jwtToken = AuthenticationPref.getAccessToken().toString();
-      Uri uri = Uri.parse(AdminCreateUrl);
+      Uri uri = Uri.parse("$AdminCreateUrl?stationId=$stationId");
       final client = http.Client();
       final response = await client
           .post(

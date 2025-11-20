@@ -199,7 +199,7 @@ class _SendValidPageState extends State<SendValidPage> {
                                 child: Container(
                                   alignment: Alignment.center,
                                   child: Text(
-                                    'Xác nhận',
+                                    'Gửi mã OTP qua Email',
                                     style: const TextStyle(
                                       fontSize: 22,
                                       color: Colors.white,

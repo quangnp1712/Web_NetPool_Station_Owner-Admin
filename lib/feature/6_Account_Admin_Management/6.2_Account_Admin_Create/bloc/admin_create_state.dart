@@ -11,15 +11,40 @@ final class AdminCreateInitial extends AdminCreateState {}
 
 abstract class AdminCreateActionState extends AdminCreateState {}
 
-class AdminCreate_ChangeState extends AdminCreateActionState {}
+class AdminCreate_State extends AdminCreateState {
+  bool? isLoading;
 
-class AdminCreate_LoadingState extends AdminCreateActionState {
+  //GenerateCaptchaState
+  String? captchaText;
+  bool? isCaptchaVerified;
+  bool? isVerifyingCaptcha;
+  bool? isClearCaptchaController;
+
+  //SelectedStationIdState
+  int? newValue;
+
+  // list station
+  List<AuthStationsModel>? stations;
+  AdminCreate_State({
+    this.isLoading,
+    this.captchaText,
+    this.isCaptchaVerified,
+    this.isVerifyingCaptcha,
+    this.isClearCaptchaController,
+    this.newValue,
+    this.stations,
+  });
+}
+
+class AdminCreate_ChangeState extends AdminCreateState {}
+
+class AdminCreate_LoadingState extends AdminCreateState {
   final bool isLoading;
 
   AdminCreate_LoadingState({required this.isLoading});
 }
 
-class AdminCreateSuccessState extends AdminCreateState {}
+class AdminCreateSuccessState extends AdminCreateActionState {}
 
 class ShowSnackBarActionState extends AdminCreateActionState {
   final String message;
@@ -64,9 +89,27 @@ class LoadingCaptchaState extends AdminCreateState {
 
 class ResetFormState extends AdminCreateState {}
 
+class AdminCreateFail_State extends AdminCreateState {}
+
 class SelectedStationIdState extends AdminCreateState {
   int? newValue;
   SelectedStationIdState({
     this.newValue,
+  });
+}
+
+class IsPickingImageState extends AdminCreateState {
+  bool isPickingImage;
+  IsPickingImageState({
+    required this.isPickingImage,
+  });
+}
+
+class PickingImagesState extends AdminCreateState {
+  bool isPickingImage;
+  String base64Images;
+  PickingImagesState({
+    required this.isPickingImage,
+    required this.base64Images,
   });
 }

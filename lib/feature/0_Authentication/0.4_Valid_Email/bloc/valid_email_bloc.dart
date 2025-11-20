@@ -42,6 +42,7 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
 
   FutureOr<void> _showVerifyEmailEvent(
       ShowVerifyEmailEvent event, Emitter<ValidEmailState> emit) {
+    RegisterSharedPref.clearEmail();
     VerifyEmailPref.setEmail(event.email.toString());
 
     Get.toNamed(validEmailPageRoute);
@@ -52,6 +53,8 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
     emit(ValidEmail_ChangeState());
 
     emit(ValidEmail_LoadingState(isLoading: true));
+    emit(ValidEmailInitial(email: _email));
+
     try {
       VerfyEmailModel validEmailModel = VerfyEmailModel(
         email: event.email,
@@ -112,6 +115,9 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
         emit(ValidEmail_LoadingState(isLoading: false));
         DebugLogger.printLog("$responseStatus - $responseMessage - thanh cong");
         LoginPref.setEmail(_email);
+        emit(ShowSnackBarActionState(
+            message: "Email: $_email xác thực thành công !",
+            success: responseSuccess));
         Get.offAllNamed(loginPageRoute);
       } else if (responseStatus == 404) {
         emit(ValidEmail_LoadingState(isLoading: false));

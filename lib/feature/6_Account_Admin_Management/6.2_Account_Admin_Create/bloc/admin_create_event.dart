@@ -13,6 +13,8 @@ class SubmitAdminCreateEvent extends AdminCreateEvent {
   final String identification;
   final String phone;
   final String username;
+  final String stationId;
+  final String? avatar;
 
   SubmitAdminCreateEvent({
     required this.email,
@@ -20,6 +22,8 @@ class SubmitAdminCreateEvent extends AdminCreateEvent {
     required this.identification,
     required this.phone,
     required this.username,
+    required this.stationId,
+    this.avatar,
   });
 }
 
@@ -38,6 +42,13 @@ class SelectedStationIdEvent extends AdminCreateEvent {
   int? newValue;
   SelectedStationIdEvent({
     this.newValue,
+  });
+}
+
+class PickAvatarEvent extends AdminCreateEvent {
+  bool isPickingImage;
+  PickAvatarEvent({
+    required this.isPickingImage,
   });
 }
 
