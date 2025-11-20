@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/menu_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/menu_controller.dart';
 
 class SideMenuItem extends StatelessWidget {
   final String itemName;

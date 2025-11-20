@@ -4,10 +4,14 @@ class AuthStationsModel {
   String? stationId;
   String? stationCode;
   String? stationName;
+  String? statusCode;
+  String? statusName;
   AuthStationsModel({
     this.stationId,
     this.stationCode,
     this.stationName,
+    this.statusCode,
+    this.statusName,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +29,10 @@ class AuthStationsModel {
           map['stationCode'] != null ? map['stationCode'] as String : null,
       stationName:
           map['stationName'] != null ? map['stationName'] as String : null,
+      statusCode:
+          map['statusCode'] != null ? map['statusCode'] as String : null,
+      statusName:
+          map['statusName'] != null ? map['statusName'] as String : null,
     );
   }
 

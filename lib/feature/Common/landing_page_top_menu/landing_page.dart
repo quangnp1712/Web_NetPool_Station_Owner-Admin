@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/navigation_controller.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/controller/user_session_controller.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/side_menu.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/widget/top_navigation_bar.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/user_session_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/widget/side_menu.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/widget/top_navigation_bar.dart';
 
 class LandingPage extends StatefulWidget {
   LandingPage({super.key});

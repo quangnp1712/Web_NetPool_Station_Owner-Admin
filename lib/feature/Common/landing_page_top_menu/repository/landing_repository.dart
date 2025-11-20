@@ -2,7 +2,7 @@ import 'package:web_netpool_station_owner_admin/core/network/exceptions/app_exce
 import 'package:web_netpool_station_owner_admin/core/network/exceptions/exception_handlers.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/api/landing_api.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/api/landing_api.dart';
 
 abstract class ILandingRepository {
   Future<Map<String, dynamic>> logout();

@@ -1,14 +1,11 @@
-import 'dart:convert';
-
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/account_info_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/model/authentication_stations_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/repository/authentication_repository.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page/shared_preferences/landing_page_shared_pref.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/shared_preferences/landing_page_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/role/models/role_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/role/repository/role_repository.dart';
 
@@ -69,6 +66,9 @@ class UserSessionController extends GetxController {
           }
         }
         _stations = stationResponse.data!.stations ?? [];
+        // _stations = _stations.where((station) {
+        //   return station.stationCode == "ACTIVE";
+        // }).toList();
       } else {
         DebugLogger.printLog("$responseStatus - $responseMessage");
       }
@@ -78,6 +78,9 @@ class UserSessionController extends GetxController {
       stationList.value = _stations; // Lấy từ constructor
 
       if (roleCode == "STATION_ADMIN" && stationList.isNotEmpty) {
+        activeStationId.value = stationList[0].stationId;
+      }
+      if (roleCode == "STATION_OWNER" && stationList.length == 1) {
         activeStationId.value = stationList[0].stationId;
       }
       try {
