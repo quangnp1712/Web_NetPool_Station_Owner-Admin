@@ -144,7 +144,6 @@ class _StationCreatePageState extends State<StationCreatePage> {
       },
       builder: (context, state) {
         _isPickingImage = state.isPickingImage;
-        _base64Images.addAll(state.base64Images);
         _selectedProvince = state.selectedProvince;
         _fullAddressController.text = state.fullAddressController;
         _isLoadingProvinces = state.isLoadingProvinces;
@@ -163,28 +162,20 @@ class _StationCreatePageState extends State<StationCreatePage> {
           _captchaController.clear();
         }
         if (state.blocState == StationCreateBlocState.ResetFormState) {
-          _formKey.currentState?.reset();
-
           //  Reset controllers mới
           _stationNameController.clear();
           _addressController.clear();
           _hotlineController.clear();
-          _fullAddressController.clear();
-
-          // dropdown
-          _selectedProvince = null;
-          _selectedDistrict = null;
-          _selectedCommune = null;
-          _districtList = [];
-          _communeList = [];
-
-          // file
-          _base64Images = [];
+          _captchaController.clear();
 
           stationCreateBloc.add(GenerateCaptchaEvent());
         }
 
         if (state.blocState == StationCreateBlocState.RemoveImageState) {
+          _base64Images = [];
+          _base64Images = state.base64Images;
+        }
+        if (state.blocState == StationCreateBlocState.PickImagesState) {
           _base64Images = [];
           _base64Images = state.base64Images;
         }

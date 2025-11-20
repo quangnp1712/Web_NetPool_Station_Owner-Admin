@@ -13,12 +13,13 @@ enum StationCreateBlocState {
   StationCreateSuccessState,
   StationCreateFailState,
   ResetFormState,
+  PickImagesState,
   RemoveImageState,
   SelectedProvinceState,
   SelectedDistrictState,
   SelectedCommuneState,
   LoadDistrictsState,
-  LoadCommunesState
+  LoadCommunesState,
 }
 
 class StationCreateState extends Equatable {

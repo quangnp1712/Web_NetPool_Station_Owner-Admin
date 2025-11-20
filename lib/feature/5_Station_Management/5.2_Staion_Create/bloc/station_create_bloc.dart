@@ -129,8 +129,11 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
 
   FutureOr<void> _resetFormEvent(
       ResetFormEvent event, Emitter<StationCreateState> emit) async {
-    emit(state.copyWith(
+    emit(StationCreateState(
+      // Bạn có thể giữ lại một số thông tin nếu cần, ví dụ list tỉnh đã load
       blocState: StationCreateBlocState.ResetFormState,
+      provincesList: state.provincesList,
+      // Các trường còn lại sẽ tự động về null/false/empty theo constructor mặc định
     ));
   }
 
@@ -277,7 +280,9 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
         }
 
         // Cập nhật state: Lấy danh sách cũ + thêm danh sách mới
+
         emit(state.copyWith(
+          blocState: StationCreateBlocState.PickImagesState,
           base64Images: newImages,
           isPickingImage: false,
         ));
