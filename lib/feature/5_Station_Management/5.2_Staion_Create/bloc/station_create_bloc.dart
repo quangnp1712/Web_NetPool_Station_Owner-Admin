@@ -297,11 +297,9 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       emit(state.copyWith(
         stationCreateStatus: StationCreateStatus.failure,
         message: "Lỗi chọn ảnh",
-      ));
-
-      emit(state.copyWith(
         isPickingImage: false,
       ));
+
       DebugLogger.printLog(e.toString());
     }
   }

@@ -95,56 +95,40 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
     // Đây là layout gốc của AccountListPage
     return BlocConsumer<AdminCreateBloc, AdminCreateState>(
       bloc: adminCreateBloc,
-      listenWhen: (previous, current) => current is AdminCreateActionState,
-      buildWhen: (previous, current) => current is! AdminCreateActionState,
       listener: (context, state) {
-        switch (state.runtimeType) {
-          case AdminCreateSuccessState:
-            adminCreateBloc.add(ResetFormEvent());
-            break;
-          case ShowSnackBarActionState:
-            final snackBarState = state as ShowSnackBarActionState;
-            ShowSnackBar(snackBarState.message, snackBarState.success);
-            break;
+        if (state.status == AdminCreateStatus.failure) {
+          ShowSnackBar(state.message, false);
+        }
+
+        if (state.status == AdminCreateStatus.success) {
+          ShowSnackBar(state.message, true);
+        }
+
+        if (state.blocState == AdminCreateBlocState.AdminCreateSuccessState) {
+          adminCreateBloc.add(ResetFormEvent());
         }
       },
       builder: (context, state) {
-        if (state is AdminCreate_State) {
-          isLoading = state.isLoading ?? isLoading;
-          _stationList = state.stations ?? [];
-          _captchaText = state.captchaText ?? _captchaText;
-          _isCaptchaVerified = state.isCaptchaVerified ?? _isCaptchaVerified;
-          _isVerifyingCaptcha = state.isVerifyingCaptcha ?? _isVerifyingCaptcha;
-          if (state.isClearCaptchaController != null) {
-            if (state.isClearCaptchaController!) {
-              _captchaController.clear();
-            }
-          }
-        }
-        if (state is GenerateCaptchaState) {
-          _captchaText = state.captchaText;
-          _isCaptchaVerified = state.isCaptchaVerified;
-          _isVerifyingCaptcha = state.isVerifyingCaptcha;
-          if (state.isClearCaptchaController) {
-            _captchaController.clear();
-          }
-        }
-        if (state is LoadingCaptchaState) {
-          if (state.isVerifyingCaptcha) {
-            _isVerifyingCaptcha = state.isVerifyingCaptcha;
-          }
-        }
-        if (state is HandleVerifyCaptchaState) {
-          if (state.isVerifyingCaptcha != null) {
-            _isVerifyingCaptcha = state.isVerifyingCaptcha!;
-          }
-          if (state.isCaptchaVerified != null) {
-            _isCaptchaVerified = state.isCaptchaVerified!;
-          }
-        }
-        if (state is ResetFormState) {
-          _formKey.currentState?.reset();
+        isLoading = state.status == AdminCreateStatus.loading;
+        _stationList = state.stations;
+        _captchaText = state.captchaText;
+        _isCaptchaVerified = state.isCaptchaVerified;
+        _isVerifyingCaptcha = state.isVerifyingCaptcha;
+        _selectedStationId = state.selectedAdminId;
+        _isPickingImage = state.isPickingImage;
+        _base64Avatar = state.avatarBase64;
 
+        //
+        if (state.isClearCaptchaController) {
+          _captchaController.clear();
+        }
+
+        if (state.blocState == AdminCreateBlocState.VerifyCaptchaSuccessState) {
+          _captchaController.value =
+              TextEditingValue(text: state.captchaText.toString());
+        }
+
+        if (state.blocState == AdminCreateBlocState.ResetFormState) {
           //  Reset controllers mới
           _usernameController.clear();
           _emailController.clear();
@@ -153,23 +137,12 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
           _identificationController.clear();
           _selectedStationId = null;
           _base64Avatar = null;
-          adminCreateBloc.add(GenerateCaptchaEvent());
-        }
-        if (state is SelectedStationIdState) {
-          _selectedStationId = state.newValue;
-        }
-        if (state is AdminCreateFail_State) {
-          isLoading = false;
-          adminCreateBloc.add(GenerateCaptchaEvent());
-        }
+          _captchaController.clear();
 
-        // xử lý ảnh
-        if (state is IsPickingImageState) {
-          _isPickingImage = state.isPickingImage;
+          adminCreateBloc.add(GenerateCaptchaEvent());
         }
-        if (state is PickingImagesState) {
-          _isPickingImage = state.isPickingImage;
-          _base64Avatar = state.base64Images;
+        if (state.blocState == AdminCreateBlocState.AdminCreateFailState) {
+          adminCreateBloc.add(GenerateCaptchaEvent());
         }
 
         return Material(
@@ -337,9 +310,9 @@ class _AdminCreatePageState extends State<AdminCreatePage> {
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             inputFormatters: [
-                              FilteringTextInputFormatter.singleLineFormatter,
                               FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10), //  10 số
+                              LengthLimitingTextInputFormatter(10),
+                              FilteringTextInputFormatter.singleLineFormatter,
                             ],
                             validator: (val) => (val?.isEmpty ?? true)
                                 ? "Vui lòng nhập SĐT"

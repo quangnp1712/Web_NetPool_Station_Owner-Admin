@@ -20,7 +20,7 @@ part 'admin_create_state.dart';
 class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
   String _captchaText = "";
 
-  AdminCreateBloc() : super(AdminCreateInitial()) {
+  AdminCreateBloc() : super(AdminCreateState()) {
     on<AdminCreateInitialEvent>(_adminCreateInitialEvent);
     on<GenerateCaptchaEvent>(_generateCaptchaEvent);
     on<HandleVerifyCaptchaEvent>(_handleVerifyCaptchaEvent);
@@ -31,8 +31,7 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
   }
   FutureOr<void> _adminCreateInitialEvent(
       AdminCreateInitialEvent event, Emitter<AdminCreateState> emit) {
-    emit(AdminCreateInitial());
-    emit(AdminCreate_State(isLoading: true));
+    emit(state.copyWith(status: AdminCreateStatus.loading));
     try {
       _generateCaptcha();
       final List<String> stationJsonList = AuthenticationPref.getStationsJson();
@@ -44,8 +43,7 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
               return AuthStationsModel.fromMap(map);
             }).toList()
           : [];
-      emit(AdminCreate_State(
-        isLoading: false,
+      emit(state.copyWith(
         captchaText: _captchaText,
         isCaptchaVerified: false,
         isVerifyingCaptcha: false,
@@ -53,53 +51,48 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
         stations: stations,
       ));
     } catch (e) {
-      emit(AdminCreate_State(isLoading: false));
-
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(state.copyWith(
+        message: "Lỗi! Vui lòng thử lại",
+        status: AdminCreateStatus.failure,
+      ));
     }
   }
 
   final Random _random = Random();
   FutureOr<void> _generateCaptchaEvent(
       GenerateCaptchaEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
-    emit(AdminCreate_LoadingState(isLoading: true));
+    emit(state.copyWith(status: AdminCreateStatus.loading));
 
     try {
       _generateCaptcha();
       //setState
       // Reset lại trạng thái xác thực
-      emit(GenerateCaptchaState(
+      emit(state.copyWith(
           captchaText: _captchaText,
           isCaptchaVerified: false,
           isVerifyingCaptcha: false,
           isClearCaptchaController: true));
-      emit(AdminCreate_ChangeState());
-      emit(AdminCreate_LoadingState(isLoading: false));
     } catch (e) {
-      emit(AdminCreate_ChangeState());
-      emit(AdminCreate_LoadingState(isLoading: false));
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(state.copyWith(
+        status: AdminCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
     }
   }
 
   FutureOr<void> _handleVerifyCaptchaEvent(
       HandleVerifyCaptchaEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
-
     try {
       if (event.captcha == "") {
         // (Tùy chọn: hiển thị snackbar lỗi "Vui lòng nhập mã")
-        emit(ShowSnackBarActionState(
-            message: "Vui lòng nhập mã", success: false));
+        emit(state.copyWith(
+            message: "Vui lòng nhập mã", status: AdminCreateStatus.failure));
       } else {
         // _isVerifyingCaptcha - Loading
 
-        emit(LoadingCaptchaState(isVerifyingCaptcha: true));
+        emit(state.copyWith(isVerifyingCaptcha: true));
 
         // --- Giả lập gọi API kiểm tra captcha ---
         await Future.delayed(const Duration(seconds: 1));
@@ -108,44 +101,50 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
         bool isSuccess = event.captcha == _captchaText;
 
         if (isSuccess) {
-          // setState(() {
-          //   _isCaptchaVerified = true;
-          // });
-          emit(HandleVerifyCaptchaState(
-              isVerifyingCaptcha: false, isCaptchaVerified: true));
+          emit(state.copyWith(
+            isVerifyingCaptcha: false,
+            isCaptchaVerified: true,
+            blocState: AdminCreateBlocState.VerifyCaptchaSuccessState,
+          ));
         } else {
           // (Tùy chọn: hiển thị snackbar lỗi "Mã xác thực không đúng")
-          emit(ShowSnackBarActionState(
-              message: "Mã xác thực không đúng", success: false));
+          emit(state.copyWith(
+            status: AdminCreateStatus.failure,
+            message: "Mã xác thực không đúng",
+          ));
+
           _generateCaptcha(); //  Tạo mã mới nếu sai
-          emit(GenerateCaptchaState(
-              captchaText: _captchaText,
-              isCaptchaVerified: false,
-              isVerifyingCaptcha: false,
-              isClearCaptchaController: true));
+          emit(state.copyWith(
+            captchaText: _captchaText,
+            isCaptchaVerified: false,
+            isVerifyingCaptcha: false,
+            isClearCaptchaController: true,
+          ));
         }
       }
     } catch (e) {
-      emit(AdminCreate_ChangeState());
-      emit(AdminCreate_LoadingState(isLoading: false));
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
+      emit(state.copyWith(
+        status: AdminCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
     }
   }
 
   FutureOr<void> _resetFormEvent(
       ResetFormEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
-    emit(ResetFormState());
+    emit(AdminCreateState(
+      // Bạn có thể giữ lại một số thông tin nếu cần, ví dụ list tỉnh đã load
+      blocState: AdminCreateBlocState.ResetFormState,
+      stations: state.stations,
+
+      // Các trường còn lại sẽ tự động về null/false/empty theo constructor mặc định
+    ));
   }
 
   FutureOr<void> _submitAdminCreateEvent(
       SubmitAdminCreateEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
-
-    emit(AdminCreate_LoadingState(isLoading: true));
-    emit(AdminCreate_State(isLoading: true));
+    emit(state.copyWith(status: AdminCreateStatus.loading));
 
     try {
       String avatar = event.avatar != null
@@ -166,45 +165,58 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
       var responseStatus = results['status'];
       var responseSuccess = results['success'];
       var responseBody = results['body'];
-      if (responseSuccess || responseStatus == 200) {
-        emit(AdminCreate_LoadingState(isLoading: false));
-        emit(AdminCreateSuccessState());
+      // var responseSuccess = true;
+      // var responseStatus = 200;
+      // var responseMessage = "";
 
-        emit(ShowSnackBarActionState(
-            message: "Đăng ký thành công", success: responseSuccess));
+      if (responseSuccess || responseStatus == 200) {
+        emit(state.copyWith(
+          status: AdminCreateStatus.success,
+          message: "Đăng ký thành công",
+          blocState: AdminCreateBlocState.AdminCreateSuccessState,
+        ));
+
         return;
       } else if (responseStatus == 400) {
-        emit(AdminCreate_LoadingState(isLoading: false));
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          status: AdminCreateStatus.failure,
+          message: responseMessage,
+        ));
       } else if (responseStatus == 404) {
-        emit(AdminCreate_LoadingState(isLoading: false));
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          status: AdminCreateStatus.failure,
+          message: responseMessage,
+        ));
       } else if (responseStatus == 409) {
-        emit(AdminCreate_LoadingState(isLoading: false));
-
-        emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+        emit(state.copyWith(
+          status: AdminCreateStatus.failure,
+          message: responseMessage,
+        ));
       } else {
-        emit(AdminCreate_LoadingState(isLoading: false));
+        emit(state.copyWith(
+          status: AdminCreateStatus.failure,
+          message: "Lỗi! Vui lòng thử lại",
+        ));
         DebugLogger.printLog("$responseStatus - $responseMessage");
-        emit(ShowSnackBarActionState(
-            message: "Lỗi! Vui lòng thử lại", success: false));
       }
-      emit(AdminCreateFail_State());
+      emit(state.copyWith(
+        blocState: AdminCreateBlocState.AdminCreateFailState,
+      ));
     } catch (e) {
-      emit(AdminCreate_LoadingState(isLoading: false));
+      emit(state.copyWith(
+        status: AdminCreateStatus.failure,
+        message: "Lỗi! Vui lòng thử lại",
+      ));
       DebugLogger.printLog(e.toString());
-      emit(ShowSnackBarActionState(
-          message: "Lỗi! Vui lòng thử lại", success: false));
     }
   }
 
   FutureOr<void> _selectedStationIdEvent(
       SelectedStationIdEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
-    emit(SelectedStationIdState(newValue: event.newValue));
+    emit(state.copyWith(
+      blocState: AdminCreateBlocState.SelectedStationIdState,
+      selectedAdminId: event.newValue,
+    ));
   }
 
   void _generateCaptcha() {
@@ -218,10 +230,9 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
 
   FutureOr<void> _pickAvatarEvent(
       PickAvatarEvent event, Emitter<AdminCreateState> emit) async {
-    emit(AdminCreate_ChangeState());
     if (event.isPickingImage) return; // Chống spam
 
-    emit(IsPickingImageState(isPickingImage: true));
+    emit(state.copyWith(isPickingImage: true));
 
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -236,18 +247,25 @@ class AdminCreateBloc extends Bloc<AdminCreateEvent, AdminCreateState> {
           String base64String = base64Encode(file.bytes!);
           String dataUri =
               "data:image/${file.extension ?? 'png'};base64,$base64String";
-          emit(
-              PickingImagesState(base64Images: dataUri, isPickingImage: false));
+          emit(state.copyWith(
+            blocState: AdminCreateBlocState.PickImagesState,
+            avatarBase64: dataUri,
+            isPickingImage: false,
+          ));
         }
 
         // Cập nhật state: Lấy danh sách cũ + thêm danh sách mới
       } else {
         // Người dùng không chọn gì
-        emit(IsPickingImageState(isPickingImage: false));
+        emit(state.copyWith(isPickingImage: false));
       }
     } catch (e) {
-      emit(ShowSnackBarActionState(message: "Lỗi chọn ảnh", success: false));
-      emit(IsPickingImageState(isPickingImage: false));
+      emit(state.copyWith(
+        status: AdminCreateStatus.failure,
+        message: "Lỗi chọn ảnh",
+        isPickingImage: false,
+      ));
+
       DebugLogger.printLog(e.toString());
     }
   }

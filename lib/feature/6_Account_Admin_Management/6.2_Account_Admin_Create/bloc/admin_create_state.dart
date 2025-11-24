@@ -1,115 +1,123 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, constant_identifier_names
 // ignore_for_file: camel_case_types
 
 part of 'admin_create_bloc.dart';
 
-sealed class AdminCreateState {
-  const AdminCreateState();
+// Dùng để phân biệt giữa "không truyền" (giữ cũ) và "truyền null" (xóa).
+const _sentinel = Object();
+
+// status
+enum AdminCreateStatus {
+  initial,
+  loading,
+  success,
+  failure,
 }
 
-final class AdminCreateInitial extends AdminCreateState {}
-
-abstract class AdminCreateActionState extends AdminCreateState {}
-
-class AdminCreate_State extends AdminCreateState {
-  bool? isLoading;
-
-  //GenerateCaptchaState
-  String? captchaText;
-  bool? isCaptchaVerified;
-  bool? isVerifyingCaptcha;
-  bool? isClearCaptchaController;
-
-  //SelectedStationIdState
-  int? newValue;
-
-  // list station
-  List<AuthStationsModel>? stations;
-  AdminCreate_State({
-    this.isLoading,
-    this.captchaText,
-    this.isCaptchaVerified,
-    this.isVerifyingCaptcha,
-    this.isClearCaptchaController,
-    this.newValue,
-    this.stations,
-  });
+// blocState
+enum AdminCreateBlocState {
+  Initial,
+  AdminCreateSuccessState,
+  AdminCreateFailState,
+  GenerateCaptchaState,
+  ResetFormState,
+  PickImagesState,
+  RemoveImageState,
+  VerifyCaptchaSuccessState,
+  SelectedStationIdState,
 }
 
-class AdminCreate_ChangeState extends AdminCreateState {}
+class AdminCreateState extends Equatable {
+  // --- 1. General Status & Message ---
 
-class AdminCreate_LoadingState extends AdminCreateState {
-  final bool isLoading;
-
-  AdminCreate_LoadingState({required this.isLoading});
-}
-
-class AdminCreateSuccessState extends AdminCreateActionState {}
-
-class ShowSnackBarActionState extends AdminCreateActionState {
+  final AdminCreateStatus status;
+  final AdminCreateBlocState blocState;
   final String message;
-  final bool success;
 
-  ShowSnackBarActionState({required this.success, required this.message});
-}
+  // --- 2. Data Lists ---
+  final List<AuthStationsModel> stations;
 
-class GenerateCaptchaState extends AdminCreateState {
-  String captchaText;
-  bool isCaptchaVerified;
-  bool isVerifyingCaptcha;
-  bool isClearCaptchaController;
-  GenerateCaptchaState({
-    required this.captchaText,
-    required this.isCaptchaVerified,
-    required this.isVerifyingCaptcha,
-    required this.isClearCaptchaController,
+  // --- 3. Form Selections & Inputs ---
+  final int? selectedAdminId; // Thay cho 'newValue' trong SelectedAdminIdState
+  final String? avatarBase64; // Thay cho 'base64Images' (String)
+
+  // --- 4. Loading Flags ---
+  final bool isPickingImage; // Loading khi chọn ảnh
+
+  // --- 5. Captcha State ---
+  final String captchaText;
+  final bool isVerifyingCaptcha;
+  final bool isCaptchaVerified;
+  final bool isClearCaptchaController;
+
+  const AdminCreateState({
+    this.status = AdminCreateStatus.initial,
+    this.blocState = AdminCreateBlocState.Initial,
+    this.message = '',
+    this.stations = const [],
+    this.selectedAdminId,
+    this.avatarBase64,
+    this.isPickingImage = false,
+    this.captchaText = '',
+    this.isVerifyingCaptcha = false,
+    this.isCaptchaVerified = false,
+    this.isClearCaptchaController = false,
   });
-}
 
-class HandleVerifyCaptchaState extends AdminCreateState {
-  String? captchaText;
-  bool? isCaptchaVerified;
-  bool? isVerifyingCaptcha;
-  bool? isClearCaptchaController;
-  HandleVerifyCaptchaState({
-    this.captchaText,
-    this.isCaptchaVerified,
-    this.isVerifyingCaptcha,
-    this.isClearCaptchaController,
-  });
-}
+  // --- COPY WITH ---
+  AdminCreateState copyWith({
+    AdminCreateStatus? status,
+    AdminCreateBlocState? blocState,
+    String? message,
+    List<AuthStationsModel>? stations,
 
-class LoadingCaptchaState extends AdminCreateState {
-  bool isVerifyingCaptcha;
+    // Các trường có thể set NULL -> dùng Object? = _sentinel
+    Object? selectedAdminId = _sentinel,
+    Object? avatarBase64 = _sentinel,
+    bool? isLoading,
+    bool? isPickingImage,
+    String? captchaText,
+    bool? isVerifyingCaptcha,
+    bool? isCaptchaVerified,
+    bool? isClearCaptchaController,
+  }) {
+    return AdminCreateState(
+      // Tự động reset về initial nếu không truyền status mới (để tắt loading/snackbar)
+      status: status ?? AdminCreateStatus.initial,
+      blocState: blocState ?? AdminCreateBlocState.Initial,
+      message: message ?? this.message,
 
-  LoadingCaptchaState({
-    required this.isVerifyingCaptcha,
-  });
-}
+      stations: stations ?? this.stations,
 
-class ResetFormState extends AdminCreateState {}
+      // Logic Sentinel cho các trường Nullable
+      selectedAdminId: selectedAdminId == _sentinel
+          ? this.selectedAdminId
+          : selectedAdminId as int?,
+      avatarBase64: avatarBase64 == _sentinel
+          ? this.avatarBase64
+          : avatarBase64 as String?,
 
-class AdminCreateFail_State extends AdminCreateState {}
+      isPickingImage: isPickingImage ?? this.isPickingImage,
 
-class SelectedStationIdState extends AdminCreateState {
-  int? newValue;
-  SelectedStationIdState({
-    this.newValue,
-  });
-}
+      captchaText: captchaText ?? this.captchaText,
+      isVerifyingCaptcha: isVerifyingCaptcha ?? this.isVerifyingCaptcha,
+      isCaptchaVerified: isCaptchaVerified ?? this.isCaptchaVerified,
+      isClearCaptchaController:
+          isClearCaptchaController ?? this.isClearCaptchaController,
+    );
+  }
 
-class IsPickingImageState extends AdminCreateState {
-  bool isPickingImage;
-  IsPickingImageState({
-    required this.isPickingImage,
-  });
-}
-
-class PickingImagesState extends AdminCreateState {
-  bool isPickingImage;
-  String base64Images;
-  PickingImagesState({
-    required this.isPickingImage,
-    required this.base64Images,
-  });
+  @override
+  List<Object?> get props => [
+        status,
+        message,
+        stations,
+        selectedAdminId,
+        avatarBase64,
+        isPickingImage,
+        captchaText,
+        isVerifyingCaptcha,
+        isCaptchaVerified,
+        isClearCaptchaController,
+      ];
 }
