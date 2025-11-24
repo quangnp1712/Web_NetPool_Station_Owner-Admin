@@ -2,6 +2,9 @@
 
 part of 'station_detail_bloc.dart';
 
+// Dùng để phân biệt giữa "không truyền" (giữ cũ) và "truyền null" (xóa).
+const _sentinel = Object();
+
 // stationDetailStatus
 enum StationDetailStatus {
   initial,
@@ -24,6 +27,8 @@ enum StationDetailBlocState {
   LoadDistrictsState,
   LoadCommunesState,
   ShowStationListPageState,
+  ToggleEditModeState,
+  VerifyCaptchaSuccessState,
 }
 
 //  xác định chế độ màn hình
@@ -126,9 +131,9 @@ class StationDetailState extends Equatable {
     List<CommuneModel>? communeList,
     List<String>? base64Images,
     int? selectedStationId,
-    ProvinceModel? selectedProvince,
-    DistrictModel? selectedDistrict,
-    CommuneModel? selectedCommune,
+    Object? selectedProvince = _sentinel,
+    Object? selectedDistrict = _sentinel,
+    Object? selectedCommune = _sentinel,
     String? fullAddressController,
     bool? isLoadingProvinces,
     bool? isLoadingDistricts,
@@ -160,9 +165,15 @@ class StationDetailState extends Equatable {
       communeList: communeList ?? this.communeList,
       base64Images: base64Images ?? this.base64Images,
       selectedStationId: selectedStationId ?? this.selectedStationId,
-      selectedProvince: selectedProvince ?? this.selectedProvince,
-      selectedDistrict: selectedDistrict ?? this.selectedDistrict,
-      selectedCommune: selectedCommune ?? this.selectedCommune,
+      selectedProvince: selectedProvince == _sentinel
+          ? this.selectedProvince
+          : selectedProvince as ProvinceModel?,
+      selectedDistrict: selectedDistrict == _sentinel
+          ? this.selectedDistrict
+          : selectedDistrict as DistrictModel?,
+      selectedCommune: selectedCommune == _sentinel
+          ? this.selectedCommune
+          : selectedCommune as CommuneModel?,
       fullAddressController:
           fullAddressController ?? this.fullAddressController,
       isLoadingProvinces: isLoadingProvinces ?? this.isLoadingProvinces,

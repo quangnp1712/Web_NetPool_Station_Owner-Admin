@@ -38,6 +38,7 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
 
   FutureOr<void> _stationDetailInitialEvent(
       StationDetailInitialEvent event, Emitter<StationDetailState> emit) async {
+    emit(StationDetailState());
     add(LoadStationDetailEvent(stationId: event.stationId ?? ""));
   }
 
@@ -377,14 +378,9 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
     // Nếu enableEdit = false -> ScreenMode.view (Chỉ xem)
 
     emit(state.copyWith(
-      screenMode: event.enableEdit ? ScreenMode.edit : ScreenMode.view,
-
-      // Khi chuyển sang Edit, có thể cần tạo Captcha mới để sẵn sàng cho việc Lưu
-      captchaText: event.enableEdit
-          ? DateTime.now().millisecondsSinceEpoch.toString().substring(9)
-          : state.captchaText,
-      isCaptchaVerified: false, // Reset captcha verification khi chuyển mode
-    ));
+        screenMode: event.enableEdit ? ScreenMode.edit : ScreenMode.view,
+        blocState: StationDetailBlocState.ToggleEditModeState,
+        stationDetailStatus: StationDetailStatus.loading));
   }
 
   final Random _random = Random();
@@ -439,12 +435,10 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
         bool isSuccess = event.captcha == _captchaText;
 
         if (isSuccess) {
-          // setState(() {
-          //   _isCaptchaVerified = true;
-          // });
           emit(state.copyWith(
             isVerifyingCaptcha: false,
             isCaptchaVerified: true,
+            blocState: StationDetailBlocState.VerifyCaptchaSuccessState,
           ));
         } else {
           // (Tùy chọn: hiển thị snackbar lỗi "Mã xác thực không đúng")
@@ -657,15 +651,23 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
   FutureOr<void> _selectedProvinceEvent(
       SelectedProvinceEvent event, Emitter<StationDetailState> emit) async {
     emit(state.copyWith(
-        blocState: StationDetailBlocState.SelectedProvinceState,
-        selectedProvince: event.newValue));
+      blocState: StationDetailBlocState.SelectedProvinceState,
+      selectedProvince: event.newValue,
+      selectedDistrict: null,
+      selectedCommune: null,
+      districtList: [],
+      communeList: [],
+    ));
   }
 
   FutureOr<void> _selectedDistrictEvent(
       SelectedDistrictEvent event, Emitter<StationDetailState> emit) async {
     emit(state.copyWith(
-        blocState: StationDetailBlocState.SelectedDistrictState,
-        selectedDistrict: event.newValue));
+      blocState: StationDetailBlocState.SelectedDistrictState,
+      selectedDistrict: event.newValue,
+      selectedCommune: null,
+      communeList: [],
+    ));
   }
 
   FutureOr<void> _selectedCommuneEvent(

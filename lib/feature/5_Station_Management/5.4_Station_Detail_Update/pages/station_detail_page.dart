@@ -239,6 +239,10 @@ class _StationDetailPageState extends State<StationDetailPage> {
         }
         if (state.blocState == StationDetailBlocState.SelectedProvinceState) {
           _selectedProvince = state.selectedProvince;
+          _selectedDistrict = null;
+          _selectedCommune = null;
+          _districtList = [];
+          _communeList = [];
           if (_selectedProvince != null) {
             stationDetailBloc
                 .add(LoadDistrictsEvent(provinceCode: _selectedProvince!.code));
@@ -246,6 +250,8 @@ class _StationDetailPageState extends State<StationDetailPage> {
         }
         if (state.blocState == StationDetailBlocState.SelectedDistrictState) {
           _selectedDistrict = state.selectedDistrict;
+          _selectedCommune = null;
+          _communeList = [];
           if (_selectedDistrict != null) {
             stationDetailBloc
                 .add(LoadCommunesEvent(districtCode: _selectedDistrict!.code));
@@ -286,9 +292,18 @@ class _StationDetailPageState extends State<StationDetailPage> {
             province: _selectedProvince,
           ));
         }
+        if (state.blocState ==
+            StationDetailBlocState.VerifyCaptchaSuccessState) {
+          _captchaController.value =
+              TextEditingValue(text: state.captchaText.toString());
+        }
 
         if (state.blocState == StationDetailBlocState.StationUpdateFailState) {
           // isLoading = state.isLoading;
+          stationDetailBloc.add(GenerateCaptchaEvent());
+        }
+
+        if (state.blocState == StationDetailBlocState.ToggleEditModeState) {
           stationDetailBloc.add(GenerateCaptchaEvent());
         }
 
@@ -728,14 +743,14 @@ class _StationDetailPageState extends State<StationDetailPage> {
 
   Widget _buildProvinceField(
       BuildContext context, StationDetailState state, bool readOnly) {
-    return _buildDropdownAPI(
+    return _buildDropdownAPI<ProvinceModel>(
       label: "Tỉnh/Thành phố",
       hint: "Tỉnh/TP",
-      value: state.selectedProvince,
-      items: state.provincesList
+      value: _selectedProvince,
+      items: _provinceList
           .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
           .toList(),
-      isLoading: state.isLoadingProvinces,
+      isLoading: _isLoadingProvinces,
       readOnly: readOnly,
       onChanged: (val) {
         if (val == null) return;
@@ -746,16 +761,15 @@ class _StationDetailPageState extends State<StationDetailPage> {
 
   Widget _buildDistrictField(
       BuildContext context, StationDetailState state, bool readOnly) {
-    final enabled = state.selectedProvince != null && !readOnly;
-    return _buildDropdownAPI(
+    return _buildDropdownAPI<DistrictModel>(
       label: "Quận/Huyện",
       hint: "Quận/Huyện",
-      value: state.selectedDistrict,
-      items: state.districtList
+      value: _selectedDistrict,
+      items: _districtList
           .map((d) => DropdownMenuItem(value: d, child: Text(d.name)))
           .toList(),
-      isLoading: state.isLoadingDistricts,
-      readOnly: !enabled,
+      isLoading: _isLoadingDistricts,
+      readOnly: readOnly,
       onChanged: (val) {
         if (val == null) return;
         stationDetailBloc.add(SelectedDistrictEvent(newValue: val));
@@ -765,16 +779,15 @@ class _StationDetailPageState extends State<StationDetailPage> {
 
   Widget _buildCommuneField(
       BuildContext context, StationDetailState state, bool readOnly) {
-    final enabled = state.selectedDistrict != null && !readOnly;
-    return _buildDropdownAPI(
+    return _buildDropdownAPI<CommuneModel>(
       label: "Phường/Xã",
       hint: "Phường/Xã",
-      value: state.selectedCommune,
-      items: state.communeList
+      value: _selectedCommune,
+      items: _communeList
           .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
           .toList(),
-      isLoading: state.isLoadingCommunes,
-      readOnly: !enabled,
+      isLoading: _isLoadingCommunes,
+      readOnly: readOnly,
       onChanged: (val) {
         if (val == null) return;
         stationDetailBloc.add(SelectedCommuneEvent(newValue: val));
@@ -884,7 +897,7 @@ class _StationDetailPageState extends State<StationDetailPage> {
               Center(
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: state.captchaText
+                      children: _captchaText
                           .split('')
                           .map((char) => Transform.rotate(
                               angle: (_random.nextDouble() * 0.4) - 0.2,
@@ -1124,6 +1137,7 @@ class _StationDetailPageState extends State<StationDetailPage> {
 
         DropdownButtonFormField<T>(
           value: value,
+          style: const TextStyle(color: AppColors.textWhite),
           dropdownColor:
               AppColors.inputBackground, // Menu xổ xuống vẫn giữ màu nền
 
@@ -1145,17 +1159,15 @@ class _StationDetailPageState extends State<StationDetailPage> {
               );
             }).toList();
           },
-
-          style: const TextStyle(color: AppColors.textWhite),
-
+          hint: Text(
+            isLoading ? "Đang tải..." : hint, // Hiển thị loading
+            style: const TextStyle(color: AppColors.textHint),
+          ),
           decoration: InputDecoration(
             filled: true,
             // View Mode: Nền trong suốt để bớt nặng nề
             fillColor:
                 readOnly ? Colors.transparent : AppColors.inputBackground,
-
-            hintText: isLoading ? "Đang tải..." : hint,
-            hintStyle: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
 
             // View Mode: Dùng gạch chân (Underline) thay vì khung (Outline)
             border: readOnly
