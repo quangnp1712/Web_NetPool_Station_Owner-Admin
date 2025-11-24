@@ -280,10 +280,13 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
         }
 
         // Cập nhật state: Lấy danh sách cũ + thêm danh sách mới
-
+        final List<String> updatedList = [
+          ...state.base64Images, // Giữ lại ảnh cũ (URL hoặc Base64 cũ)
+          ...newImages // Thêm ảnh mới vào sau
+        ];
         emit(state.copyWith(
           blocState: StationCreateBlocState.PickImagesState,
-          base64Images: newImages,
+          base64Images: updatedList,
           isPickingImage: false,
         ));
       } else {
@@ -306,14 +309,20 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
   FutureOr<void> _removeImageEvent(
       RemoveImageEvent event, Emitter<StationCreateState> emit) async {
     try {
-      List<String> currentImages = event.base64Images;
-      // Xóa ảnh tại vị trí index
-      currentImages.removeAt(event.imageIndex);
-      // Emit state mới
-      emit(state.copyWith(
-        blocState: StationCreateBlocState.RemoveImageState,
-        base64Images: currentImages,
-      ));
+      final List<String> currentImages =
+          List<String>.from(state.base64Images ?? []);
+      if (event.imageIndex >= 0 && event.imageIndex < currentImages.length) {
+        // Xóa ảnh tại vị trí index
+        currentImages.removeAt(event.imageIndex);
+        // Emit state mới
+        emit(state.copyWith(
+          blocState: StationCreateBlocState.RemoveImageState,
+          base64Images: currentImages,
+        ));
+      } else {
+        DebugLogger.printLog(
+            "Lỗi xóa ảnh: Index ${event.imageIndex} không hợp lệ. Độ dài list: ${currentImages.length}");
+      }
     } catch (e) {
       emit(state.copyWith(
         stationCreateStatus: StationCreateStatus.failure,

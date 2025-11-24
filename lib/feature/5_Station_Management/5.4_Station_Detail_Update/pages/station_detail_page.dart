@@ -560,116 +560,53 @@ class _StationDetailPageState extends State<StationDetailPage> {
             border: Border.all(color: AppColors.textHint),
           ),
           child: _base64Images.isEmpty
-              ? Center(
-                  child: Text("Không có hình ảnh",
-                      style: TextStyle(color: Colors.grey.shade500)))
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _base64Images.length,
-                    itemBuilder: (ctx, index) {
-                      final String imageSource = _base64Images[index];
-
-                      // --- LOGIC QUAN TRỌNG: KIỂM TRA URL HAY BASE64 ---
-                      final bool isUrl = imageSource.startsWith('http');
-
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: isUrl
-                                  // TRƯỜNG HỢP 1: LÀ URL (Từ API)
-                                  ? Image.network(
-                                      imageSource,
-                                      width: 180,
-                                      height: 180,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Container(
-                                          width: 180,
-                                          height: 180,
-                                          color: Colors.grey,
-                                          child: const Icon(Icons.broken_image),
-                                        );
-                                      },
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return SizedBox(
-                                          width: 180,
-                                          height: 180,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                  : null,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  // TRƯỜNG HỢP 2: LÀ BASE64 (Ảnh mới chọn)
-                                  : Image.memory(
-                                      base64Decode(imageSource.contains(',')
-                                          ? imageSource.split(',').last
-                                          : imageSource),
-                                      width: 180,
-                                      height: 180,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return const SizedBox(
-                                            width: 180,
-                                            height: 180,
-                                            child:
-                                                Center(child: Text("Lỗi ảnh")));
-                                      },
-                                    ),
-                            ),
-                            // Chỉ hiện nút xóa ảnh khi đang Edit
-                            if (!isReadOnly)
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: InkWell(
-                                  onTap: () => context
-                                      .read<StationDetailBloc>()
-                                      .add(RemoveImageEvent(
-                                          base64Images: _base64Images,
-                                          imageIndex: index)),
-                                  child: const CircleAvatar(
-                                      radius: 12,
-                                      backgroundColor: Colors.black54,
-                                      child: Icon(Icons.close,
-                                          size: 16, color: Colors.white)),
-                                ),
-                              )
-                          ],
+              ? isReadOnly
+                  ? Center(
+                      child: Text("Không có hình ảnh",
+                          style: TextStyle(color: Colors.grey.shade500)))
+                  : Center(
+                      child: TextButton.icon(
+                        onPressed: () {
+                          if (!_isPickingImage) {
+                            stationDetailBloc.add(PickImagesEvent(
+                                isPickingImage: _isPickingImage));
+                          }
+                        },
+                        icon: _isPickingImage
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: AppColors.textWhite))
+                            : const Icon(Icons.photo_camera,
+                                color: AppColors.textWhite, size: 20),
+                        label: Text(
+                          _isPickingImage ? "Đang tải..." : "Tải ảnh lên",
+                          style: const TextStyle(
+                              color: AppColors.textWhite, fontSize: 14),
                         ),
-                      );
-                    },
-                  ),
-                ),
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              AppColors.btnSecondary.withOpacity(0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                        ),
+                      ),
+                    )
+              // 2. Lưới ảnh (nếu có ảnh)
+              : _buildImageGridView(context, state),
         ),
-        // Chỉ hiện nút thêm ảnh khi đang Edit
-        if (!isReadOnly)
+        if (!isReadOnly && _base64Images.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: TextButton.icon(
               onPressed: () {
-                if (!_isPickingImage) {
-                  stationDetailBloc
-                      .add(PickImagesEvent(isPickingImage: _isPickingImage));
+                if (!state.isPickingImage) {
+                  stationDetailBloc.add(
+                      PickImagesEvent(isPickingImage: state.isPickingImage));
                 }
               },
               icon: state.isPickingImage
@@ -677,13 +614,115 @@ class _StationDetailPageState extends State<StationDetailPage> {
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.add_photo_alternate, color: Colors.white),
+                  : const Icon(Icons.add_photo_alternate_outlined,
+                      color: Colors.white),
               label: Text(
                   state.isPickingImage ? "Đang xử lý..." : "Thêm/Thay đổi ảnh",
                   style: const TextStyle(color: Colors.white)),
             ),
           )
       ],
+    );
+  }
+
+  // [FIXED] Widget GridView xử lý cả URL và Base64
+  Widget _buildImageGridView(BuildContext context, StationDetailState state) {
+    final isReadOnly = state.isReadOnly;
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.stylus,
+          },
+        ),
+        child: Scrollbar(
+          thumbVisibility: true, // Luôn hiển thị thanh cuộn
+          controller: ScrollController(), // Thêm controller cho scrollbar
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _base64Images.length,
+            itemBuilder: (context, index) {
+              String imageSource = _base64Images[index];
+              bool isUrl = imageSource.startsWith('http'); // Kiểm tra URL
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: isUrl
+                          // Trường hợp 1: URL (Ảnh từ API)
+                          ? Image.network(
+                              imageSource,
+                              width: 180,
+                              height: 180,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                      width: 180,
+                                      height: 180,
+                                      color: Colors.grey,
+                                      child: const Icon(Icons.broken_image)),
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return SizedBox(
+                                    width: 180,
+                                    height: 180,
+                                    child: Center(
+                                        child: CircularProgressIndicator(
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null)));
+                              },
+                            )
+                          // Trường hợp 2: Base64 (Ảnh mới chọn)
+                          : Image.memory(
+                              base64Decode(imageSource.contains(',')
+                                  ? imageSource.split(',').last
+                                  : imageSource),
+                              width: 180,
+                              height: 180,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const SizedBox(
+                                      width: 180,
+                                      height: 180,
+                                      child: Center(child: Text("Lỗi ảnh"))),
+                            ),
+                    ),
+                    // Nút xóa ảnh
+                    if (!isReadOnly)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: InkWell(
+                          onTap: () => stationDetailBloc.add(RemoveImageEvent(
+                              base64Images: _base64Images, imageIndex: index)),
+                          child: const CircleAvatar(
+                              radius: 12,
+                              backgroundColor: Colors.black54,
+                              child: Icon(Icons.close,
+                                  size: 16, color: Colors.white)),
+                        ),
+                      )
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -764,15 +803,12 @@ class _StationDetailPageState extends State<StationDetailPage> {
         focusNode: _addressFocusNode,
         optionsBuilder: (TextEditingValue textEditingValue) {
           if (textEditingValue.text.isEmpty) {
-            context
-                .read<StationDetailBloc>()
-                .add(ClearAddressSuggestionsEvent());
+            stationDetailBloc.add(ClearAddressSuggestionsEvent());
             return const Iterable<String>.empty();
           }
           if (_debounce?.isActive ?? false) _debounce!.cancel();
           _debounce = Timer(const Duration(milliseconds: 500), () {
-            context
-                .read<StationDetailBloc>()
+            stationDetailBloc
                 .add(SearchAddressSuggestionEvent(textEditingValue.text));
           });
           return state.addressSuggestions;
@@ -863,9 +899,8 @@ class _StationDetailPageState extends State<StationDetailPage> {
                   alignment: Alignment.centerRight,
                   child: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.blue),
-                      onPressed: () => context
-                          .read<StationDetailBloc>()
-                          .add(GenerateCaptchaEvent())))
+                      onPressed: () =>
+                          stationDetailBloc.add(GenerateCaptchaEvent())))
             ]),
           ),
           SizedBox(
