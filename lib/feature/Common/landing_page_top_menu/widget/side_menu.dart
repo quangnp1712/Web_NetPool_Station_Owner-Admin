@@ -266,20 +266,21 @@ class SideMenu extends StatelessWidget {
                       ),
 
                     //$ 5.3 Câp nhập station - con
-                    SideMenuChildItem(
-                      itemName: stationUpdatePageName,
-                      onTap: () {
-                        if (!menuController.isActive(stationUpdatePageName)) {
-                          menuController.changeActiveItemTo(
-                              stationUpdatePageName,
-                              parentName: stationParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
-                            Get.back();
-                          navigationController
-                              .navigateAndSyncURL(stationUpdatePageRoute);
-                        }
-                      },
-                    ),
+                    if (isStationSelected)
+                      SideMenuChildItem(
+                        itemName: stationUpdatePageName,
+                        onTap: () {
+                          if (!menuController.isActive(stationUpdatePageName)) {
+                            menuController.changeActiveItemTo(
+                                stationUpdatePageName,
+                                parentName: stationParentName);
+                            if (ResponsiveWidget.isSmallScreen(context))
+                              Get.back();
+                            navigationController
+                                .navigateAndSyncURL(stationUpdatePageRoute);
+                          }
+                        },
+                      ),
                   ],
                 ),
 

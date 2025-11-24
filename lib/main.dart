@@ -19,6 +19,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/shared_preferences/register_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/bloc/station_create_bloc.dart';
@@ -97,6 +98,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => AdminCreateBloc()),
         BlocProvider(create: (_) => StationListBloc()),
         BlocProvider(create: (_) => StationCreateBloc()),
+        BlocProvider(create: (_) => StationDetailBloc()),
       ],
       child: GetMaterialApp(
         localizationsDelegates: const [

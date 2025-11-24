@@ -59,6 +59,14 @@ class AuthenticationPref {
     return SharedPreferencesHelper.preferences.getString("email") ?? "";
   }
 
+  static Future<void> setStationId(String stationId) async {
+    await SharedPreferencesHelper.preferences.setString("stationId", stationId);
+  }
+
+  static String getStationId() {
+    return SharedPreferencesHelper.preferences.getString("stationId") ?? "";
+  }
+
   static Future<void> setStationsJson(List<String> stations) async {
     await SharedPreferencesHelper.preferences
         .setStringList("stations", stations);

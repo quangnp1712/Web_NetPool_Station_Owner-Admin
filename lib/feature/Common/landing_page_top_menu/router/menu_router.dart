@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/pages/station_detail_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/pages/account_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
@@ -59,7 +61,14 @@ Route<dynamic> menuRoute(RouteSettings settings) {
         },
       );
     case stationUpdatePageRoute:
-      return getPageRoute(const AdminCreatePage());
+      return MaterialPageRoute(
+        builder: (context) {
+          return BlocProvider<StationDetailBloc>.value(
+            value: BlocProvider.of<StationDetailBloc>(context),
+            child: StationDetailPage(),
+          );
+        },
+      );
 
     //! QUẢN LÝ STATION ADMIN $//
     case adminListPageRoute:

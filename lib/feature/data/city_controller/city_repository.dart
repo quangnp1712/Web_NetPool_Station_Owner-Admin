@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:web_netpool_station_owner_admin/core/network/exceptions/app_exceptions.dart';
 import 'package:web_netpool_station_owner_admin/core/network/exceptions/exception_handlers.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/data/city_controller/station_create_api.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_api.dart';
 
 abstract class ICityRepository {
   Future<Map<String, dynamic>> getProvinces();

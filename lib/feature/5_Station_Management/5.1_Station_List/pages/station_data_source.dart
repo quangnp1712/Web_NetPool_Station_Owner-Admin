@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/model/station_list_model.dart';
 
 /// Lớp Nguồn dữ liệu (Data Source) cho PaginatedDataTable2
@@ -8,7 +10,7 @@ import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1
 class StationDataSource extends DataTableSource {
   List<StationListModel> _stationList = []; // Sửa: Dữ liệu của trang hiện tại
   final BuildContext context;
-
+  final StationListBloc stationListBloc;
   // --- THÊM: Biến cho phân trang ---
   int _totalRows = 0; // Tổng số data trên server
   int _pageOffset = 0; // Vị trí bắt đầu của trang hiện tại
@@ -16,6 +18,7 @@ class StationDataSource extends DataTableSource {
 
   StationDataSource({
     required this.context,
+    required this.stationListBloc,
     required List<StationListModel> initialData,
   }) {
     _stationList = initialData;
@@ -203,7 +206,8 @@ class StationDataSource extends DataTableSource {
             IconButton(
               icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent),
               onPressed: () {
-                // TODO: Xử lý sự kiện sửa
+                stationListBloc
+                    .add(ShowStationDetailEvent(stationId: data.stationId));
               },
               tooltip: "Chỉnh sửa",
             ),

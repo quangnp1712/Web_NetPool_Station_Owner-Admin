@@ -64,3 +64,5 @@ class SelectedDistrictState extends StationListState {
 }
 
 class ShowCreateStationPageState extends StationListActionState {}
+
+class ShowStationDetailPageState extends StationListActionState {}

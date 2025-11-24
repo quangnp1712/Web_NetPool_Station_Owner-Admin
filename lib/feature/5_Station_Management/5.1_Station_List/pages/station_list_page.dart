@@ -1,3 +1,5 @@
+// ignore_for_file: type_literal_in_constant_pattern
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,10 +59,11 @@ class _StationListPageState extends State<StationListPage> {
   void initState() {
     super.initState();
     // Khởi tạo Data Source với dữ liệu rỗng
-    _dataSource = StationDataSource(context: context, initialData: []);
     _paginatorController = PaginatorController();
 
     stationListBloc.add(StationListInitialEvent());
+    _dataSource = StationDataSource(
+        context: context, initialData: [], stationListBloc: stationListBloc);
   }
 
   @override
@@ -110,6 +113,14 @@ class _StationListPageState extends State<StationListPage> {
                   parentName: stationParentName);
               if (ResponsiveWidget.isSmallScreen(context)) Get.back();
               navigationController.navigateAndSyncURL(stationCreatePageRoute);
+            }
+            break;
+          case ShowStationDetailPageState:
+            if (!menuController.isActive(stationUpdatePageName)) {
+              menuController.changeActiveItemTo(stationUpdatePageName,
+                  parentName: stationParentName);
+              if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+              navigationController.navigateAndSyncURL(stationUpdatePageRoute);
             }
             break;
         }

@@ -82,6 +82,7 @@ class UserSessionController extends GetxController {
       }
       if (roleCode == "STATION_OWNER" && stationList.length == 1) {
         activeStationId.value = stationList[0].stationId;
+        AuthenticationPref.setStationId(activeStationId.value ?? "");
       }
       try {
         List<String>? stationJsonList =

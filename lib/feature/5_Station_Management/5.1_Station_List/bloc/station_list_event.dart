@@ -47,4 +47,11 @@ class SelectedProvinceEvent extends StationListEvent {
 
 class ShowCreateStationPageEvent extends StationListEvent {}
 
+class ShowStationDetailEvent extends StationListEvent {
+  int? stationId;
+  ShowStationDetailEvent({
+    this.stationId,
+  });
+}
+
 class RoleEvent extends StationListEvent {}

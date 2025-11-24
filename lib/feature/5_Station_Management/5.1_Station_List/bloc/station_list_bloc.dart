@@ -9,6 +9,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Aut
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/model/station_list_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/model/station_list_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/repository/station_list_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/shared_preferences/station_detail_shared_pref.dart';
 
 part 'station_list_event.dart';
 part 'station_list_state.dart';
@@ -24,6 +25,7 @@ class StationListBloc extends Bloc<StationListEvent, StationListState> {
     on<SelectedProvinceEvent>(_selectedProvinceEvent);
     on<SelectedDistrictEvent>(_selectedDistrictEvent);
     on<ShowCreateStationPageEvent>(_showCreateStationPageEvent);
+    on<ShowStationDetailEvent>(_showStationDetailEvent);
   }
   FutureOr<void> _StationListInitialEvent(
       StationListInitialEvent event, Emitter<StationListState> emit) {
@@ -193,5 +195,12 @@ class StationListBloc extends Bloc<StationListEvent, StationListState> {
       ShowCreateStationPageEvent event, Emitter<StationListState> emit) async {
     emit(StationList_ChangeState());
     emit(ShowCreateStationPageState());
+  }
+
+  FutureOr<void> _showStationDetailEvent(
+      ShowStationDetailEvent event, Emitter<StationListState> emit) {
+    StationDetailSharedPref.setStationId(event.stationId.toString());
+    DebugLogger.printLog("StationID: ${event.stationId}");
+    emit(ShowStationDetailPageState());
   }
 }
