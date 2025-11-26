@@ -46,8 +46,10 @@ class MenuController extends GetxController {
       var responseBody = results['body'];
 
       SharedPreferencesHelper.clearAll();
+      if (Get.isRegistered<UserSessionController>()) {
+        Get.delete<UserSessionController>(force: true);
+      }
       Get.toNamed(loginPageRoute);
-      Get.delete<UserSessionController>();
       ShowSnackBar("Đăng xuất thành công", true);
     } catch (e) {
       SharedPreferencesHelper.clearAll();

@@ -44,7 +44,16 @@ class _LoginPageState extends State<LoginPage> {
       listener: (context, state) {
         switch (state.runtimeType) {
           case LoginSuccessState:
-            Get.put(UserSessionController(), permanent: true);
+            // ---  LOGIC KIỂM TRA THÔNG MINH ---
+            if (Get.isRegistered<UserSessionController>()) {
+              // Trường hợp: User logout nhưng controller chưa bị xóa (do permanent: true)
+              // -> Lấy controller cũ và bắt buộc nó load dữ liệu mới
+              Get.find<UserSessionController>().loadData();
+            } else {
+              // Trường hợp: Mở app lần đầu hoặc đã xóa sạch bộ nhớ
+              // -> Tạo mới hoàn toàn (onInit sẽ tự chạy loadData)
+              Get.put(UserSessionController(), permanent: true);
+            }
             Get.offAllNamed(rootRoute);
             break;
 

@@ -22,9 +22,6 @@ class SideMenu extends StatelessWidget {
     // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
     final String userRole = AuthenticationPref.getRoleCode();
 
-    // bool isStationSelected = true; // (Giả lập là đã chọn)
-    // final bool isStationSelected = sessionController.activeStationId.value.isNotEmpty;
-
     // 2. Tạo biến bool helper
     final bool isOwner = (userRole == "STATION_OWNER");
 
@@ -294,58 +291,61 @@ class SideMenu extends StatelessWidget {
                 ),
 
                 //! Mục 6: Quản lý Admin - Nhaan vieen
-                CustomExpansionItem(
-                  parentName: adminParentName,
-                  icon: Icons.person_outline,
-                  children: [
-                    //$ 6.1 Danh sách admin - con
-                    SideMenuChildItem(
-                      itemName: adminListPageName,
-                      onTap: () {
-                        if (!menuController.isActive(adminListPageName)) {
-                          menuController.changeActiveItemTo(adminListPageName,
-                              parentName: adminParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
-                            Get.back();
-                          navigationController
-                              .navigateAndSyncURL(adminListPageRoute);
-                        }
-                      },
-                    ),
+                if (isOwner)
+                  CustomExpansionItem(
+                    parentName: adminParentName,
+                    icon: Icons.person_outline,
+                    children: [
+                      //$ 6.1 Danh sách admin - con
+                      SideMenuChildItem(
+                        itemName: adminListPageName,
+                        onTap: () {
+                          if (!menuController.isActive(adminListPageName)) {
+                            menuController.changeActiveItemTo(adminListPageName,
+                                parentName: adminParentName);
+                            if (ResponsiveWidget.isSmallScreen(context))
+                              Get.back();
+                            navigationController
+                                .navigateAndSyncURL(adminListPageRoute);
+                          }
+                        },
+                      ),
 
-                    //$ 6.2 Tạo admin - con
-                    SideMenuChildItem(
-                      itemName: adminCreatePageName,
-                      onTap: () {
-                        if (!menuController.isActive(adminCreatePageName)) {
-                          menuController.changeActiveItemTo(adminCreatePageName,
-                              parentName: adminParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
-                            Get.back();
-                          navigationController
-                              .navigateAndSyncURL(adminCreatePageRoute);
-                        }
-                      },
-                    ),
+                      //$ 6.2 Tạo admin - con
+                      SideMenuChildItem(
+                        itemName: adminCreatePageName,
+                        onTap: () {
+                          if (!menuController.isActive(adminCreatePageName)) {
+                            menuController.changeActiveItemTo(
+                                adminCreatePageName,
+                                parentName: adminParentName);
+                            if (ResponsiveWidget.isSmallScreen(context))
+                              Get.back();
+                            navigationController
+                                .navigateAndSyncURL(adminCreatePageRoute);
+                          }
+                        },
+                      ),
 
-                    //$ 6.3 Update admin - con
-                    // if (isAdminSelected) ...[
+                      //$ 6.3 Update admin - con
+                      // if (isAdminSelected) ...[
 
-                    SideMenuChildItem(
-                      itemName: adminUpdatePageName,
-                      onTap: () {
-                        if (!menuController.isActive(adminUpdatePageName)) {
-                          menuController.changeActiveItemTo(adminUpdatePageName,
-                              parentName: adminParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
-                            Get.back();
-                          navigationController
-                              .navigateAndSyncURL(adminUpdatePageRoute);
-                        }
-                      },
-                    )
-                  ],
-                ),
+                      SideMenuChildItem(
+                        itemName: adminUpdatePageName,
+                        onTap: () {
+                          if (!menuController.isActive(adminUpdatePageName)) {
+                            menuController.changeActiveItemTo(
+                                adminUpdatePageName,
+                                parentName: adminParentName);
+                            if (ResponsiveWidget.isSmallScreen(context))
+                              Get.back();
+                            navigationController
+                                .navigateAndSyncURL(adminUpdatePageRoute);
+                          }
+                        },
+                      )
+                    ],
+                  ),
 
                 if (isStationSelected) ...[
                   //! Mục 7: Quản lý Tài khoản người chơi (Cả 2 đều thấy) ---
