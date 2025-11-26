@@ -271,8 +271,8 @@ class SideMenu extends StatelessWidget {
                         },
                       ),
 
-                    //$ 5.3 Câp nhập station - con
-                    if (isStationSelected)
+                    //$ 5.3 Câp nhập station - con - Station Owner
+                    if (isStationSelected && isOwner)
                       SideMenuChildItem(
                         itemName: stationUpdatePageName,
                         onTap: () {
@@ -284,6 +284,22 @@ class SideMenu extends StatelessWidget {
                               Get.back();
                             navigationController
                                 .navigateAndSyncURL(stationUpdatePageRoute);
+                          }
+                        },
+                      ),
+                    //$ 5.3 Xem chi tiết station - con - Station Admin
+                    if (!isOwner)
+                      SideMenuChildItem(
+                        itemName: stationDetailPageName,
+                        onTap: () {
+                          if (!menuController.isActive(stationDetailPageName)) {
+                            menuController.changeActiveItemTo(
+                                stationDetailPageName,
+                                parentName: stationParentName);
+                            if (ResponsiveWidget.isSmallScreen(context))
+                              Get.back();
+                            navigationController
+                                .navigateAndSyncURL(stationDetailPageRoute);
                           }
                         },
                       ),

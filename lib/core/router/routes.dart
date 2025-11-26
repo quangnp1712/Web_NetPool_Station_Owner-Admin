@@ -48,6 +48,8 @@ const String stationCreatePageName = "Tạo Station";
 const String stationCreatePageRoute = "/station/create";
 const String stationUpdatePageName = "Cập nhật Station";
 const String stationUpdatePageRoute = "/station/update";
+const String stationDetailPageName = "Xem chi tiết Station";
+const String stationDetailPageRoute = "/station/detail";
 
 // 5: QUẢN LÝ SPACE - LOẠI HÌNH //
 const String spacePageName = "Loại hình";

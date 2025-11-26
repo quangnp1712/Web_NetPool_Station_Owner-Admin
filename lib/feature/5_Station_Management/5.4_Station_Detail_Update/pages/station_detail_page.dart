@@ -14,6 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/shared_preferences/station_detail_shared_pref.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
@@ -953,6 +954,12 @@ class _StationDetailPageState extends State<StationDetailPage> {
   }
 
   Widget _buildActionButtons(BuildContext context, StationDetailState state) {
+    // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
+    String userRole = AuthenticationPref.getRoleCode();
+
+    // 2. Tạo biến bool helper
+    bool isOwner = (userRole == "STATION_OWNER");
+
     final backButton = ElevatedButton(
         onPressed: () => stationDetailBloc.add(ShowStationListPageEvent()),
         style: ElevatedButton.styleFrom(
@@ -963,60 +970,67 @@ class _StationDetailPageState extends State<StationDetailPage> {
         child: const Text("TRỞ VỀ",
             style: TextStyle(
                 color: AppColors.bgCard, fontWeight: FontWeight.bold)));
-
-    if (state.isReadOnly) {
-      // View Mode: [CHỈNH SỬA] [TRỞ VỀ]
-      return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-        ElevatedButton(
-          onPressed: () => stationDetailBloc.add(ToggleEditModeEvent(true)),
-          style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGlow,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: const Text("CHỈNH SỬA",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(width: 16),
-        backButton
-      ]);
+    if (isOwner) {
+      if (state.isReadOnly) {
+        // View Mode: [CHỈNH SỬA] [TRỞ VỀ]
+        return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          ElevatedButton(
+            onPressed: () => stationDetailBloc.add(ToggleEditModeEvent(true)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGlow,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8))),
+            child: const Text("CHỈNH SỬA",
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 16),
+          backButton
+        ]);
+      } else {
+        // Edit Mode: [LƯU] [HỦY]
+        return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          ElevatedButton(
+            onPressed: state.isCaptchaVerified
+                ? () {
+                    // if (_formKey.currentState!.validate())
+                    // stationDetailBloc.add(SubmitStationUpdateEvent());
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGlow,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8))),
+            child: const Text("LƯU THAY ĐỔI",
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: () {
+              // Hủy bỏ -> Reload lại dữ liệu gốc (về chế độ View)
+              stationDetailBloc
+                  .add(StationDetailInitialEvent(stationId: stationId));
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8))),
+            child: const Text("HỦY BỎ",
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ]);
+      }
     } else {
-      // Edit Mode: [LƯU] [HỦY]
-      return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-        ElevatedButton(
-          onPressed: state.isCaptchaVerified
-              ? () {
-                  // if (_formKey.currentState!.validate())
-                  // stationDetailBloc.add(SubmitStationUpdateEvent());
-                }
-              : null,
-          style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGlow,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: const Text("LƯU THAY ĐỔI",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(width: 16),
-        ElevatedButton(
-          onPressed: () {
-            // Hủy bỏ -> Reload lại dữ liệu gốc (về chế độ View)
-            stationDetailBloc
-                .add(StationDetailInitialEvent(stationId: stationId));
-          },
-          style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: const Text("HỦY BỎ",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-      ]);
+      return Row(
+          mainAxisAlignment: MainAxisAlignment.end, children: [backButton]);
     }
   }
 

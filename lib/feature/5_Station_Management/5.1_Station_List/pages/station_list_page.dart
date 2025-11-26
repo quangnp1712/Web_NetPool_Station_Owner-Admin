@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/model/station_list_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/pages/station_data_source.dart';
@@ -249,6 +250,11 @@ class _StationListPageState extends State<StationListPage> {
 
 // --- SỬA: WIDGET CON: HÀNG FILTER ---
   Widget _buildFilterBar() {
+    // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
+    String userRole = AuthenticationPref.getRoleCode();
+
+    // 2. Tạo biến bool helper
+    bool isOwner = (userRole == "STATION_OWNER");
     return CommonFilterBar(
       searchController: _searchController,
       searchHintText: "Tìm kiếm tên Station",
@@ -312,12 +318,14 @@ class _StationListPageState extends State<StationListPage> {
       // ------------------------------------
 
       // Cấu hình Nút Tạo
-      createButtonConfig: CreateButtonConfig(
-        text: "TẠO STATION",
-        onPressed: () {
-          stationListBloc.add(ShowCreateStationPageEvent());
-        },
-      ),
+      createButtonConfig: isOwner
+          ? CreateButtonConfig(
+              text: "TẠO STATION",
+              onPressed: () {
+                stationListBloc.add(ShowCreateStationPageEvent());
+              },
+            )
+          : null,
     );
   }
 

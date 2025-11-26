@@ -63,6 +63,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
         },
       );
     case stationUpdatePageRoute:
+    case stationDetailPageRoute:
       return MaterialPageRoute(
         builder: (context) {
           return BlocProvider<StationDetailBloc>.value(

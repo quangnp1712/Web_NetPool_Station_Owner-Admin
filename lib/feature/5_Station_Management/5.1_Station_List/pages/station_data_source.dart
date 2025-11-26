@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/model/station_list_model.dart';
 
@@ -165,6 +166,11 @@ class StationDataSource extends DataTableSource {
     }
 
     final data = _stationList[localIndex];
+    // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
+    String userRole = AuthenticationPref.getRoleCode();
+
+    // 2. Tạo biến bool helper
+    bool isOwner = (userRole == "STATION_OWNER");
 
     // Đây là logic tạo DataCell của bạn
     return DataRow(
@@ -209,15 +215,16 @@ class StationDataSource extends DataTableSource {
                 stationListBloc
                     .add(ShowStationDetailEvent(stationId: data.stationId));
               },
-              tooltip: "Chỉnh sửa",
+              tooltip: isOwner ? "Chỉnh sửa" : "Xem chi tiết",
             ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              onPressed: () {
-                // TODO: Xử lý sự kiện xóa
-              },
-              tooltip: "Xóa",
-            ),
+            if (isOwner)
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                onPressed: () {
+                  // TODO: Xử lý sự kiện xóa
+                },
+                tooltip: "Xóa",
+              ),
             Visibility(
               // Chỉ hiển thị khi bị từ chối
               visible: data.statusCode == "REJECT",
