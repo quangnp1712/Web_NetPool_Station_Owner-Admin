@@ -86,7 +86,7 @@ const String adminListPageName = "Danh sách Quản trị viên";
 const String adminListPageRoute = "/station/admin/list";
 const String adminCreatePageName = "Tạo Quản trị viên";
 const String adminCreatePageRoute = "/station/admin/create";
-const String adminUpdatePageName = "Cập nhật Station - Quản trị viên";
+const String adminUpdatePageName = "Cập nhật Quản trị viên";
 const String adminUpdatePageRoute = "/station/admin/update";
 
 // 10: QUẢN LÝ PAYMENT - GIAO DỊCH//

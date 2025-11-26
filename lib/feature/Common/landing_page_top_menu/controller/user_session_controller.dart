@@ -20,6 +20,8 @@ class UserSessionController extends GetxController {
   // (Giờ đây dùng StationInfoModel từ login_data_model.dart)
   var stationList = <AuthStationsModel>[].obs;
   var activeStationId = Rxn<String>();
+  var activeAdminId = Rxn<String>();
+  var activePlayerId = Rxn<String>();
   // SỬA: stationId là String
   // ------------------------------------
 
@@ -127,14 +129,33 @@ class UserSessionController extends GetxController {
     }
   }
 
-  // --- SỬA: Hàm thay đổi Station (dùng String) ---
+  // ---  Hàm thay đổi Station (dùng String) ---
   void changeActiveStation(String? newStationId) {
-    // SỬA: Dùng String?
+    //
     if (activeStationId.value != newStationId) {
       activeStationId.value = newStationId!;
       // (Lưu ID mới này vào SharedPreferences nếu bạn muốn)
       LandingPageSharedPref.setActiveStation(newStationId);
     }
   }
+
   // --------------------------------
+  // ---  Hàm thay đổi Admin (dùng String) ---
+  // void changeActiveAdmin(String? newAdminId) {
+  //   //
+  //   if (activeAdminId.value != newAdminId) {
+  //     activeAdminId.value = newAdminId!;
+  //   }
+  // }
+
+  // // --------------------------------
+  // // ---  Hàm thay đổi Player (dùng String) ---
+  // void changeActivePlayer(String? newPlayerId) {
+  //   //
+  //   if (activePlayerId.value != newPlayerId) {
+  //     activePlayerId.value = newPlayerId!;
+  //     // (Lưu ID mới này vào SharedPreferences nếu bạn muốn)
+  //   }
+  // }
+  // // --------------------------------
 }

@@ -2,10 +2,17 @@ import 'package:web_netpool_station_owner_admin/core/utils/shared_preferences_he
 
 class AdminDetailSharedPref {
   static Future<void> setAccountId(String accountId) async {
-    await SharedPreferencesHelper.preferences.setString("accountId", accountId);
+    await SharedPreferencesHelper.preferences
+        .setString("adminDetail_accountId", accountId);
   }
 
   static String getAccountId() {
-    return SharedPreferencesHelper.preferences.getString("accountId") ?? "";
+    return SharedPreferencesHelper.preferences
+            .getString("adminDetail_accountId") ??
+        "";
+  }
+
+  static Future<void> clearAccountId() async {
+    await SharedPreferencesHelper.preferences.remove("adminDetail_accountId");
   }
 }

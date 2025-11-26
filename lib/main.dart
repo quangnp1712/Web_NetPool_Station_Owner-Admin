@@ -20,6 +20,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.3_Account_Admin_Detail/bloc/admin_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/bloc/station_create_bloc.dart';
@@ -90,12 +91,20 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        //$ authentication
         BlocProvider(create: (_) => LoginBloc()),
         BlocProvider(create: (_) => RegisterBloc()),
         BlocProvider(create: (_) => ValidEmailBloc()),
+
+        //$ Acount Player
         BlocProvider(create: (_) => AccountListBloc()),
+
+        //$ Account Admin
         BlocProvider(create: (_) => AdminListBloc()),
         BlocProvider(create: (_) => AdminCreateBloc()),
+        BlocProvider(create: (_) => AdminDetailBloc()),
+
+        //$ Station
         BlocProvider(create: (_) => StationListBloc()),
         BlocProvider(create: (_) => StationCreateBloc()),
         BlocProvider(create: (_) => StationDetailBloc()),

@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/pages/station_detail_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.3_Account_Admin_Detail/bloc/admin_detail_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.3_Account_Admin_Detail/pages/admin_detail_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/pages/account_list_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1_Station_List/bloc/station_list_bloc.dart';
@@ -94,6 +96,19 @@ Route<dynamic> menuRoute(RouteSettings settings) {
             value: BlocProvider.of<AdminCreateBloc>(context),
             // Cung cấp nó cho trang con
             child: const AdminCreatePage(),
+          );
+        },
+      );
+    case adminUpdatePageRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          // 'context' ở đây là context của localNavigator,
+          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
+          return BlocProvider<AdminDetailBloc>.value(
+            // Lấy BLoC instance đã tồn tại
+            value: BlocProvider.of<AdminDetailBloc>(context),
+            // Cung cấp nó cho trang con
+            child: const AdminDetailPage(),
           );
         },
       );
