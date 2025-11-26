@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'admin_list_bloc.dart';
 
 sealed class AdminListEvent {
@@ -26,3 +27,28 @@ class AdminListLoadEvent extends AdminListEvent {
 class RoleEvent extends AdminListEvent {}
 
 class GetStationIdEvent extends AdminListEvent {}
+
+class SelectedStationEvent extends AdminListEvent {
+  String? newValue;
+  SelectedStationEvent({
+    this.newValue,
+  });
+}
+
+class SelectedStatusEvent extends AdminListEvent {
+  String? newValue;
+  SelectedStatusEvent({
+    this.newValue,
+  });
+}
+
+class ResetPressedEvent extends AdminListEvent {}
+
+class ShowCreateAdminEvent extends AdminListEvent {}
+
+class ShowDetailAdminEvent extends AdminListEvent {
+  String? accountId;
+  ShowDetailAdminEvent({
+    this.accountId,
+  });
+}

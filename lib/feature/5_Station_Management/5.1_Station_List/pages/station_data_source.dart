@@ -180,7 +180,7 @@ class StationDataSource extends DataTableSource {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                data.stationName.toString(),
+                data.stationName ?? "Chưa cập nhật",
                 overflow: TextOverflow.ellipsis, // Tùy chọn: Thêm ...
                 maxLines: 2, // Tùy chọn: Tối đa 2 dòng
               ),

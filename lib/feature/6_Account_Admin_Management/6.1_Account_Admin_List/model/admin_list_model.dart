@@ -13,7 +13,10 @@ class AdminListModel {
   String? email;
   String? statusCode;
   String? statusName;
-  bool? isActive;
+
+  // bo sung
+  String? stationId;
+  String? stationName;
 
   AdminListModel({
     this.accountId,
@@ -26,6 +29,8 @@ class AdminListModel {
     this.email,
     this.statusCode,
     this.statusName,
+    this.stationId,
+    this.stationName,
   });
 
   Map<String, dynamic> toMap() {

@@ -29,7 +29,7 @@ class AdminListRepository extends AdminListApi implements IAdminListRepository {
       final String jwtToken = AuthenticationPref.getAccessToken().toString();
 
       Uri uri = Uri.parse(
-          "$AdminListUrl/?search=$search&statusCodes=$statusCodes&roleIds=$roleIds&sorter=$sorter&current=$current&pageSize=$pageSize&stationId=$stationId");
+          "$AdminListUrl?search=$search&statusCodes=$statusCodes&roleIds=$roleIds&sorter=$sorter&current=$current&pageSize=$pageSize&stationId=$stationId");
       final client = http.Client();
       final response = await client.get(
         uri,
