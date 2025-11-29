@@ -26,12 +26,12 @@ import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.1
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/bloc/station_create_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.1_Account_Admin_List/bloc/admin_list_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.2_Account_Admin_Create/bloc/admin_create_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/bloc/space_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/404/error.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/bloc/login_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/menu_controller.dart'
     as menu_controller;
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/firebase_options.dart';
 
 Future<void> main() async {
@@ -108,6 +108,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => StationListBloc()),
         BlocProvider(create: (_) => StationCreateBloc()),
         BlocProvider(create: (_) => StationDetailBloc()),
+
+        //$ Space
+        BlocProvider(create: (_) => SpaceBloc()),
       ],
       child: GetMaterialApp(
         localizationsDelegates: const [

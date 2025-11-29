@@ -2,14 +2,16 @@
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/model/station_create_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/model/space_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/data/meta/model/meta_model.dart';
 
-class StationCreateModelResponse extends BaseResponse {
-  List<StationCreateModel>? data;
-  StationCreateMetaModel? meta;
+class SpaceListModelResponse extends BaseResponse {
+  List<PlatformSpaceModel>? data;
+  MetaModel? meta;
 
-  StationCreateModelResponse({
+  SpaceListModelResponse({
     this.data,
+    this.meta,
     status,
     success,
     errorCode,
@@ -28,14 +30,17 @@ class StationCreateModelResponse extends BaseResponse {
     };
   }
 
-  factory StationCreateModelResponse.fromMap(Map<String, dynamic> map) {
-    return StationCreateModelResponse(
+  factory SpaceListModelResponse.fromMap(Map<String, dynamic> map) {
+    return SpaceListModelResponse(
       data: map['data'] != null
-          ? List<StationCreateModel>.from(
+          ? List<PlatformSpaceModel>.from(
               (map['data'] as List).map(
-                (x) => StationCreateModel.fromMap(x as Map<String, dynamic>),
+                (x) => PlatformSpaceModel.fromMap(x as Map<String, dynamic>),
               ),
             )
+          : null,
+      meta: map['meta'] != null
+          ? MetaModel.fromMap(map['meta'] as Map<String, dynamic>)
           : null,
       status: map['status'] != null ? map['status'] as String : null,
       success: map['success'] != null ? map['success'] as bool : null,
@@ -48,15 +53,15 @@ class StationCreateModelResponse extends BaseResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory StationCreateModelResponse.fromJson(Map<String, dynamic> source) =>
-      StationCreateModelResponse.fromMap(source);
+  factory SpaceListModelResponse.fromJson(Map<String, dynamic> source) =>
+      SpaceListModelResponse.fromMap(source);
 }
 
-class StationCreateMetaModel {
+class SpaceListMetaModel {
   int? pageSize;
   int? current;
   int? total;
-  StationCreateMetaModel({
+  SpaceListMetaModel({
     this.pageSize,
     this.current,
     this.total,
@@ -70,8 +75,8 @@ class StationCreateMetaModel {
     };
   }
 
-  factory StationCreateMetaModel.fromMap(Map<String, dynamic> map) {
-    return StationCreateMetaModel(
+  factory SpaceListMetaModel.fromMap(Map<String, dynamic> map) {
+    return SpaceListMetaModel(
       pageSize: map['pageSize'] != null ? map['pageSize'] as int : null,
       current: map['current'] != null ? map['current'] as int : null,
       total: map['total'] != null ? map['total'] as int : null,
@@ -80,6 +85,6 @@ class StationCreateMetaModel {
 
   String toJson() => json.encode(toMap());
 
-  factory StationCreateMetaModel.fromJson(Map<String, dynamic> source) =>
-      StationCreateMetaModel.fromMap(source);
+  factory SpaceListMetaModel.fromJson(Map<String, dynamic> source) =>
+      SpaceListMetaModel.fromMap(source);
 }

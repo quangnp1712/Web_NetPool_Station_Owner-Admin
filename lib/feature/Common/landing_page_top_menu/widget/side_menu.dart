@@ -90,8 +90,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               paymentOverviewPageName,
                               parentName: paymentParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(paymentOverviewPageRoute);
                         }
@@ -105,8 +106,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               paymentHistoryPageName,
                               parentName: paymentParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(paymentHistoryPageRoute);
                         }
@@ -128,8 +130,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               bookingOverviewPageName,
                               parentName: bookingParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(bookingOverviewPageRoute);
                         }
@@ -143,8 +146,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               bookingCalendarPageName,
                               parentName: bookingParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(bookingCalendarPageRoute);
                         }
@@ -158,8 +162,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               bookingApprovePageName,
                               parentName: bookingParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(bookingApprovePageRoute);
                         }
@@ -180,8 +185,9 @@ class SideMenu extends StatelessWidget {
                         if (!menuController.isActive(matchListPageName)) {
                           menuController.changeActiveItemTo(matchListPageName,
                               parentName: matchParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(matchListPageRoute);
                         }
@@ -195,8 +201,9 @@ class SideMenu extends StatelessWidget {
                           menuController.changeActiveItemTo(
                               matchApprovePageName,
                               parentName: matchParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(matchApprovePageRoute);
                         }
@@ -209,8 +216,9 @@ class SideMenu extends StatelessWidget {
                         if (!menuController.isActive(matchUpdatePageName)) {
                           menuController.changeActiveItemTo(matchUpdatePageName,
                               parentName: matchParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(matchUpdatePageRoute);
                         }
@@ -246,8 +254,9 @@ class SideMenu extends StatelessWidget {
                         if (!menuController.isActive(stationListPageName)) {
                           menuController.changeActiveItemTo(stationListPageName,
                               parentName: stationParentName);
-                          if (ResponsiveWidget.isSmallScreen(context))
+                          if (ResponsiveWidget.isSmallScreen(context)) {
                             Get.back();
+                          }
                           navigationController
                               .navigateAndSyncURL(stationListPageRoute);
                         }
@@ -263,8 +272,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 stationCreatePageName,
                                 parentName: stationParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(stationCreatePageRoute);
                           }
@@ -280,8 +290,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 stationUpdatePageName,
                                 parentName: stationParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(stationUpdatePageRoute);
                           }
@@ -296,8 +307,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 stationDetailPageName,
                                 parentName: stationParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(stationDetailPageRoute);
                           }
@@ -319,8 +331,9 @@ class SideMenu extends StatelessWidget {
                           if (!menuController.isActive(adminListPageName)) {
                             menuController.changeActiveItemTo(adminListPageName,
                                 parentName: adminParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(adminListPageRoute);
                           }
@@ -335,8 +348,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 adminCreatePageName,
                                 parentName: adminParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(adminCreatePageRoute);
                           }
@@ -353,8 +367,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 adminUpdatePageName,
                                 parentName: adminParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(adminUpdatePageRoute);
                           }
@@ -377,8 +392,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 accountListPageName,
                                 parentName: accountParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(accountListPageRoute);
                           }
@@ -412,8 +428,9 @@ class SideMenu extends StatelessWidget {
                           if (!menuController.isActive(areaListPageName)) {
                             menuController.changeActiveItemTo(areaListPageName,
                                 parentName: areaParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(areaListPageRoute);
                           }
@@ -429,8 +446,9 @@ class SideMenu extends StatelessWidget {
                               menuController.changeActiveItemTo(
                                   areaCreatePageName,
                                   parentName: areaParentName);
-                              if (ResponsiveWidget.isSmallScreen(context))
+                              if (ResponsiveWidget.isSmallScreen(context)) {
                                 Get.back();
+                              }
                               navigationController
                                   .navigateAndSyncURL(areaCreatePageRoute);
                             }
@@ -445,8 +463,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 areaUpdatePageName,
                                 parentName: areaParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(areaUpdatePageRoute);
                           }
@@ -468,8 +487,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 resourceListPageName,
                                 parentName: resourceParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(resourceListPageRoute);
                           }
@@ -486,8 +506,9 @@ class SideMenu extends StatelessWidget {
                               menuController.changeActiveItemTo(
                                   resourceCreatePageName,
                                   parentName: resourceParentName);
-                              if (ResponsiveWidget.isSmallScreen(context))
+                              if (ResponsiveWidget.isSmallScreen(context)) {
                                 Get.back();
+                              }
                               navigationController
                                   .navigateAndSyncURL(resourceCreatePageRoute);
                             }
@@ -503,8 +524,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 resourceUpdatePageName,
                                 parentName: resourceParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(resourceUpdatePageRoute);
                           }
@@ -525,8 +547,9 @@ class SideMenu extends StatelessWidget {
                           if (!menuController.isActive(menuListPageName)) {
                             menuController.changeActiveItemTo(menuListPageName,
                                 parentName: menuParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(menuListPageRoute);
                           }
@@ -540,8 +563,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 menuCreatePageName,
                                 parentName: menuParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(menuCreatePageRoute);
                           }
@@ -555,8 +579,9 @@ class SideMenu extends StatelessWidget {
                             menuController.changeActiveItemTo(
                                 menuUpdatePageName,
                                 parentName: menuParentName);
-                            if (ResponsiveWidget.isSmallScreen(context))
+                            if (ResponsiveWidget.isSmallScreen(context)) {
                               Get.back();
+                            }
                             navigationController
                                 .navigateAndSyncURL(menuUpdatePageRoute);
                           }

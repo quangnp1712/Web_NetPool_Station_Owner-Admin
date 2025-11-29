@@ -17,6 +17,8 @@ import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Manageme
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.2_Account_Admin_Create/bloc/admin_create_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.2_Account_Admin_Create/pages/admin_create_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/1_Dashboard/dashboard.dart';
+import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/bloc/space_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/pages/space_page.dart';
 
 PageRoute getPageRoute(Widget child) {
   return MaterialPageRoute(builder: (context) => child);
@@ -113,7 +115,20 @@ Route<dynamic> menuRoute(RouteSettings settings) {
           );
         },
       );
-
+    //! QUẢN LÝ STATION $//
+    case spacePageRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          // 'context' ở đây là context của localNavigator,
+          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
+          return BlocProvider<SpaceBloc>.value(
+            // Lấy BLoC instance đã tồn tại
+            value: BlocProvider.of<SpaceBloc>(context),
+            // Cung cấp nó cho trang con
+            child: const StationSpacePage(),
+          );
+        },
+      );
     //! TEST $//
     // case testRoute:
     //   return getPageRoute(const TestPage());
