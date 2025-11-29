@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/bloc/space_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/model/space_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/model/station_space_model.dart';
@@ -249,6 +250,11 @@ class _StationSpacePageState extends State<StationSpacePage> {
 
   // --- SECTION 2: LIST HEADER ---
   Widget _buildSpaceListHeader(BuildContext context) {
+    // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
+    String userRole = AuthenticationPref.getRoleCode();
+
+    // 2. Tạo biến bool helper
+    bool isOwner = (userRole == "STATION_OWNER");
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -257,19 +263,22 @@ class _StationSpacePageState extends State<StationSpacePage> {
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold)),
-        ElevatedButton.icon(
-          onPressed: () => _showCreateDialog(context),
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: const Text("THÊM LOẠI HÌNH",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryGlow,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        ),
+        isOwner
+            ? ElevatedButton.icon(
+                onPressed: () => _showCreateDialog(context),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text("THÊM LOẠI HÌNH",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGlow,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+              )
+            : Container(),
       ],
     );
   }
@@ -302,6 +311,12 @@ class _StationSpacePageState extends State<StationSpacePage> {
         Color(int.tryParse(colorHex.replaceFirst('#', '0xff')) ?? 0xFFCB30E0);
     final iconCode = item.space?.metadata?.icon;
     final iconData = _iconMap[iconCode] ?? Icons.category;
+
+// 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
+    String userRole = AuthenticationPref.getRoleCode();
+
+    // 2. Tạo biến bool helper
+    bool isOwner = (userRole == "STATION_OWNER");
 
     return Container(
       decoration: BoxDecoration(
@@ -403,12 +418,14 @@ class _StationSpacePageState extends State<StationSpacePage> {
                     // Actions
                     Row(
                       children: [
-                        InkWell(
-                            onTap: () => _showEditDialog(context, item),
-                            child: const Padding(
-                                padding: EdgeInsets.all(6),
-                                child: Icon(Icons.edit,
-                                    size: 18, color: Colors.blue))),
+                        isOwner
+                            ? InkWell(
+                                onTap: () => _showEditDialog(context, item),
+                                child: const Padding(
+                                    padding: EdgeInsets.all(6),
+                                    child: Icon(Icons.edit,
+                                        size: 18, color: Colors.blue)))
+                            : Container(),
                         const SizedBox(width: 4),
                         InkWell(
                             onTap: () => _showDeleteConfirm(context, item),
