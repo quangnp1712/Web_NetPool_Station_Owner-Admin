@@ -66,6 +66,8 @@ class UserSessionController extends GetxController {
                   Utf8Encoding().decode(station.stationName ?? "");
             }
           }
+          AuthenticationPref.setAvatarUrl(
+              stationResponse.data?.avatar.toString() ?? "");
         }
         _stations = stationResponse.data!.stations ?? [];
         // _stations = _stations.where((station) {

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/widget/side_menu.dart';
@@ -26,7 +27,7 @@ class _LandingPageState extends State<LandingPage> {
       Get.put(UserSessionController(), permanent: true);
     }
     final sessionController = Get.find<UserSessionController>();
-
+    final avatar = AuthenticationPref.getAvatarUrl();
     return Obx(() {
       return Stack(
         children: [
@@ -34,10 +35,12 @@ class _LandingPageState extends State<LandingPage> {
             key: widget.scaffoldKey,
             extendBodyBehindAppBar: true,
             appBar: topNavigationBar(
-                context,
-                widget.scaffoldKey,
-                sessionController.roleName.value,
-                sessionController.username.value),
+              context,
+              widget.scaffoldKey,
+              sessionController.roleName.value,
+              sessionController.username.value,
+              avatar,
+            ),
             drawer: const Drawer(
               child: SideMenu(),
             ),

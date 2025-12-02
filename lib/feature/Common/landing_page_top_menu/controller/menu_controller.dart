@@ -49,11 +49,11 @@ class MenuController extends GetxController {
       if (Get.isRegistered<UserSessionController>()) {
         Get.delete<UserSessionController>(force: true);
       }
-      Get.toNamed(loginPageRoute);
+      Get.offAllNamed(loginPageRoute);
       ShowSnackBar("Đăng xuất thành công", true);
     } catch (e) {
       SharedPreferencesHelper.clearAll();
-      Get.toNamed(loginPageRoute);
+      Get.offAllNamed(loginPageRoute);
       Get.delete<UserSessionController>();
       DebugLogger.printLog("Lỗi! $e");
     }

@@ -17,6 +17,14 @@ class AuthenticationPref {
     return SharedPreferencesHelper.preferences.getString("username") ?? "";
   }
 
+  static Future<void> setAvatarUrl(String avatarUrl) async {
+    await SharedPreferencesHelper.preferences.setString("avatarUrl", avatarUrl);
+  }
+
+  static String getAvatarUrl() {
+    return SharedPreferencesHelper.preferences.getString("avatarUrl") ?? "";
+  }
+
   static Future<void> setAccessToken(String token) async {
     await SharedPreferencesHelper.preferences.setString("accessToken", token);
   }

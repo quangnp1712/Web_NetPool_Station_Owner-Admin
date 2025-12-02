@@ -76,7 +76,7 @@ class ValidEmailBloc extends Bloc<ValidEmailEvent, ValidEmailState> {
         emit(ValidEmail_LoadingState(isLoading: false));
 
         emit(ShowSnackBarActionState(
-            message: responseMessage, success: responseSuccess));
+            message: "Email $_email chưa đăng ký", success: responseSuccess));
       } else if (responseStatus == 401) {
         emit(ValidEmail_LoadingState(isLoading: false));
 

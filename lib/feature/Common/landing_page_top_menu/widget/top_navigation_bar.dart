@@ -7,7 +7,7 @@ import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/widget/top_nav_selector_station.dart';
 
 AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key,
-        String? _roleName, String? _username) =>
+        String? _roleName, String? _username, String avatarUrl) =>
     AppBar(
       toolbarHeight: 80.0,
       leadingWidth: !ResponsiveWidget.isSmallScreen(context) ? 300 : null,
@@ -110,12 +110,18 @@ AppBar topNavigationBar(BuildContext context, GlobalKey<ScaffoldState> key,
                   color: Colors.white, borderRadius: BorderRadius.circular(30)),
               padding: const EdgeInsets.all(2),
               margin: const EdgeInsets.all(2),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 backgroundColor: light,
-                child: Icon(
-                  Icons.person_outline,
-                  color: dark,
-                ),
+                // 1. Nếu có URL thì hiển thị ảnh nền, ngược lại thì null
+                backgroundImage:
+                    (avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
+                // 2. Nếu KHÔNG có URL thì hiển thị Icon, nếu có ảnh rồi thì null (để không bị đè lên ảnh)
+                child: (avatarUrl.isEmpty)
+                    ? const Icon(
+                        Icons.person_outline,
+                        color: dark,
+                      )
+                    : null,
               ),
             ),
           ),

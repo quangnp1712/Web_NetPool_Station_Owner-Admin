@@ -8,7 +8,6 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Val
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/pages/send_verify_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/pages/verify_email_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/home_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/landing_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Register/pages/register_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.2_Login/pages/login_page.dart';
@@ -46,11 +45,6 @@ class RouteGenerator {
         page: () => BlocProvider<ValidEmailBloc>.value(
             value: validEmailPageBloc, child: SendValidPage()),
         middlewares: [EnsureNotAuthMiddleware()],
-      ),
-      GetPage(
-        name: HomePage.HomePageRoute,
-        page: () => const HomePage(),
-        middlewares: [EnsureAuthMiddleware()],
       ),
 
       // MENU //
