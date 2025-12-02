@@ -19,6 +19,8 @@ import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Manageme
 import 'package:web_netpool_station_owner_admin/feature/1_Dashboard/dashboard.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/bloc/space_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/pages/space_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/bloc/area_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/pages/area_list_page.dart';
 
 PageRoute getPageRoute(Widget child) {
   return MaterialPageRoute(builder: (context) => child);
@@ -79,12 +81,8 @@ Route<dynamic> menuRoute(RouteSettings settings) {
     case adminListPageRoute:
       return MaterialPageRoute(
         builder: (context) {
-          // 'context' ở đây là context của localNavigator,
-          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AdminListBloc>.value(
-            // Lấy BLoC instance đã tồn tại
             value: BlocProvider.of<AdminListBloc>(context),
-            // Cung cấp nó cho trang con
             child: const AdminListPage(),
           );
         },
@@ -92,12 +90,8 @@ Route<dynamic> menuRoute(RouteSettings settings) {
     case adminCreatePageRoute:
       return MaterialPageRoute(
         builder: (context) {
-          // 'context' ở đây là context của localNavigator,
-          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AdminCreateBloc>.value(
-            // Lấy BLoC instance đã tồn tại
             value: BlocProvider.of<AdminCreateBloc>(context),
-            // Cung cấp nó cho trang con
             child: const AdminCreatePage(),
           );
         },
@@ -105,27 +99,31 @@ Route<dynamic> menuRoute(RouteSettings settings) {
     case adminUpdatePageRoute:
       return MaterialPageRoute(
         builder: (context) {
-          // 'context' ở đây là context của localNavigator,
-          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<AdminDetailBloc>.value(
-            // Lấy BLoC instance đã tồn tại
             value: BlocProvider.of<AdminDetailBloc>(context),
-            // Cung cấp nó cho trang con
             child: const AdminDetailPage(),
           );
         },
       );
-    //! QUẢN LÝ STATION $//
+
+    //! QUẢN LÝ SPACE $//
     case spacePageRoute:
       return MaterialPageRoute(
         builder: (context) {
-          // 'context' ở đây là context của localNavigator,
-          // nó có thể tìm thấy BLoC đã được cung cấp ở main.dart
           return BlocProvider<SpaceBloc>.value(
-            // Lấy BLoC instance đã tồn tại
             value: BlocProvider.of<SpaceBloc>(context),
-            // Cung cấp nó cho trang con
             child: const StationSpacePage(),
+          );
+        },
+      );
+
+    //! QUẢN LÝ AREA $//
+    case areaListPageRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          return BlocProvider<AreaListBloc>.value(
+            value: BlocProvider.of<AreaListBloc>(context),
+            child: const AreaListPage(),
           );
         },
       );

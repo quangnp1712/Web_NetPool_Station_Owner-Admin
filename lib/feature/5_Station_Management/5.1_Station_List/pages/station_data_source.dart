@@ -23,6 +23,7 @@ class StationDataSource extends DataTableSource {
     required List<StationListModel> initialData,
   }) {
     _stationList = initialData;
+    _totalRows = initialData.length;
   }
 
   /// Cập nhật dữ liệu (ví dụ: khi BLoC load xong)

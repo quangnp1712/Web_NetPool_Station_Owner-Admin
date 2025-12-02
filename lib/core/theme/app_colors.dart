@@ -25,4 +25,13 @@ class AppColors {
   static const Color textWhite = Colors.white;
   static const Color textBlack = Colors.black;
   static const Color textHint = Color(0xFF8A8A8E);
+
+  static const Color border = Color(0xFF1E293B); // Slate 800
+  static const Color textMain = Color(0xFFE2E8F0); // Slate 200
+  static const Color primaryBlue = Color(0xFF2563EB); // Blue 600
+
+  static const Color statusActiveBg = Color(0xFF1B5E20); // Green 900
+  static const Color statusActiveText = Color(0xFF4ADE80); // Green 400
+  static const Color statusInactiveBg = Color(0xFF424242);
+  static const Color statusInactiveText = Color(0xFFBDBDBD);
 }
