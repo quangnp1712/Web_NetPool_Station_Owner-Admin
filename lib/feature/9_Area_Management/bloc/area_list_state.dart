@@ -2,17 +2,8 @@
 
 part of 'area_list_bloc.dart';
 
-const _sentinel = Object();
+enum AreaListStatus { initial, loading, success, failure }
 
-// status
-enum AreaListStatus {
-  initial,
-  loading,
-  success,
-  failure,
-}
-
-// blocState
 enum AreaListBlocState {
   Initial,
   AreaListSuccess,
@@ -20,35 +11,36 @@ enum AreaListBlocState {
   SelectedSpace,
   SelectedStatus,
   AppliedSearch,
-  ResetFilters,
+  ResetFilters
 }
 
+enum CreateStatus { initial, loading, success, failure }
+
+enum UpdateStatus { initial, loading, success, failure } // New Status
+
 class AreaListState extends Equatable {
-  // --- General Data ---
+  final AreaListStatus status;
   final String message;
   final int currentStationId;
 
-  // --- General Status ---
-  final AreaListStatus status;
   final AreaListBlocState blocState;
+  final CreateStatus createStatus;
+  final UpdateStatus updateStatus;
 
-  // --- Data Lists ---
   final List<AreaModel> areaList;
   final List<StationSpaceModel> allStationSpaces;
   final List<String> statusOptions;
-
-  // --- Filter Selections & Inputs ---
   final StationSpaceModel? selectedSpace;
   final String? selectedStatus;
   final String searchTerm;
-
-  // --- Pagination & Meta ---
-  MetaModel? meta;
+  final MetaModel meta;
 
   AreaListState({
     this.message = "",
     this.currentStationId = 0,
     this.status = AreaListStatus.initial,
+    this.createStatus = CreateStatus.initial,
+    this.updateStatus = UpdateStatus.initial, // Default
     this.blocState = AreaListBlocState.Initial,
     this.areaList = const [],
     this.allStationSpaces = const [],
@@ -63,6 +55,8 @@ class AreaListState extends Equatable {
     String? message,
     int? currentStationId,
     AreaListStatus? status,
+    CreateStatus? createStatus,
+    UpdateStatus? updateStatus, // Update copyWith
     AreaListBlocState? blocState,
     List<AreaModel>? areaList,
     List<StationSpaceModel>? allStationSpaces,
@@ -71,14 +65,15 @@ class AreaListState extends Equatable {
     String? selectedStatus,
     String? searchTerm,
     MetaModel? meta,
-    bool forceNullSpace = false, // Helper để set null cho selectedSpace
+    bool forceNullSpace = false,
     bool forceNullStatus = false,
   }) {
     return AreaListState(
       message: message ?? this.message,
       currentStationId: currentStationId ?? this.currentStationId,
-      status:
-          status ?? AreaListStatus.initial, // Giữ status cũ nếu không truyền
+      status: status ?? this.status,
+      createStatus: createStatus ?? this.createStatus,
+      updateStatus: updateStatus ?? this.updateStatus, // Update copyWith
       blocState: blocState ?? AreaListBlocState.Initial,
       areaList: areaList ?? this.areaList,
       allStationSpaces: allStationSpaces ?? this.allStationSpaces,
@@ -97,6 +92,8 @@ class AreaListState extends Equatable {
         message,
         currentStationId,
         status,
+        createStatus,
+        updateStatus,
         blocState,
         areaList,
         allStationSpaces,

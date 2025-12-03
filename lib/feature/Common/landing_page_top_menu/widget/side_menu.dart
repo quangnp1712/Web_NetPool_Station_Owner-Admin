@@ -417,61 +417,16 @@ class SideMenu extends StatelessWidget {
                   ),
 
                   //! Mục 9: QL KHU VỰC (Owner mới thấy "Tạo") ---
-                  CustomExpansionItem(
-                    parentName: areaParentName,
-                    icon: Icons.map_outlined,
-                    children: [
-                      //$ 9.1 Danh sách Khu vực - con
-                      SideMenuChildItem(
-                        itemName: areaListPageName,
-                        onTap: () {
-                          if (!menuController.isActive(areaListPageName)) {
-                            menuController.changeActiveItemTo(areaListPageName,
-                                parentName: areaParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
-                            }
-                            navigationController
-                                .navigateAndSyncURL(areaListPageRoute);
-                          }
-                        },
-                      ),
-                      // --- PHÂN QUYỀN ---
-                      //$ 9.2 Tạo Khu vực - con
-                      if (isOwner)
-                        SideMenuChildItem(
-                          itemName: areaCreatePageName,
-                          onTap: () {
-                            if (!menuController.isActive(areaCreatePageName)) {
-                              menuController.changeActiveItemTo(
-                                  areaCreatePageName,
-                                  parentName: areaParentName);
-                              if (ResponsiveWidget.isSmallScreen(context)) {
-                                Get.back();
-                              }
-                              navigationController
-                                  .navigateAndSyncURL(areaCreatePageRoute);
-                            }
-                          },
-                        ),
-                      // ------------------
-                      //$ 9.3 Cập nhật Station - Khu vực - con
-                      SideMenuChildItem(
-                        itemName: areaUpdatePageName,
-                        onTap: () {
-                          if (!menuController.isActive(areaUpdatePageName)) {
-                            menuController.changeActiveItemTo(
-                                areaUpdatePageName,
-                                parentName: areaParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
-                            }
-                            navigationController
-                                .navigateAndSyncURL(areaUpdatePageRoute);
-                          }
-                        },
-                      ),
-                    ],
+                  SideMenuItem(
+                    itemName: areaPageName,
+                    icon: Icons.map_outlined, // Icon từ ảnh
+                    onTap: () {
+                      if (!menuController.isActive(areaPageName)) {
+                        menuController.changeActiveItemTo(areaPageName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController.navigateAndSyncURL(areaPageRoute);
+                      }
+                    },
                   ),
 
                   //! Mục 10: QL TÀI NGUYÊN (Owner mới thấy "Tạo") ---

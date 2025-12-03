@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/model/area_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/model/area_list_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/meta/model/meta_model.dart';
 
 class AreaListModelResponse extends BaseResponse {

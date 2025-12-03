@@ -1,6 +1,6 @@
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/model/space_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/model/station_space_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/model/area_list_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/model/area_list_model.dart';
 
 final List<StationSpaceModel> mockStationSpace = [
   StationSpaceModel(

@@ -2,5 +2,6 @@ import 'package:web_netpool_station_owner_admin/core/network/api/api_endpoints.d
 
 //! Area  List !//
 class AreaListApi {
-  final String AreaListUrl = "$domainUrl/v1/pub/areas";
+  final String pubAreaUrl = "$domainUrl/v1/pub/areas";
+  final String apiAreaUrl = "$domainUrl/v1/api/areas";
 }

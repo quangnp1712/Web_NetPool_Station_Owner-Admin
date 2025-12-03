@@ -56,13 +56,8 @@ const String spacePageName = "Loại hình";
 const String spacePageRoute = "/station/spaces";
 
 // 6: QUẢN LÝ AREA - KHU VỰC //
-const String areaParentName = "Khu vực";
-const String areaListPageName = "Danh sách Khu vực";
-const String areaListPageRoute = "/station/areas/list";
-const String areaCreatePageName = "Tạo Khu vực";
-const String areaCreatePageRoute = "/station/area/create";
-const String areaUpdatePageName = "Cập nhật Station - Khu vực";
-const String areaUpdatePageRoute = "/station/area/update";
+const String areaPageName = "Khu vực";
+const String areaPageRoute = "/station/areas";
 
 // 7: QUẢN LÝ PROPERTY - TÀI NGUYÊN //
 const String resourceParentName = "Tài nguyên";

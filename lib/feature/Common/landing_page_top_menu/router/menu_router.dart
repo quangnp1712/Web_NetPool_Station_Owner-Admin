@@ -19,8 +19,8 @@ import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Manageme
 import 'package:web_netpool_station_owner_admin/feature/1_Dashboard/dashboard.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/bloc/space_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/8_Space_Management/pages/space_page.dart';
-import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/bloc/area_list_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/8.1_Space_List/pages/area_list_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/bloc/area_list_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/9_Area_Management/pages/area_list_page.dart';
 
 PageRoute getPageRoute(Widget child) {
   return MaterialPageRoute(builder: (context) => child);
@@ -118,7 +118,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
       );
 
     //! QUẢN LÝ AREA $//
-    case areaListPageRoute:
+    case areaPageRoute:
       return MaterialPageRoute(
         builder: (context) {
           return BlocProvider<AreaListBloc>.value(

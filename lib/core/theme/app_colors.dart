@@ -34,4 +34,7 @@ class AppColors {
   static const Color statusActiveText = Color(0xFF4ADE80); // Green 400
   static const Color statusInactiveBg = Color(0xFF424242);
   static const Color statusInactiveText = Color(0xFFBDBDBD);
+
+  static const Color statusUsing = Color(0xFFDC2626); // Red for "Using"
+  static const Color statusFree = Color(0xFF10B981); // Green for "Free"
 }
