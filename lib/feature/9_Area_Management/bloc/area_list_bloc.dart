@@ -182,35 +182,6 @@ class AreaListBloc extends Bloc<AreaListEvent, AreaListState> {
           } catch (e) {
             areas = [];
           }
-          // final int selectedSpaceId = state.selectedSpace!.stationSpaceId!;
-
-          // final List<AreaModel> filteredList = areas.where((area) {
-          //   // Lọc theo Space
-          //   bool spaceMatch = area.stationSpaceId == selectedSpaceId;
-
-          //   // Lọc theo Status
-          //   bool statusMatch = state.selectedStatus == null ||
-          //       area.statusCode == state.selectedStatus;
-
-          //   // Lọc theo Search Term
-          //   bool searchMatch = state.searchTerm.isEmpty ||
-          //       (area.areaName
-          //               ?.toLowerCase()
-          //               .contains(state.searchTerm.toLowerCase()) ??
-          //           false) ||
-          //       (area.areaCode
-          //               ?.toLowerCase()
-          //               .contains(state.searchTerm.toLowerCase()) ??
-          //           false);
-
-          //   return spaceMatch && statusMatch && searchMatch;
-          // }).toList();
-
-          // final int totalItems = filteredList.length;
-          // final int start = (current - 1) * pageSize;
-          // final int end = min(start + pageSize, totalItems);
-          // final List<AreaModel> pageData =
-          //     totalItems > 0 ? filteredList.sublist(start, end) : <AreaModel>[];
 
           emit(state.copyWith(
             status: AreaListStatus.success,

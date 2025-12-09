@@ -17,6 +17,7 @@ class StationSpaceModel {
   int? capacity;
   String? statusCode;
   String? statusName;
+  SpaceMetaDataModel? metadata;
 
   // bổ sung
   PlatformSpaceModel? space;
@@ -32,6 +33,7 @@ class StationSpaceModel {
     this.statusCode,
     this.statusName,
     this.space,
+    this.metadata,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +43,7 @@ class StationSpaceModel {
       'spaceCode': spaceCode,
       'spaceName': spaceName,
       'capacity': capacity,
+      'metadata': metadata?.toMap(),
     };
   }
 
@@ -57,6 +60,9 @@ class StationSpaceModel {
           map['statusCode'] != null ? map['statusCode'] as String : null,
       statusName:
           map['statusName'] != null ? map['statusName'] as String : null,
+      metadata: map['metadata'] != null
+          ? SpaceMetaDataModel.fromMap(map['metadata'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -75,6 +81,7 @@ class StationSpaceModel {
     String? statusCode,
     String? statusName,
     PlatformSpaceModel? space,
+    SpaceMetaDataModel? metadata,
   }) {
     return StationSpaceModel(
       stationSpaceId: stationSpaceId ?? this.stationSpaceId,
@@ -86,6 +93,7 @@ class StationSpaceModel {
       statusCode: statusCode ?? this.statusCode,
       statusName: statusName ?? this.statusName,
       space: space ?? this.space,
+      metadata: metadata ?? this.metadata,
     );
   }
 }

@@ -59,7 +59,7 @@ const String spacePageRoute = "/station/spaces";
 const String areaPageName = "Khu vực";
 const String areaPageRoute = "/station/areas";
 
-// 7: QUẢN LÝ PROPERTY - TÀI NGUYÊN //
+// 7: QUẢN LÝ RESOURCE - TÀI NGUYÊN //
 const String resourceParentName = "Tài nguyên";
 const String resourceListPageName = "Danh sách Tài nguyên";
 const String resourceListPageRoute = "/station/resources/list";

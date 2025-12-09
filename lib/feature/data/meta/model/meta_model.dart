@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 class MetaModel {
@@ -30,4 +31,16 @@ class MetaModel {
 
   factory MetaModel.fromJson(Map<String, dynamic> source) =>
       MetaModel.fromMap(source);
+
+  MetaModel copyWith({
+    int? pageSize,
+    int? current,
+    int? total,
+  }) {
+    return MetaModel(
+      pageSize: pageSize ?? this.pageSize,
+      current: current ?? this.current,
+      total: total ?? this.total,
+    );
+  }
 }
