@@ -47,7 +47,7 @@ dependencies:
   geolocator: ^13.0.2
 
   dropdown_button2: ^2.3.9
-  intl: ^0.20.2
+  intl: ^0.19.0
 
   # thay thế cho step
   timeline_tile: ^2.0.0
