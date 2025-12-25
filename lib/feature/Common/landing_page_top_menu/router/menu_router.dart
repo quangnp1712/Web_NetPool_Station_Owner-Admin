@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/bloc/station_resource_bloc.dart';
-import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/pages/mock_resoucre_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/pages/resoucre_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/pages/station_detail_page.dart';
@@ -132,10 +131,7 @@ Route<dynamic> menuRoute(RouteSettings settings) {
       );
 
     //! QUẢN LÝ RESOUCRE  $//
-    case resourceListPageRoute:
-      return getPageRoute(const MockStationResourcePage());
-
-    case resourceCreatePageRoute:
+    case resourcePageRoute:
       return MaterialPageRoute(
         builder: (context) {
           return BlocProvider<StationResourceBloc>.value(

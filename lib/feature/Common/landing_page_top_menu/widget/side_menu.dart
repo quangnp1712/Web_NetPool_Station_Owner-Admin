@@ -430,64 +430,17 @@ class SideMenu extends StatelessWidget {
                   ),
 
                   //! Mục 10: QL TÀI NGUYÊN (Owner mới thấy "Tạo") ---
-                  CustomExpansionItem(
-                    parentName: resourceParentName,
-                    icon: Icons.devices_other_outlined,
-                    children: [
-                      //$ 10.1 Danh sách Tài nguyên - con
-                      SideMenuChildItem(
-                        itemName: resourceListPageName,
-                        onTap: () {
-                          if (!menuController.isActive(resourceListPageName)) {
-                            menuController.changeActiveItemTo(
-                                resourceListPageName,
-                                parentName: resourceParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
-                            }
-                            navigationController
-                                .navigateAndSyncURL(resourceListPageRoute);
-                          }
-                        },
-                      ),
-                      //$ 10.2 Tạo Tài nguyên - con
-                      // --- PHÂN QUYỀN ---
-                      if (isOwner)
-                        SideMenuChildItem(
-                          itemName: resourceCreatePageName,
-                          onTap: () {
-                            if (!menuController
-                                .isActive(resourceCreatePageName)) {
-                              menuController.changeActiveItemTo(
-                                  resourceCreatePageName,
-                                  parentName: resourceParentName);
-                              if (ResponsiveWidget.isSmallScreen(context)) {
-                                Get.back();
-                              }
-                              navigationController
-                                  .navigateAndSyncURL(resourceCreatePageRoute);
-                            }
-                          },
-                        ),
-                      //$ 10.3 Cập nhật Station - Tài nguyên - con
-                      // ------------------
-                      SideMenuChildItem(
-                        itemName: resourceUpdatePageName,
-                        onTap: () {
-                          if (!menuController
-                              .isActive(resourceUpdatePageName)) {
-                            menuController.changeActiveItemTo(
-                                resourceUpdatePageName,
-                                parentName: resourceParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
-                            }
-                            navigationController
-                                .navigateAndSyncURL(resourceUpdatePageRoute);
-                          }
-                        },
-                      ),
-                    ],
+                  SideMenuItem(
+                    itemName: resourcePageName,
+                    icon: Icons.devices_other_outlined, // Icon từ ảnh
+                    onTap: () {
+                      if (!menuController.isActive(resourcePageName)) {
+                        menuController.changeActiveItemTo(resourcePageName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(resourcePageRoute);
+                      }
+                    },
                   ),
 
                   //! Mục 11: QL DỊCH VỤ ĂN UỐNG (Cả 2 đều thấy) ---

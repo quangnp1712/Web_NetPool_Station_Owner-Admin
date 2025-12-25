@@ -60,13 +60,8 @@ const String areaPageName = "Khu vực";
 const String areaPageRoute = "/station/areas";
 
 // 7: QUẢN LÝ RESOURCE - TÀI NGUYÊN //
-const String resourceParentName = "Tài nguyên";
-const String resourceListPageName = "Danh sách Tài nguyên";
-const String resourceListPageRoute = "/station/resources/list";
-const String resourceCreatePageName = "Tạo Tài nguyên";
-const String resourceCreatePageRoute = "/station/resource/create";
-const String resourceUpdatePageName = "Cập nhật Station - Tài nguyên";
-const String resourceUpdatePageRoute = "/station/resource/update";
+const String resourcePageName = "Tài nguyên";
+const String resourcePageRoute = "/station/resources";
 
 // 8: QUẢN LÝ MENU - DV ĂN UỐNG//
 const String menuParentName = "Dịch vụ ăn uống";
