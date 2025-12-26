@@ -30,3 +30,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_REALMEN_2023 }}
           channelId: live
           projectId: realmen-2023
+          target: owner_site

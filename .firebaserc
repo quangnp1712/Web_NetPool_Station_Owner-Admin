@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "realmen-2023"
-  }
+  },
+  "targets": {
+    "realmen-2023": {
+      "hosting": {
+        "owner_site": [
+          "netpool-station-owner"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

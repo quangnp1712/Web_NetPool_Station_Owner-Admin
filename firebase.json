@@ -20,6 +20,7 @@
     }
   },
   "hosting": {
+    "target": "owner_site",
     "public": "build/web",
     "ignore": [
       "firebase.json",
