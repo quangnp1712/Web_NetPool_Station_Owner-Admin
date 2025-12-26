@@ -334,23 +334,23 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               // 1. Liên kết "Quên mật khẩu" (Sát trái)
-                              MouseRegion(
-                                // THÊM: Thay đổi con trỏ chuột khi hover
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Get.toNamed(validEmailPageRoute);
-                                  },
-                                  child: Text(
-                                    'Quên mật khẩu ?',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.blueAccent,
-                                      fontFamily: 'SegoeUI',
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // MouseRegion(
+                              //   // THÊM: Thay đổi con trỏ chuột khi hover
+                              //   cursor: SystemMouseCursors.click,
+                              //   child: GestureDetector(
+                              //     onTap: () {
+                              //       Get.toNamed(validEmailPageRoute);
+                              //     },
+                              //     child: Text(
+                              //       'Quên mật khẩu ?',
+                              //       style: const TextStyle(
+                              //         fontSize: 14,
+                              //         color: Colors.blueAccent,
+                              //         fontFamily: 'SegoeUI',
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
 
                               // 2. Liên kết "Xác thực email" (Sát phải)
                               MouseRegion(

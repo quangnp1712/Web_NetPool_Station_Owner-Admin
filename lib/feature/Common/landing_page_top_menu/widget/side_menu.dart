@@ -243,28 +243,31 @@ class SideMenu extends StatelessWidget {
                 ),
 
                 //! Mục 5: Quản lý Station (Owner mới thấy "Tạo") ---
-                CustomExpansionItem(
-                  parentName: stationParentName,
-                  icon: Icons.store_outlined,
-                  children: [
-                    //$ 5.1 Danh sách station - con
-                    SideMenuChildItem(
-                      itemName: stationListPageName,
-                      onTap: () {
-                        if (!menuController.isActive(stationListPageName)) {
-                          menuController.changeActiveItemTo(stationListPageName,
-                              parentName: stationParentName);
-                          if (ResponsiveWidget.isSmallScreen(context)) {
-                            Get.back();
-                          }
-                          navigationController
-                              .navigateAndSyncURL(stationListPageRoute);
-                        }
-                      },
-                    ),
+                if (isOwner)
+                  CustomExpansionItem(
+                    parentName: stationParentName,
+                    icon: Icons.store_outlined,
+                    children: [
+                      //$ 5.1 Danh sách station - con
 
-                    //$ 5.2 Tạo station - con
-                    if (isOwner)
+                      SideMenuChildItem(
+                        itemName: stationListPageName,
+                        onTap: () {
+                          if (!menuController.isActive(stationListPageName)) {
+                            menuController.changeActiveItemTo(
+                                stationListPageName,
+                                parentName: stationParentName);
+                            if (ResponsiveWidget.isSmallScreen(context)) {
+                              Get.back();
+                            }
+                            navigationController
+                                .navigateAndSyncURL(stationListPageRoute);
+                          }
+                        },
+                      ),
+
+                      //$ 5.2 Tạo station - con
+
                       SideMenuChildItem(
                         itemName: stationCreatePageName,
                         onTap: () {
@@ -281,42 +284,41 @@ class SideMenu extends StatelessWidget {
                         },
                       ),
 
-                    //$ 5.3 Câp nhập station - con - Station Owner
-                    if (isStationSelected && isOwner)
-                      SideMenuChildItem(
-                        itemName: stationUpdatePageName,
-                        onTap: () {
-                          if (!menuController.isActive(stationUpdatePageName)) {
-                            menuController.changeActiveItemTo(
-                                stationUpdatePageName,
-                                parentName: stationParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
+                      //$ 5.3 Câp nhập station - con - Station Owner
+                      if (isStationSelected)
+                        SideMenuChildItem(
+                          itemName: stationUpdatePageName,
+                          onTap: () {
+                            if (!menuController
+                                .isActive(stationUpdatePageName)) {
+                              menuController.changeActiveItemTo(
+                                  stationUpdatePageName,
+                                  parentName: stationParentName);
+                              if (ResponsiveWidget.isSmallScreen(context)) {
+                                Get.back();
+                              }
+                              navigationController
+                                  .navigateAndSyncURL(stationUpdatePageRoute);
                             }
-                            navigationController
-                                .navigateAndSyncURL(stationUpdatePageRoute);
-                          }
-                        },
-                      ),
-                    //$ 5.3 Xem chi tiết station - con - Station Admin
-                    if (!isOwner)
-                      SideMenuChildItem(
-                        itemName: stationDetailPageName,
-                        onTap: () {
-                          if (!menuController.isActive(stationDetailPageName)) {
-                            menuController.changeActiveItemTo(
-                                stationDetailPageName,
-                                parentName: stationParentName);
-                            if (ResponsiveWidget.isSmallScreen(context)) {
-                              Get.back();
-                            }
-                            navigationController
-                                .navigateAndSyncURL(stationDetailPageRoute);
-                          }
-                        },
-                      ),
-                  ],
-                ),
+                          },
+                        ),
+                    ],
+                  ),
+                //$ 5.3 Xem chi tiết station - con - Station Admin
+                if (!isOwner)
+                  SideMenuItem(
+                    itemName: stationDetailPageName,
+                    icon: Icons.category_outlined, // Icon từ ảnh
+                    onTap: () {
+                      if (!menuController.isActive(stationDetailPageName)) {
+                        menuController
+                            .changeActiveItemTo(stationDetailPageName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(stationDetailPageRoute);
+                      }
+                    },
+                  ),
 
                 //! Mục 6: Quản lý Admin - Nhaan vieen
                 if (isOwner)
