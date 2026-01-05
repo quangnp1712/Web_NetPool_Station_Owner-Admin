@@ -2,14 +2,14 @@
 import 'dart:convert';
 
 import 'package:web_netpool_station_owner_admin/core/model/base_response_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/model/station_detail_model.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/model/4_resource/resoucre_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/meta/model/meta_model.dart';
 
-class StationDetailModelResponse extends BaseResponse {
-  StationDetailModel? data;
+class ResoucreListModelResponse extends BaseResponse {
+  List<StationResourceModel>? data;
   MetaModel? meta;
 
-  StationDetailModelResponse({
+  ResoucreListModelResponse({
     this.data,
     this.meta,
     status,
@@ -19,21 +19,14 @@ class StationDetailModelResponse extends BaseResponse {
     message,
   });
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'data': data,
-      'status': status,
-      'success': success,
-      'errorCode': errorCode,
-      'responseAt': responseAt,
-      'message': message,
-    };
-  }
-
-  factory StationDetailModelResponse.fromMap(Map<String, dynamic> map) {
-    return StationDetailModelResponse(
+  factory ResoucreListModelResponse.fromMap(Map<String, dynamic> map) {
+    return ResoucreListModelResponse(
       data: map['data'] != null
-          ? StationDetailModel.fromMap(map['data'] as Map<String, dynamic>)
+          ? List<StationResourceModel>.from(
+              (map['data'] as List).map(
+                (x) => StationResourceModel.fromMap(x as Map<String, dynamic>),
+              ),
+            )
           : null,
       meta: map['meta'] != null
           ? MetaModel.fromMap(map['meta'] as Map<String, dynamic>)
@@ -47,8 +40,6 @@ class StationDetailModelResponse extends BaseResponse {
     );
   }
 
-  String toJson() => json.encode(toMap());
-
-  factory StationDetailModelResponse.fromJson(Map<String, dynamic> source) =>
-      StationDetailModelResponse.fromMap(source);
+  factory ResoucreListModelResponse.fromJson(Map<String, dynamic> source) =>
+      ResoucreListModelResponse.fromMap(source);
 }

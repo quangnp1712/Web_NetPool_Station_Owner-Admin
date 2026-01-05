@@ -106,7 +106,7 @@ class _AreaListPageState extends State<AreaListPage> {
                     borderRadius: BorderRadius.circular(20.0),
                     boxShadow: [
                       BoxShadow(
-                          color: AppColors.primaryGlow,
+                          color: AppColors.primaryGlow.withOpacity(0.25),
                           blurRadius: 20.0,
                           spreadRadius: 0.5,
                           offset: const Offset(0, 4))

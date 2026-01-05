@@ -20,6 +20,7 @@ import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.3_Reg
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/bloc/valid_email_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.4_Valid_Email/shared_preferences/verify_email_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/bloc/station_resource_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/1_Dashboard/dashboard.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.3_Account_Admin_Detail/bloc/admin_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/7_Account_Player_Management/7.1_Account_List/bloc/account_list_bloc.dart';
@@ -44,25 +45,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  try {
-    if (kIsWeb) {
-      // Chạy trên Web
-      await FirebaseAppCheck.instance.activate(
-        // Cung cấp reCAPTCHA v3 site key của bạn ở đây
-        // Bạn phải lấy key này từ Google Cloud Console (reCAPTCHA v3)
-        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY_HERE'),
-      );
-    } else {
-      // Chạy trên Android/iOS
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.appAttest, // (Nên thêm cho iOS)
-      );
-    }
-  } catch (e) {
-    print('Lỗi Firebase App Check: $e');
-  }
-  _FBSignAnonymous();
+  await _FBSignAnonymous();
   Get.put(menu_controller.MenuController());
   Get.put(NavigationController());
   // SharedPreferencesHelper.clearAll();

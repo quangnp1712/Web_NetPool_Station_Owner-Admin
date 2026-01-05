@@ -57,13 +57,15 @@ class StationCreateState extends Equatable {
 
   // [THÊM] Loading và List gợi ý địa chỉ
   final bool isLoadingAddressSuggestions;
-  final List<String> addressSuggestions;
-  // final List<AutocompleteModel> addressSuggestions;
+  final List<AutocompleteModel> addressSuggestions;
+
+  final String? placeId;
 
   const StationCreateState({
     this.blocState = StationCreateBlocState.Initial,
     this.stationCreateStatus = StationCreateStatus.initial,
     this.message = '',
+    this.placeId = '',
     this.provincesList = const [],
     this.districtList = const [],
     this.communeList = const [],
@@ -90,6 +92,7 @@ class StationCreateState extends Equatable {
     StationCreateBlocState? blocState,
     StationCreateStatus? stationCreateStatus,
     String? message,
+    String? placeId,
     List<ProvinceModel>? provincesList,
     List<DistrictModel>? districtList,
     List<CommuneModel>? communeList,
@@ -108,13 +111,14 @@ class StationCreateState extends Equatable {
     bool? isCaptchaVerified,
     bool? isClearCaptchaController,
     bool? isLoadingAddressSuggestions,
-    List<String>? addressSuggestions,
+    List<AutocompleteModel>? addressSuggestions,
     // List<AutocompleteModel>? addressSuggestions,
   }) {
     return StationCreateState(
       blocState: blocState ?? StationCreateBlocState.Initial,
       stationCreateStatus: stationCreateStatus ?? StationCreateStatus.initial,
       message: message ?? this.message,
+      placeId: placeId ?? this.placeId,
       provincesList: provincesList ?? this.provincesList,
       districtList: districtList ?? this.districtList,
       communeList: communeList ?? this.communeList,
@@ -145,6 +149,7 @@ class StationCreateState extends Equatable {
         blocState,
         stationCreateStatus,
         message,
+        placeId,
         provincesList,
         districtList,
         communeList,

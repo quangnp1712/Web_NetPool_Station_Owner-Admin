@@ -205,7 +205,7 @@ class _StationListPageState extends State<StationListPage> {
         return Material(
           color: AppColors.mainBackground, // Màu nền tối bên ngoài
           child: ListView(
-            physics: const NeverScrollableScrollPhysics(),
+            // physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(0.0),
             children: [
               Container(
@@ -221,7 +221,7 @@ class _StationListPageState extends State<StationListPage> {
                     boxShadow: [
                       // Áp dụng chính xác thông số Drop Shadow bạn đã cung cấp
                       BoxShadow(
-                        color: AppColors.primaryGlow,
+                        color: AppColors.primaryGlow.withOpacity(0.25),
                         blurRadius: 20.0,
                         spreadRadius: 0.5,
                         offset: const Offset(0, 4),
@@ -230,6 +230,7 @@ class _StationListPageState extends State<StationListPage> {
                   ),
                   child: Column(
                     children: [
+                      _buildHeader(context),
                       // 1. Hàng Filter (Tìm kiếm, Dropdown, Button)
                       _buildFilterBar(),
 
@@ -245,6 +246,31 @@ class _StationListPageState extends State<StationListPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text("Danh sách Station",
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textWhite,
+                      letterSpacing: -0.5)),
+              SizedBox(height: 4),
+              Text("Quản lý các station",
+                  style: TextStyle(fontSize: 14, color: AppColors.textHint)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

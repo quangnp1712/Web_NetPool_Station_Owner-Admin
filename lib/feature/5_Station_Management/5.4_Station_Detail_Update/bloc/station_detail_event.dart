@@ -117,11 +117,13 @@ class SelectedCommuneEvent extends StationDetailEvent {
 
 class UpdateFullAddressEvent extends StationDetailEvent {
   String? address;
+  String? placeId;
   CommuneModel? commune;
   DistrictModel? district;
   ProvinceModel? province;
   UpdateFullAddressEvent({
     this.address,
+    this.placeId,
     this.commune,
     this.district,
     this.province,
@@ -136,3 +138,33 @@ class SearchAddressSuggestionEvent extends StationDetailEvent {
 class ClearAddressSuggestionsEvent extends StationDetailEvent {}
 
 class ShowStationListPageEvent extends StationDetailEvent {}
+
+class StationUpdateEvent extends StationDetailEvent {
+  final String stationName;
+  final String address;
+  final String province;
+  final String commune;
+  final String district;
+  final String hotline;
+  final String placeId;
+  final List<String>? media;
+  StationUpdateEvent({
+    required this.stationName,
+    required this.address,
+    required this.province,
+    required this.commune,
+    required this.district,
+    required this.hotline,
+    required this.placeId,
+    this.media,
+  });
+}
+
+class ChangeTabEvent extends StationDetailEvent {
+  final String newTab;
+  const ChangeTabEvent(this.newTab);
+  @override
+  List<Object?> get props => [newTab];
+}
+
+class LoadStationEditDialogEvent extends StationDetailEvent {}

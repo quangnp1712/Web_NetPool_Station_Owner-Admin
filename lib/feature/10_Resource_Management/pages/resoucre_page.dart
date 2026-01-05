@@ -101,7 +101,7 @@ class _StationResourcePageState extends State<StationResourcePage> {
                     borderRadius: BorderRadius.circular(20.0),
                     boxShadow: [
                       BoxShadow(
-                          color: AppColors.primaryGlow.withOpacity(0.15),
+                          color: AppColors.primaryGlow.withOpacity(0.25),
                           blurRadius: 20.0,
                           spreadRadius: 0.5,
                           offset: const Offset(0, 4))

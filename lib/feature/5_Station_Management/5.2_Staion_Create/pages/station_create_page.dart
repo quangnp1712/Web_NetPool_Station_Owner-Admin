@@ -14,6 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_text_styles.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.2_Staion_Create/bloc/station_create_bloc.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/models/autocomplete_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/user_session_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
@@ -58,6 +59,18 @@ class _StationCreatePageState extends State<StationCreatePage> {
   // --- THÊM: Hàm lấy màu ngẫu nhiên (an toàn) ---
   Color _getRandomCaptchaColor() {
     return _captchaColors[_random.nextInt(_captchaColors.length)];
+  }
+
+  // --- Helper để tách chuỗi Full Address lấy phần tên đường ---
+  String _parseAddressFromFullString(String? fullAddress) {
+    if (fullAddress == null || fullAddress.isEmpty) return '';
+    List<String> parts = fullAddress.split(',');
+    // Yêu cầu: Bỏ 3 dấu phẩy (tức là 3 phần tử cuối: Xã, Huyện, Tỉnh)
+    if (parts.length > 3) {
+      return parts.sublist(0, parts.length - 3).join(',').trim();
+    }
+    // Nếu chuỗi ngắn quá (chưa đủ thông tin), trả về nguyên chuỗi
+    return fullAddress;
   }
 
   // -------------------------------------------
@@ -259,7 +272,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
                         borderRadius: BorderRadius.circular(20.0),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryGlow,
+                            color: AppColors.primaryGlow.withOpacity(0.25),
                             blurRadius: 20.0,
                             spreadRadius: 0.5,
                             offset: const Offset(0, 4),
@@ -531,7 +544,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
             const SizedBox(height: 40),
 
             // 6. Buttons
-            _buildActionButtons(),
+            _buildActionButtons(state),
             const SizedBox(height: 16), // Thêm padding dưới
           ],
         ),
@@ -546,16 +559,17 @@ class _StationCreatePageState extends State<StationCreatePage> {
       const Text("Địa chỉ chi tiết (Số nhà, đường)",
           style: TextStyle(color: AppColors.textWhite, fontSize: 16)),
       const SizedBox(height: 8),
-      RawAutocomplete<String>(
+      RawAutocomplete<AutocompleteModel>(
         textEditingController: _addressController,
         focusNode: _addressFocusNode,
-
+        displayStringForOption: (AutocompleteModel option) =>
+            _parseAddressFromFullString(option.address),
         // 1. Options Builder: Logic lấy danh sách hiển thị
         // Ở đây ta trả về list từ Bloc State, nhưng trigger event tìm kiếm
         optionsBuilder: (TextEditingValue textEditingValue) {
           if (textEditingValue.text.isEmpty) {
             stationCreateBloc.add(ClearAddressSuggestionsEvent());
-            return const Iterable<String>.empty();
+            return const Iterable<AutocompleteModel>.empty();
           }
 
           // Debounce: Đợi 500ms sau khi ngừng gõ mới gọi API
@@ -568,7 +582,19 @@ class _StationCreatePageState extends State<StationCreatePage> {
           // Trả về danh sách hiện tại trong state (Bloc sẽ update list này sau khi API trả về)
           return state.addressSuggestions;
         },
+        onSelected: (AutocompleteModel selection) {
+          // Handle selection, fill address text with SHORT address
+          String shortAddr = _parseAddressFromFullString(selection.address);
+          _addressController.text = shortAddr;
 
+          stationCreateBloc.add(UpdateFullAddressEvent(
+            address: shortAddr,
+            province: state.selectedProvince,
+            district: state.selectedDistrict,
+            commune: state.selectedCommune,
+            placeId: selection.placeId,
+          ));
+        },
         // 2. UI của ô nhập liệu (giữ nguyên design cũ)
         fieldViewBuilder: (BuildContext context,
             TextEditingController fieldTextEditingController,
@@ -578,6 +604,15 @@ class _StationCreatePageState extends State<StationCreatePage> {
             controller: fieldTextEditingController,
             focusNode: fieldFocusNode,
             style: const TextStyle(color: AppColors.textWhite),
+            onChanged: (val) {
+              stationCreateBloc.add(UpdateFullAddressEvent(
+                address: val,
+                province: state.selectedProvince,
+                district: state.selectedDistrict,
+                commune: state.selectedCommune,
+                placeId: null, // Reset placeId
+              ));
+            },
             decoration: InputDecoration(
                 hintText: "Ví dụ: 483 Thống Nhất",
                 hintStyle: const TextStyle(color: AppColors.textHint),
@@ -610,8 +645,8 @@ class _StationCreatePageState extends State<StationCreatePage> {
 
         // 3. UI của danh sách gợi ý (Overlay)
         optionsViewBuilder: (BuildContext context,
-            AutocompleteOnSelected<String> onSelected,
-            Iterable<String> options) {
+            AutocompleteOnSelected<AutocompleteModel> onSelected,
+            Iterable<AutocompleteModel> options) {
           return Align(
             alignment: Alignment.topLeft,
             child: Material(
@@ -630,12 +665,12 @@ class _StationCreatePageState extends State<StationCreatePage> {
                   shrinkWrap: true,
                   itemCount: options.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final String option = options.elementAt(index);
+                    final AutocompleteModel option = options.elementAt(index);
                     return InkWell(
                       onTap: () => onSelected(option),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text(option,
+                        child: Text(option.address ?? '',
                             style: const TextStyle(
                                 color: AppColors.textWhite) // Màu chữ trắng
                             ),
@@ -1084,7 +1119,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
   }
 
   // ---  WIDGET CON: Nút bấm ---
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(StationCreateState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -1101,7 +1136,8 @@ class _StationCreatePageState extends State<StationCreatePage> {
                     province: _selectedProvince!.name,
                     district: _selectedDistrict!.name,
                     commune: _selectedCommune!.name,
-                    media: _base64Images));
+                    media: _base64Images,
+                    placeId: state.placeId ?? ""));
               }
             }
           },

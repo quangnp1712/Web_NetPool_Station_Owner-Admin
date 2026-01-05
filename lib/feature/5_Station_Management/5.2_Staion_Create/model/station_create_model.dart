@@ -16,6 +16,7 @@ class StationCreateModel {
   String? statusName;
   List<MediaModel>? media;
   MetaDataModel? metadata;
+  String? placeId;
 
   StationCreateModel({
     this.stationId,
@@ -31,6 +32,7 @@ class StationCreateModel {
     this.statusName,
     this.media,
     this.metadata,
+    this.placeId,
   });
 
   Map<String, dynamic> toMap() {
@@ -42,6 +44,8 @@ class StationCreateModel {
       'commune': commune,
       'district': district,
       'hotline': hotline,
+      'media': media?.map((x) => x.toMap()).toList(),
+      'placeId': placeId,
     };
   }
 
@@ -58,6 +62,7 @@ class StationCreateModel {
       commune: map['commune'] != null ? map['commune'] as String : null,
       district: map['district'] != null ? map['district'] as String : null,
       hotline: map['hotline'] != null ? map['hotline'] as String : null,
+      placeId: map['placeId'] != null ? map['placeId'] as String : null,
       statusCode:
           map['statusCode'] != null ? map['statusCode'] as String : null,
       statusName:

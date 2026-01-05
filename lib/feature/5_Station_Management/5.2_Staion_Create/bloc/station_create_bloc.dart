@@ -146,14 +146,16 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
           ? await _uploadImagesToFirebase(event.media!)
           : [];
       StationCreateModel stationCreateModel = StationCreateModel(
-          stationName: event.stationName,
-          address: event.address,
-          province: event.province,
-          commune: event.commune,
-          hotline: event.hotline,
-          district: event.district,
-          avatar: media.isNotEmpty ? media[0].url : null,
-          media: media);
+        stationName: event.stationName,
+        address: event.address,
+        province: event.province,
+        commune: event.commune,
+        hotline: event.hotline,
+        district: event.district,
+        avatar: media.isNotEmpty ? media[0].url : null,
+        media: media,
+        placeId: event.placeId,
+      );
       var results =
           await StationCreateRepository().createStation(stationCreateModel);
       var responseMessage = results['message'];
@@ -342,40 +344,35 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
 
     try {
       List<AutocompleteModel> autocompletes = [];
-      // Giả lập delay API BE
-      await Future.delayed(const Duration(milliseconds: 300));
 
-      // var results = await AutocompleteRepository().autocomplete(event.query);
-      // var responseMessage = results['message'];
-      // var responseStatus = results['status'];
-      // var responseSuccess = results['success'];
-      // var responseBody = results['body'];
-      // if (responseSuccess || responseStatus == 200) {
-      //   AutocompleteModelResponse autocompleteModelResponse =
-      //       AutocompleteModelResponse.fromJson(responseBody);
-      //   if (autocompleteModelResponse.data != null ||
-      //       autocompleteModelResponse.data!.isNotEmpty) {
-      //     if (autocompleteModelResponse.data!.isNotEmpty) {
-      //       autocompletes = autocompleteModelResponse.data!;
-      //     }
-      //   }
-      // }
+      //! full address
+      String _query = [
+        event.query,
+        state.selectedCommune?.name,
+        state.selectedDistrict?.name,
+        state.selectedProvince?.name,
+      ].where((s) => s != null && s.isNotEmpty).join(', ');
 
-      // Giả lập kết quả trả về từ BE (Chỉ lấy phần Số nhà + Tên đường)
-      // API thực tế sẽ lấy query + provinceId + districtId để search chính xác hơn
-      final List<String> mockResults = [
-        "${event.query} Nguyễn Văn Lượng",
-        "${event.query} Quang Trung",
-        "${event.query}/2A Phan Văn Trị",
-        "${event.query} Lê Đức Thọ",
-        "Hẻm ${event.query} Thống Nhất",
-      ];
+      //! call api
+      var results = await AutocompleteRepository().autocomplete(_query);
+      var responseMessage = results['message'];
+      var responseStatus = results['status'];
+      var responseSuccess = results['success'];
+      var responseBody = results['body'];
+      if (responseSuccess || responseStatus == 200) {
+        AutocompleteModelResponse autocompleteModelResponse =
+            AutocompleteModelResponse.fromJson(responseBody);
+        if (autocompleteModelResponse.data != null ||
+            autocompleteModelResponse.data!.isNotEmpty) {
+          if (autocompleteModelResponse.data!.isNotEmpty) {
+            autocompletes = autocompleteModelResponse.data!;
+          }
+        }
+      }
 
       emit(state.copyWith(
-          addressSuggestions: mockResults, isLoadingAddressSuggestions: false));
-      // emit(state.copyWith(
-      //       addressSuggestions: autocompletes,
-      //       isLoadingAddressSuggestions: false));
+          addressSuggestions: autocompletes,
+          isLoadingAddressSuggestions: false));
     } catch (e) {
       emit(state.copyWith(
           addressSuggestions: [], isLoadingAddressSuggestions: false));
@@ -551,7 +548,8 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       final fullAddress = [address, commune, district, province]
           .where((s) => s.isNotEmpty)
           .join(', ');
-      emit(state.copyWith(fullAddressController: fullAddress));
+      emit(state.copyWith(
+          fullAddressController: fullAddress, placeId: event.placeId));
     } catch (e) {
       DebugLogger.printLog("Lỗi: $e");
     }

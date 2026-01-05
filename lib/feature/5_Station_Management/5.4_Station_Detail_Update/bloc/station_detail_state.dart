@@ -8,7 +8,9 @@ const _sentinel = Object();
 // stationDetailStatus
 enum StationDetailStatus {
   initial,
-  loading,
+  loadingHeader,
+  loadingContent,
+  loadingDialog,
   success,
   failure,
 }
@@ -50,13 +52,14 @@ class StationDetailState extends Equatable {
   bool get isEditMode => screenMode == ScreenMode.edit;
 
   // --- Data ---
-  final StationDetailModelResponse? stationDetailModelResponse;
+  final StationDetailModel? station;
   final String currentStationId;
   final String stationName;
   final String address;
   final String phone;
   final String statusName;
   final String statusCode;
+  final String? placeId;
 
   // --- Data Lists ---
   final List<ProvinceModel> provincesList;
@@ -65,7 +68,6 @@ class StationDetailState extends Equatable {
   final List<String> base64Images;
 
   // --- Form Selections & Inputs ---
-  final int? selectedStationId;
   final ProvinceModel? selectedProvince;
   final DistrictModel? selectedDistrict;
   final CommuneModel? selectedCommune;
@@ -85,19 +87,22 @@ class StationDetailState extends Equatable {
 
   // [THÊM] Loading và List gợi ý địa chỉ
   final bool isLoadingAddressSuggestions;
-  final List<String> addressSuggestions;
-  // final List<AutocompleteModel> addressSuggestions;
+  final List<AutocompleteModel> addressSuggestions;
+
+  final String activeTab;
+  final List<StationSpaceModel> spaces;
+  final List<AreaModel> areas;
+  final List<StationResourceModel> resources;
 
   const StationDetailState({
     this.blocState = StationDetailBlocState.Initial,
     this.stationDetailStatus = StationDetailStatus.initial,
-    this.stationDetailModelResponse,
+    this.station,
     this.message = '',
     this.provincesList = const [],
     this.districtList = const [],
     this.communeList = const [],
     this.base64Images = const [],
-    this.selectedStationId,
     this.selectedProvince,
     this.selectedDistrict,
     this.selectedCommune,
@@ -117,20 +122,30 @@ class StationDetailState extends Equatable {
     this.phone = '',
     this.statusName = '',
     this.statusCode = '',
+    this.placeId = '',
     this.screenMode = ScreenMode.view,
     this.currentStationId = '',
+    this.activeTab = 'overview',
+    this.spaces = const [],
+    this.areas = const [],
+    this.resources = const [],
   });
+
+  bool get isHeaderLoading =>
+      stationDetailStatus == StationDetailStatus.loadingHeader;
+  bool get isContentLoading =>
+      stationDetailStatus == StationDetailStatus.loadingContent;
 
   // Hàm copyWith quan trọng để cập nhật state
   StationDetailState copyWith({
     StationDetailBlocState? blocState,
     StationDetailStatus? stationDetailStatus,
     String? message,
+    String? placeId,
     List<ProvinceModel>? provincesList,
     List<DistrictModel>? districtList,
     List<CommuneModel>? communeList,
     List<String>? base64Images,
-    int? selectedStationId,
     Object? selectedProvince = _sentinel,
     Object? selectedDistrict = _sentinel,
     Object? selectedCommune = _sentinel,
@@ -144,9 +159,7 @@ class StationDetailState extends Equatable {
     bool? isCaptchaVerified,
     bool? isClearCaptchaController,
     bool? isLoadingAddressSuggestions,
-    List<String>? addressSuggestions,
-    // List<AutocompleteModel>? addressSuggestions,
-
+    List<AutocompleteModel>? addressSuggestions,
     String? stationName,
     String? address,
     String? phone,
@@ -154,17 +167,21 @@ class StationDetailState extends Equatable {
     String? statusCode,
     ScreenMode? screenMode,
     String? currentStationId,
-    StationDetailModelResponse? stationDetailModelResponse,
+    StationDetailModel? station,
+    String? activeTab,
+    List<StationSpaceModel>? spaces,
+    List<AreaModel>? areas,
+    List<StationResourceModel>? resources,
   }) {
     return StationDetailState(
       blocState: blocState ?? StationDetailBlocState.Initial,
       stationDetailStatus: stationDetailStatus ?? StationDetailStatus.initial,
       message: message ?? this.message,
+      placeId: placeId ?? this.placeId,
       provincesList: provincesList ?? this.provincesList,
       districtList: districtList ?? this.districtList,
       communeList: communeList ?? this.communeList,
       base64Images: base64Images ?? this.base64Images,
-      selectedStationId: selectedStationId ?? this.selectedStationId,
       selectedProvince: selectedProvince == _sentinel
           ? this.selectedProvince
           : selectedProvince as ProvinceModel?,
@@ -195,8 +212,11 @@ class StationDetailState extends Equatable {
       statusCode: statusCode ?? this.statusCode,
       screenMode: screenMode ?? this.screenMode,
       currentStationId: currentStationId ?? this.currentStationId,
-      stationDetailModelResponse:
-          stationDetailModelResponse ?? this.stationDetailModelResponse,
+      station: station ?? this.station,
+      activeTab: activeTab ?? this.activeTab,
+      spaces: spaces ?? this.spaces,
+      areas: areas ?? this.areas,
+      resources: resources ?? this.resources,
     );
   }
 
@@ -209,7 +229,6 @@ class StationDetailState extends Equatable {
         districtList,
         communeList,
         base64Images,
-        selectedStationId,
         selectedProvince,
         selectedDistrict,
         selectedCommune,
@@ -226,8 +245,13 @@ class StationDetailState extends Equatable {
         addressSuggestions,
         screenMode,
         currentStationId,
-        stationDetailModelResponse,
+        station,
         statusCode,
         statusName,
+        placeId,
+        activeTab,
+        spaces,
+        areas,
+        resources,
       ];
 }

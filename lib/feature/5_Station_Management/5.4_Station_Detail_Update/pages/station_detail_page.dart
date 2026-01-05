@@ -1,28 +1,21 @@
 // ignore_for_file: type_literal_in_constant_pattern
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:file_picker/file_picker.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:web_netpool_station_owner_admin/core/responsive/responsive.dart';
-import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/theme/app_colors.dart';
+import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/feature/0_Authentication/0.1_Authentication/shared_preferences/auth_shared_preferences.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/shared_preferences/station_detail_shared_pref.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/widgets/get_icon_widget.dart';
+import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/widgets/station_edit_dialog.dart';
 import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/user_session_controller.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/snackbar/snackbar.dart';
-import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_model.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/repository/landing_repository.dart';
-import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/menu_controller.dart';
 
 //! Station Detail - Xem Sửa Station !//
 
@@ -34,40 +27,14 @@ class StationDetailPage extends StatefulWidget {
 }
 
 class _StationDetailPageState extends State<StationDetailPage> {
-  late final String stationId;
+  StationDetailBloc bloc = StationDetailBloc();
   final UserSessionController sessionController = Get.find();
 
-  final _formKey = GlobalKey<FormState>();
-  final StationDetailBloc stationDetailBloc = StationDetailBloc();
+  String _activeTab = 'overview';
+  late final String _userRole;
+  late final String stationId;
 
-  // [THÊM] Timer cho debounce search
-  Timer? _debounce;
-
-  // Controllers cho form chính
-  final _stationNameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _hotlineController = TextEditingController();
-  final _fullAddressController = TextEditingController();
-
-  // Controllers và State cho Captcha
-  final _captchaController = TextEditingController();
-  bool _isCaptchaVerified = false; // State chính để kiểm soát
-  bool _isVerifyingCaptcha = false; // State cho loading button 'Xác thực'
-  final Random _random = Random();
-  String _captchaText = "";
-
-  //  Danh sách màu an toàn (màu tối) để không trùng màu nền (xám sáng)
-  final List<Color> _captchaColors = [
-    Colors.black,
-    const Color.fromARGB(255, 255, 58, 58),
-    const Color.fromARGB(255, 35, 123, 254),
-    const Color.fromARGB(255, 43, 246, 53),
-    const Color.fromARGB(255, 255, 103, 53),
-    const Color.fromARGB(255, 204, 85, 255),
-  ];
-  // ---------------------------------------
-
-  // Helper chọn màu sắc dựa trên StatusCode
+// --- HELPER MỚI: CHỌN MÀU THEO TRẠNG THÁI ---
   Color _getStatusColor(String? code) {
     switch (code?.toUpperCase()) {
       case 'ACTIVE':
@@ -82,1163 +49,1103 @@ class _StationDetailPageState extends State<StationDetailPage> {
     }
   }
 
-  // --- THÊM: Hàm lấy màu ngẫu nhiên (an toàn) ---
-  Color _getRandomCaptchaColor() {
-    return _captchaColors[_random.nextInt(_captchaColors.length)];
-  }
-
-  // -------------------------------------------
-  // Danh sách dữ liệu
-  List<ProvinceModel> _provinceList = [];
-  List<DistrictModel> _districtList = [];
-  List<CommuneModel> _communeList = [];
-
-  // Giá trị cho dropdowns
-  ProvinceModel? _selectedProvince;
-  DistrictModel? _selectedDistrict;
-  CommuneModel? _selectedCommune;
-  // -------------------------------------------
-
-  // Trạng thái loading
-  bool _isLoadingProvinces = false;
-  bool _isLoadingDistricts = false;
-  bool _isLoadingCommunes = false;
-  bool isLoading = true;
-
-  // --- THÊM: State cho Upload Ảnh ---
-  List<String> _base64Images = []; // Dạng: "data:image/png;base64,..."
-  bool _isPickingImage = false;
-  // --------------------------------
-
-  // [THÊM] FocusNode bền vững cho Autocomplete
-  late final FocusNode _addressFocusNode;
-  // --------------------------------
+  // Tách 2 trạng thái loading
+  bool _isHeaderLoading = true; // Loading toàn màn hình (cho Header)
+  bool _isContentLoading = false; // Loading riêng cho Content (Skeleton)
 
   @override
   void initState() {
     super.initState();
-
-    // [THÊM] Khởi tạo FocusNode
-    _addressFocusNode = FocusNode();
+    //$ get userrole
+    _userRole = AuthenticationPref.getRoleCode();
+    DebugLogger.printLog(_userRole);
+    //$ get stationID
     if (StationDetailSharedPref.getStationId() != "") {
       stationId = StationDetailSharedPref.getStationId();
     } else {
       stationId = sessionController.activeStationId.value ?? "";
     }
-
-    stationDetailBloc.add(StationDetailInitialEvent(stationId: stationId));
-
-    _addressController.addListener(() {
-      final currentState = stationDetailBloc.state;
-
-      // 2. Gửi sự kiện UpdateFullAddressEvent
-      if (currentState.isEditMode) {
-        stationDetailBloc.add(UpdateFullAddressEvent(
-          address: _addressController.text,
-          commune: _selectedCommune,
-          district: _selectedDistrict,
-          province: _selectedProvince,
-        ));
-      }
-    });
+    bloc.add(StationDetailInitialEvent(stationId: stationId));
   }
 
-  @override
-  void dispose() {
-    // --- THÊM: Dispose controllers ---
-    _stationNameController.dispose();
-    _addressController.dispose();
-    _hotlineController.dispose();
-    _captchaController.dispose();
-    _fullAddressController.dispose();
-    _debounce?.cancel();
-    _addressFocusNode.dispose();
-    stationDetailBloc.close();
-    StationDetailSharedPref.clearStationId();
-    super.dispose();
+  void _showEditModal(BuildContext context, StationDetailState state) {
+    // Mở Dialog Edit - Nơi chứa Logic Form cũ
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => BlocProvider.value(
+        value: bloc, // Reuse existing BLoC
+        child: StationEditDialog(bloc: bloc),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Đây là layout gốc của AccountListPage
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return BlocConsumer<StationDetailBloc, StationDetailState>(
-      bloc: stationDetailBloc,
+      bloc: bloc,
       listener: (context, state) {
-        if (state.stationDetailStatus == StationDetailStatus.failure) {
-          ShowSnackBar(state.message, false);
-        }
-        if (state.stationDetailStatus == StationDetailStatus.success) {
-          ShowSnackBar(state.message, true);
-          if (state.isEditMode) {
-            stationDetailBloc
-                .add(StationDetailInitialEvent(stationId: stationId));
-          }
-        }
         if (state.blocState ==
             StationDetailBlocState.StationUpdateSuccessState) {
-          stationDetailBloc.add(ResetFormEvent());
-        }
-        if (state.blocState ==
-            StationDetailBlocState.ShowStationListPageState) {
-          if (!menuController.isActive(stationListPageName)) {
-            menuController.changeActiveItemTo(stationListPageName,
-                parentName: stationParentName);
-            if (ResponsiveWidget.isSmallScreen(context)) Get.back();
-            navigationController.navigateAndSyncURL(stationListPageRoute);
-          }
+          bloc.add(StationDetailInitialEvent(stationId: stationId));
         }
       },
       builder: (context, state) {
-        // view detail
-        if (!state.isEditMode) {
-          _base64Images = state.base64Images;
-
-          _stationNameController.value =
-              TextEditingValue(text: state.stationName.toString());
-          _addressController.value =
-              TextEditingValue(text: state.address.toString());
-          _hotlineController.value =
-              TextEditingValue(text: state.phone.toString());
+        _isHeaderLoading =
+            state.stationDetailStatus == StationDetailStatus.loadingHeader
+                ? true
+                : false;
+        _isContentLoading =
+            state.stationDetailStatus == StationDetailStatus.loadingContent
+                ? true
+                : false;
+        if (_isHeaderLoading) {
+          return const Scaffold(
+              backgroundColor: AppColors.mainBackground,
+              body: Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryGlow)));
         }
 
-        _isPickingImage = state.isPickingImage;
-        _selectedProvince = state.selectedProvince;
-        _fullAddressController.text = state.fullAddressController;
-        _isLoadingProvinces = state.isLoadingProvinces;
-        _provinceList = state.provincesList ?? [];
-        _isLoadingDistricts = state.isLoadingDistricts;
-        _districtList = state.districtList ?? [];
-        _communeList = state.communeList ?? [];
-        _selectedCommune = state.selectedCommune;
-        _selectedDistrict = state.selectedDistrict;
-        _isLoadingCommunes = state.isLoadingCommunes;
-        _captchaText = state.captchaText;
-        _isCaptchaVerified = state.isCaptchaVerified;
-        _isVerifyingCaptcha = state.isVerifyingCaptcha;
-        isLoading = state.stationDetailStatus == StationDetailStatus.loading;
-
-        if (state.isClearCaptchaController) {
-          _captchaController.clear();
-        }
-        if (state.blocState == StationDetailBlocState.ResetFormState) {
-          //  Reset controllers mới
-          _stationNameController.clear();
-          _addressController.clear();
-          _hotlineController.clear();
-          _captchaController.clear();
-
-          stationDetailBloc.add(GenerateCaptchaEvent());
-        }
-
-        if (state.blocState == StationDetailBlocState.RemoveImageState) {
-          _base64Images = [];
-          _base64Images = state.base64Images;
-        }
-        if (state.blocState == StationDetailBlocState.PickImagesState) {
-          _base64Images = [];
-          _base64Images = state.base64Images;
-        }
-        if (state.blocState == StationDetailBlocState.SelectedProvinceState) {
-          _selectedProvince = state.selectedProvince;
-          _selectedDistrict = null;
-          _selectedCommune = null;
-          _districtList = [];
-          _communeList = [];
-          if (_selectedProvince != null) {
-            stationDetailBloc
-                .add(LoadDistrictsEvent(provinceCode: _selectedProvince!.code));
-          }
-        }
-        if (state.blocState == StationDetailBlocState.SelectedDistrictState) {
-          _selectedDistrict = state.selectedDistrict;
-          _selectedCommune = null;
-          _communeList = [];
-          if (_selectedDistrict != null) {
-            stationDetailBloc
-                .add(LoadCommunesEvent(districtCode: _selectedDistrict!.code));
-          }
-        }
-        if (state.blocState == StationDetailBlocState.SelectedCommuneState) {
-          _selectedCommune = state.selectedCommune;
-          stationDetailBloc.add(UpdateFullAddressEvent(
-            address: _addressController.text,
-            commune: _selectedCommune,
-            district: _selectedDistrict,
-            province: _selectedProvince,
-          ));
-        }
-
-        if (state.blocState == StationDetailBlocState.LoadDistrictsState) {
-          _isLoadingDistricts = state.isLoadingDistricts;
-          _districtList = state.districtList ?? [];
-          _communeList = state.communeList ?? [];
-          _selectedCommune = state.selectedCommune;
-          _selectedDistrict = state.selectedDistrict;
-          stationDetailBloc.add(UpdateFullAddressEvent(
-            address: _addressController.text,
-            commune: null, // Reset
-            district: null, // Reset
-            province: _selectedProvince,
-          ));
-        }
-
-        if (state.blocState == StationDetailBlocState.LoadCommunesState) {
-          _isLoadingCommunes = state.isLoadingCommunes;
-          _communeList = state.communeList ?? [];
-          _selectedCommune = state.selectedCommune;
-          stationDetailBloc.add(UpdateFullAddressEvent(
-            address: _addressController.text,
-            commune: null, // Reset
-            district: _selectedDistrict,
-            province: _selectedProvince,
-          ));
-        }
-        if (state.blocState ==
-            StationDetailBlocState.VerifyCaptchaSuccessState) {
-          _captchaController.value =
-              TextEditingValue(text: state.captchaText.toString());
-        }
-
-        if (state.blocState == StationDetailBlocState.StationUpdateFailState) {
-          // isLoading = state.isLoading;
-          stationDetailBloc.add(GenerateCaptchaEvent());
-        }
-
-        if (state.blocState == StationDetailBlocState.ToggleEditModeState) {
-          stationDetailBloc.add(GenerateCaptchaEvent());
-        }
-
-        return Material(
-          color: AppColors.mainBackground,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(40.0),
-                    alignment: Alignment.center,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.containerBackground,
-                        borderRadius: BorderRadius.circular(20.0),
-                        boxShadow: [
-                          BoxShadow(
-                              color: AppColors.primaryGlow,
-                              blurRadius: 20.0,
-                              spreadRadius: 0.5,
-                              offset: const Offset(0, 4)),
-                        ],
-                      ),
-                      child: _buildFormContent(context, state),
-                    ),
-                  ),
-                  _buildFooter(),
-                ],
-              ),
-              // --- WIDGET LOADING TRONG STACK ---
-              if (isLoading)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.containerBackground.withOpacity(
-                        0.8,
-                      ), // Màu nền mờ
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.primaryGlow,
-                        ),
-                      ),
-                    ),
-                  ),
+        return Scaffold(
+          backgroundColor: AppColors.mainBackground,
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(isDesktop ? 32 : 16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeaderCard(context, state, isDesktop),
+                    const SizedBox(height: 24),
+                    _buildMainContent(isDesktop, state),
+                  ],
                 ),
-              // ------------------------------------
-            ],
+              ),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildFormContent(BuildContext context, StationDetailState state) {
-    // Tiêu đề thay đổi dựa trên chế độ View/Edit
-    final String title =
-        state.isEditMode ? "Cập nhật Station" : "Chi tiết Station";
-    final bool isReadOnly =
-        state.isReadOnly; // True = View Mode, False = Edit Mode
-
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Header Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        color: AppColors.textWhite,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold)),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                      color: isReadOnly
-                          ? Colors.blue.withOpacity(0.2)
-                          : Colors.orange.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: isReadOnly ? Colors.blue : Colors.orange)),
-                  child: Text(
-                    isReadOnly ? "Chế độ xem" : "Đang chỉnh sửa",
-                    style: TextStyle(
-                        color: isReadOnly ? Colors.blue : Colors.orange,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
+  Widget _buildHeaderCard(
+      BuildContext context, StationDetailState state, bool isDesktop) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.primaryGlow.withOpacity(0.05),
+              blurRadius: 30,
+              spreadRadius: 0),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          isDesktop
+              ? IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 3, child: _buildCoverImage(state)),
+                      Expanded(
+                          flex: 7, child: _buildHeaderInfo(context, state)),
+                    ],
                   ),
                 )
-              ],
-            ),
-            const Divider(color: AppColors.inputBackground, height: 32),
-            const SizedBox(height: 32),
-
-            // 2. Images
-            _buildImageUploader(context, state),
-            const SizedBox(height: 32),
-
-            // 3. Info Fields
-            _buildTextFormField(
-              label: "Tên Station",
-              hint: "Nhập tên Station",
-              controller: _stationNameController,
-              readOnly: isReadOnly,
-              validator: (val) =>
-                  (val?.isEmpty ?? true) ? "Vui lòng nhập tên" : null,
-            ),
-            const SizedBox(height: 24),
-
-            // [SỬA ĐỔI] Hàng chứa: Số điện thoại (70%) + Trạng thái (30%)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Cột Số điện thoại
-                Expanded(
-                  flex: 7,
-                  child: _buildTextFormField(
-                    label: "Số điện thoại",
-                    hint: "09xx.xxx.xxx",
-                    controller: _hotlineController,
-                    readOnly: state.isReadOnly,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10)
-                    ],
-                    validator: (val) =>
-                        (val?.isEmpty ?? true) ? "Vui lòng nhập SĐT" : null,
-                  ),
+              : Column(
+                  children: [
+                    SizedBox(height: 200, child: _buildCoverImage(state)),
+                    _buildHeaderInfo(context, state),
+                  ],
                 ),
-                const SizedBox(width: 24),
+          Container(
+            color: AppColors.containerBackground,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildTabItem('overview', 'Dashboard', Icons.dashboard),
+                  const SizedBox(width: 12),
+                  _buildTabItem(
+                      'spaces', 'Loại hình (Spaces)', Icons.videogame_asset),
+                  const SizedBox(width: 12),
+                  _buildTabItem('areas', 'Khu vực', Icons.layers),
+                  const SizedBox(width: 12),
+                  _buildTabItem('resources', 'Tài nguyên', Icons.memory),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                // Cột Trạng thái (Status Badge)
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Label giả lập cho đồng bộ với input
-                      Text(
-                        "Trạng thái",
+  Widget _buildCoverImage(StationDetailState state) {
+    final images = state.base64Images;
+    final displayImage = images.isNotEmpty ? images.first : '';
+    // Status logic removed from here to move next to Station Code
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        displayImage.isNotEmpty
+            ? (displayImage.startsWith('http')
+                ? Image.network(displayImage, fit: BoxFit.cover)
+                : Image.memory(base64Decode(displayImage.split(',').last),
+                    fit: BoxFit.cover))
+            : Container(
+                color: AppColors.inputBackground,
+                child: const Icon(Icons.image, color: AppColors.textHint)),
+
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [AppColors.bgCard, AppColors.bgCard.withOpacity(0.0)],
+            ),
+          ),
+        ),
+        // Removed Positioned status widget from here
+      ],
+    );
+  }
+
+  Widget _buildHeaderInfo(BuildContext context, StationDetailState state) {
+    final status = state.station?.statusName;
+    // Cập nhật: Sử dụng _getStatusColor
+    final statusColor = _getStatusColor(state.station?.statusCode);
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(state.station?.stationName ?? "",
+                  style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textWhite)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  // Station Code Badge
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: AppColors.inputBackground,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.border)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.tag,
+                            size: 14, color: AppColors.textHint),
+                        const SizedBox(width: 4),
+                        Text(state.station?.stationCode ?? "ST-00",
+                            style: const TextStyle(
+                                fontFamily: 'Monospace',
+                                fontSize: 12,
+                                color: AppColors.textHint)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Status Badge (Moved here) & Updated Color Logic
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: statusColor),
+                    ),
+                    child: Text(status ?? "Vô hiệu",
                         style: TextStyle(
-                          color: AppColors.textWhite.withOpacity(0.7),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Box hiển thị trạng thái
-                      Container(
-                        height:
-                            48, // Chiều cao khớp với Input chuẩn (isDense: true)
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(
-                            color: _getStatusColor(state.statusCode)
-                                .withOpacity(0.5),
-                            width: 1,
-                          ),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          state.statusName ?? "Chưa cập nhật",
-                          style: TextStyle(
-                            color: _getStatusColor(state.statusCode),
+                            color: statusColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                            fontSize: 12)),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // 4. Address Dropdowns
-            LayoutBuilder(builder: (context, constraints) {
-              if (constraints.maxWidth > 650) {
-                return Column(children: [
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Expanded(
-                        child: _buildProvinceField(context, state, isReadOnly)),
-                    const SizedBox(width: 24),
-                    Expanded(
-                        child: _buildDistrictField(context, state, isReadOnly)),
-                  ]),
-                  const SizedBox(height: 24),
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Expanded(
-                        child: _buildCommuneField(context, state, isReadOnly)),
-                    const SizedBox(width: 24),
-                    Expanded(
-                        child: _buildAddressAutocompleteField(
-                            context, state, isReadOnly)),
-                  ]),
-                ]);
-              } else {
-                return Column(children: [
-                  _buildProvinceField(context, state, isReadOnly),
-                  const SizedBox(height: 24),
-                  _buildDistrictField(context, state, isReadOnly),
-                  const SizedBox(height: 24),
-                  _buildCommuneField(context, state, isReadOnly),
-                  const SizedBox(height: 24),
-                  _buildAddressAutocompleteField(context, state, isReadOnly),
-                ]);
-              }
-            }),
-            const SizedBox(height: 24),
-
-            // 5. Full Address (Always Readonly)
-            _buildTextFormField(
-              label: "Địa chỉ đầy đủ",
-              hint: "...",
-              controller: _fullAddressController,
-              readOnly: true,
-            ),
-            const SizedBox(height: 32),
-
-            // 6. Captcha (Chỉ hiện khi đang Edit)
-            if (state.isEditMode) ...[
-              _buildCaptchaSection(context, state),
-              const SizedBox(height: 40),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(children: [
+                const Icon(Icons.location_on,
+                    size: 16, color: AppColors.btnPrimary),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(state.station?.address ?? "",
+                        style: const TextStyle(
+                            color: AppColors.textMain,
+                            overflow: TextOverflow.ellipsis)))
+              ]),
+              const SizedBox(height: 8),
+              Row(children: [
+                const Icon(Icons.phone,
+                    size: 16, color: AppColors.activeStatus),
+                const SizedBox(width: 8),
+                Text(state.station?.hotline ?? "",
+                    style: const TextStyle(color: AppColors.textMain))
+              ]),
             ],
+          ),
+          const SizedBox(height: 24),
+          // Logic hiển thị Button hoặc Skeleton Loading
+          _userRole == 'STATION_OWNER'
+              ? (_isContentLoading
+                  // Hiển thị Skeleton khi đang loading
+                  ? _buildSkeleton(
+                      width: 200, // Chiều rộng ước lượng của nút
+                      height:
+                          52, // Chiều cao tương đương nút (padding vertical 16*2 + icon/text)
+                      radius: 8,
+                    )
+                  // Hiển thị Nút bấm khi đã load xong
+                  : ElevatedButton.icon(
+                      onPressed: () {
+                        bloc.add(ToggleEditModeEvent(true));
+                        _showEditModal(context, state);
+                      },
+                      icon: const Icon(Icons.settings, size: 18),
+                      label: const Text('Cấu hình Station'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.btnPrimary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        elevation: 8,
+                        shadowColor: AppColors.btnPrimary.withOpacity(0.5),
+                      ),
+                    ))
+              : Container(),
+        ],
+      ),
+    );
+  }
 
-            // 7. Buttons
-            _buildActionButtons(context, state),
+  Widget _buildTabItem(String id, String label, IconData icon) {
+    final isActive = _activeTab == id;
+    return InkWell(
+      onTap: () => setState(() => _activeTab = id),
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.btnPrimary.withOpacity(0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: isActive
+                  ? AppColors.btnPrimary.withOpacity(0.5)
+                  : Colors.transparent),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 18,
+                color: isActive ? AppColors.menuActive : AppColors.textHint),
+            const SizedBox(width: 8),
+            Text(label,
+                style: TextStyle(
+                    color: isActive ? AppColors.menuActive : AppColors.textHint,
+                    fontWeight:
+                        isActive ? FontWeight.bold : FontWeight.normal)),
           ],
         ),
       ),
     );
   }
 
-  // ======================= WIDGETS LOGIC =======================
-
-  Widget _buildImageUploader(BuildContext context, StationDetailState state) {
-    final isReadOnly = state.isReadOnly;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Hình ảnh",
-            style: TextStyle(color: AppColors.textWhite, fontSize: 16)),
-        const SizedBox(height: 8),
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.inputBackground,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: AppColors.textHint),
-          ),
-          child: _base64Images.isEmpty
-              ? isReadOnly
-                  ? Center(
-                      child: Text("Không có hình ảnh",
-                          style: TextStyle(color: Colors.grey.shade500)))
-                  : Center(
-                      child: TextButton.icon(
-                        onPressed: () {
-                          if (!_isPickingImage) {
-                            stationDetailBloc.add(PickImagesEvent(
-                                isPickingImage: _isPickingImage));
-                          }
-                        },
-                        icon: _isPickingImage
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: AppColors.textWhite))
-                            : const Icon(Icons.photo_camera,
-                                color: AppColors.textWhite, size: 20),
-                        label: Text(
-                          _isPickingImage ? "Đang tải..." : "Tải ảnh lên",
-                          style: const TextStyle(
-                              color: AppColors.textWhite, fontSize: 14),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor:
-                              AppColors.btnSecondary.withOpacity(0.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                        ),
-                      ),
-                    )
-              // 2. Lưới ảnh (nếu có ảnh)
-              : _buildImageGridView(context, state),
-        ),
-        if (!isReadOnly && _base64Images.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: TextButton.icon(
-              onPressed: () {
-                if (!state.isPickingImage) {
-                  stationDetailBloc.add(
-                      PickImagesEvent(isPickingImage: state.isPickingImage));
-                }
-              },
-              icon: state.isPickingImage
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.add_photo_alternate_outlined,
-                      color: Colors.white),
-              label: Text(
-                  state.isPickingImage ? "Đang xử lý..." : "Thêm/Thay đổi ảnh",
-                  style: const TextStyle(color: Colors.white)),
-            ),
-          )
-      ],
-    );
-  }
-
-  // [FIXED] Widget GridView xử lý cả URL và Base64
-  Widget _buildImageGridView(BuildContext context, StationDetailState state) {
-    final isReadOnly = state.isReadOnly;
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.stylus,
-          },
-        ),
-        child: Scrollbar(
-          thumbVisibility: true, // Luôn hiển thị thanh cuộn
-          controller: ScrollController(), // Thêm controller cho scrollbar
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _base64Images.length,
-            itemBuilder: (context, index) {
-              String imageSource = _base64Images[index];
-              bool isUrl = imageSource.startsWith('http'); // Kiểm tra URL
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: isUrl
-                          // Trường hợp 1: URL (Ảnh từ API)
-                          ? Image.network(
-                              imageSource,
-                              width: 180,
-                              height: 180,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                      width: 180,
-                                      height: 180,
-                                      color: Colors.grey,
-                                      child: const Icon(Icons.broken_image)),
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return SizedBox(
-                                    width: 180,
-                                    height: 180,
-                                    child: Center(
-                                        child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null)));
-                              },
-                            )
-                          // Trường hợp 2: Base64 (Ảnh mới chọn)
-                          : Image.memory(
-                              base64Decode(imageSource.contains(',')
-                                  ? imageSource.split(',').last
-                                  : imageSource),
-                              width: 180,
-                              height: 180,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const SizedBox(
-                                      width: 180,
-                                      height: 180,
-                                      child: Center(child: Text("Lỗi ảnh"))),
-                            ),
-                    ),
-                    // Nút xóa ảnh
-                    if (!isReadOnly)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: InkWell(
-                          onTap: () => stationDetailBloc.add(RemoveImageEvent(
-                              base64Images: _base64Images, imageIndex: index)),
-                          child: const CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.black54,
-                              child: Icon(Icons.close,
-                                  size: 16, color: Colors.white)),
-                        ),
-                      )
-                  ],
+  Widget _buildMainContent(bool isDesktop, StationDetailState state) {
+    // [LOADING 2] Hiển thị Skeleton nếu đang load content (7s)
+    // Các hàm _build... sẽ tự check _isContentLoading để hiển thị Skeleton
+    if (_activeTab == 'overview') {
+      return _buildOverviewContent(isDesktop, state);
+    } else if (_activeTab == 'spaces') {
+      return _buildSpaceTypesList(state);
+    } else if (_activeTab == 'areas') {
+      return _buildFullAreasList(state);
+    } else if (_activeTab == 'resources') {
+      // return _buildResourcesList(state);
+      // Placeholder content cho các tab khác
+      return Container(
+        height: 300,
+        width: double.infinity,
+        decoration: BoxDecoration(
+            color: AppColors.bgCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border)),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.add_box, size: 16),
+                label: const Text('Quản lý Tài nguyên'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.activeStatus,
+                  foregroundColor: Colors.white,
                 ),
-              );
-            },
+              ),
+            ],
           ),
+        ),
+      );
+    }
+    // Placeholder content cho các tab khác
+    return Container(
+      height: 300,
+      width: double.infinity,
+      decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border)),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.construction, size: 48, color: AppColors.textHint),
+            const SizedBox(height: 16),
+            Text("Nội dung tab $_activeTab đang cập nhật...",
+                style: TextStyle(color: AppColors.textMain)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProvinceField(
-      BuildContext context, StationDetailState state, bool readOnly) {
-    return _buildDropdownAPI<ProvinceModel>(
-      label: "Tỉnh/Thành phố",
-      hint: "Tỉnh/TP",
-      value: _selectedProvince,
-      items: _provinceList
-          .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
-          .toList(),
-      isLoading: _isLoadingProvinces,
-      readOnly: readOnly,
-      onChanged: (val) {
-        if (val == null) return;
-        stationDetailBloc.add(SelectedProvinceEvent(newValue: val));
-      },
+// --- HELPER: SKELETON (LOADING BAR) ---
+  // Sử dụng LinearProgressIndicator để tạo hiệu ứng loading bar chạy vô tận
+  Widget _buildSkeleton({double? width, double? height, double radius = 4}) {
+    return SizedBox(
+      width: width,
+      height: height ?? 16,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: LinearProgressIndicator(
+          // Màu của thanh chạy (foreground)
+          color: AppColors.textHint.withOpacity(0.3),
+          // Màu nền (background)
+          backgroundColor: AppColors.inputBackground,
+          minHeight: height ?? 16,
+        ),
+      ),
     );
   }
 
-  Widget _buildDistrictField(
-      BuildContext context, StationDetailState state, bool readOnly) {
-    return _buildDropdownAPI<DistrictModel>(
-      label: "Quận/Huyện",
-      hint: "Quận/Huyện",
-      value: _selectedDistrict,
-      items: _districtList
-          .map((d) => DropdownMenuItem(value: d, child: Text(d.name)))
-          .toList(),
-      isLoading: _isLoadingDistricts,
-      readOnly: readOnly,
-      onChanged: (val) {
-        if (val == null) return;
-        stationDetailBloc.add(SelectedDistrictEvent(newValue: val));
-      },
-    );
-  }
+  Widget _buildOverviewContent(bool isDesktop, StationDetailState state) {
+    final totalResources = 10;
+    // state.resources.fold<int>(0, (p, e) => p + e.quantity);
 
-  Widget _buildCommuneField(
-      BuildContext context, StationDetailState state, bool readOnly) {
-    return _buildDropdownAPI<CommuneModel>(
-      label: "Phường/Xã",
-      hint: "Phường/Xã",
-      value: _selectedCommune,
-      items: _communeList
-          .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
-          .toList(),
-      isLoading: _isLoadingCommunes,
-      readOnly: readOnly,
-      onChanged: (val) {
-        if (val == null) return;
-        stationDetailBloc.add(SelectedCommuneEvent(newValue: val));
-      },
-    );
-  }
-
-  // Input Địa chỉ có Autocomplete (Chỉ active khi Edit)
-  Widget _buildAddressAutocompleteField(
-      BuildContext context, StationDetailState state, bool readOnly) {
-    if (readOnly) {
-      // View Mode: Chỉ hiện text tĩnh
-      return _buildTextFormField(
-          label: "Số nhà, đường",
-          hint: "",
-          controller: _addressController,
-          readOnly: true);
-    }
-    // Edit Mode: Hiện Autocomplete
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text("Số nhà, đường",
-          style: TextStyle(color: AppColors.textWhite, fontSize: 16)),
-      const SizedBox(height: 8),
-      RawAutocomplete<String>(
-        textEditingController: _addressController,
-        focusNode: _addressFocusNode,
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            stationDetailBloc.add(ClearAddressSuggestionsEvent());
-            return const Iterable<String>.empty();
-          }
-          if (_debounce?.isActive ?? false) _debounce!.cancel();
-          _debounce = Timer(const Duration(milliseconds: 500), () {
-            stationDetailBloc
-                .add(SearchAddressSuggestionEvent(textEditingValue.text));
-          });
-          return state.addressSuggestions;
-        },
-        fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-          return TextFormField(
-            controller: controller,
-            focusNode: focusNode,
-            style: const TextStyle(color: AppColors.textWhite),
-            decoration: InputDecoration(
-              hintText: "Nhập địa chỉ...",
-              hintStyle: const TextStyle(color: AppColors.textHint),
-              filled: true,
-              fillColor: AppColors.inputBackground,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              suffixIcon: state.isLoadingAddressSuggestions
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white)))
-                  : null,
-            ),
-            validator: (val) =>
-                (val?.isEmpty ?? true) ? "Vui lòng nhập địa chỉ" : null,
+    return Column(
+      children: [
+        LayoutBuilder(builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 700;
+          return Flex(
+            direction: isWide ? Axis.horizontal : Axis.vertical,
+            children: [
+              Expanded(
+                  flex: isWide ? 1 : 0,
+                  child: _buildStatCard(
+                      'Loại hình (Spaces)',
+                      _isContentLoading ? null : '${state.spaces.length}',
+                      Icons.videogame_asset,
+                      AppColors.primaryBlue)),
+              SizedBox(width: isWide ? 16 : 0, height: isWide ? 0 : 16),
+              Expanded(
+                  flex: isWide ? 1 : 0,
+                  child: _buildStatCard(
+                      'Khu vực (Areas)',
+                      _isContentLoading ? null : '${state.areas.length}',
+                      Icons.layers,
+                      AppColors.btnPrimary)),
+              SizedBox(width: isWide ? 16 : 0, height: isWide ? 0 : 16),
+              Expanded(
+                  flex: isWide ? 1 : 0,
+                  child: _buildStatCard(
+                      'Tài nguyên (Res)',
+                      _isContentLoading ? null : '$totalResources',
+                      Icons.memory,
+                      AppColors.activeStatus)),
+            ],
           );
-        },
-        optionsViewBuilder: (context, onSelected, options) {
-          return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                  elevation: 4.0,
-                  color: AppColors.inputBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                      width: 300,
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          itemCount: options.length,
-                          itemBuilder: (ctx, index) {
-                            final option = options.elementAt(index);
-                            return InkWell(
-                                onTap: () => onSelected(option),
-                                child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Text(option,
-                                        style: const TextStyle(
-                                            color: AppColors.textWhite))));
-                          }))));
-        },
-      )
-    ]);
+        }),
+        const SizedBox(height: 24),
+        LayoutBuilder(builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 900;
+          return Flex(
+            direction: isWide ? Axis.horizontal : Axis.vertical,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: isWide ? 2 : 0,
+                child: _buildRecentAreasCard(state),
+              ),
+              SizedBox(width: isWide ? 24 : 0, height: isWide ? 0 : 24),
+              Expanded(
+                flex: isWide ? 1 : 0,
+                child: _buildQuickActionsCard(),
+              ),
+            ],
+          );
+        }),
+      ],
+    );
   }
 
-  Widget _buildCaptchaSection(BuildContext context, StationDetailState state) {
-    return Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        crossAxisAlignment: WrapCrossAlignment.end,
+  Widget _buildStatCard(
+      String title, String? value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style:
+                      const TextStyle(color: AppColors.textHint, fontSize: 14)),
+              const SizedBox(
+                  height: 12), // Tăng khoảng cách chút để bar không bị dính
+              // Nếu value null (loading), hiện LinearProgressIndicator
+              value == null
+                  ? SizedBox(
+                      width: 60, // Độ dài của thanh loading
+                      height: 4, // Độ dày của thanh
+                      child: LinearProgressIndicator(
+                        color: color, // Màu chạy (foreground)
+                        backgroundColor:
+                            color.withOpacity(0.2), // Màu nền mờ (background)
+                        borderRadius: BorderRadius.circular(
+                            2), // Bo tròn góc thanh loading
+                      ),
+                    )
+                  : Text(value,
+                      style: const TextStyle(
+                          color: AppColors.textWhite,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold)),
+            ],
+          ),
           Container(
-            width: 150,
-            height: 50,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8)),
-            child: Stack(children: [
-              Center(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: _captchaText
-                          .split('')
-                          .map((char) => Transform.rotate(
-                              angle: (_random.nextDouble() * 0.4) - 0.2,
-                              child: Text(char,
-                                  style: GoogleFonts.permanentMarker(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: _getRandomCaptchaColor(),
-                                      decoration: TextDecoration.lineThrough))))
-                          .toList())),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.blue),
-                      onPressed: () =>
-                          stationDetailBloc.add(GenerateCaptchaEvent())))
-            ]),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withOpacity(0.2)),
+            ),
+            child: Icon(icon, color: color, size: 28),
           ),
-          SizedBox(
-              width: 200,
-              child: TextFormField(
-                  controller: _captchaController,
-                  readOnly: state.isCaptchaVerified,
-                  style: const TextStyle(color: AppColors.textWhite),
-                  decoration: InputDecoration(
-                      hintText: "Nhập mã",
-                      filled: true,
-                      fillColor: AppColors.inputBackground,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      suffixIcon: IconButton(
-                        icon: state.isVerifyingCaptcha
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : Icon(
-                                state.isCaptchaVerified
-                                    ? Icons.check_circle
-                                    : Icons.arrow_forward,
-                                color: state.isCaptchaVerified
-                                    ? Colors.green
-                                    : Colors.white),
-                        onPressed: () {
-                          if (!_isCaptchaVerified) {
-                            stationDetailBloc.add(HandleVerifyCaptchaEvent(
-                                captcha: _captchaController.text));
-                          }
-                        },
-                      ))))
-        ]);
+        ],
+      ),
+    );
   }
 
-  Widget _buildActionButtons(BuildContext context, StationDetailState state) {
-    // 1. Lấy role code của người dùng (giả sử là "STATION_OWNER" hoặc "STATION_ADMIN")
-    String userRole = AuthenticationPref.getRoleCode();
-
-    // 2. Tạo biến bool helper
-    bool isOwner = (userRole == "STATION_OWNER");
-
-    final backButton = ElevatedButton(
-        onPressed: () => stationDetailBloc.add(ShowStationListPageEvent()),
-        style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.btnSecondary,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-        child: const Text("TRỞ VỀ",
-            style: TextStyle(
-                color: AppColors.bgCard, fontWeight: FontWeight.bold)));
-    if (isOwner) {
-      if (state.isReadOnly) {
-        // View Mode: [CHỈNH SỬA] [TRỞ VỀ]
-        return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          ElevatedButton(
-            onPressed: () => stationDetailBloc.add(ToggleEditModeEvent(true)),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGlow,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8))),
-            child: const Text("CHỈNH SỬA",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(width: 16),
-          backButton
-        ]);
-      } else {
-        // Edit Mode: [LƯU] [HỦY]
-        return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          ElevatedButton(
-            onPressed: state.isCaptchaVerified
-                ? () {
-                    // if (_formKey.currentState!.validate())
-                    // stationDetailBloc.add(SubmitStationUpdateEvent());
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGlow,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8))),
-            child: const Text("LƯU THAY ĐỔI",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(width: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Hủy bỏ -> Reload lại dữ liệu gốc (về chế độ View)
-              stationDetailBloc
-                  .add(StationDetailInitialEvent(stationId: stationId));
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8))),
-            child: const Text("HỦY BỎ",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ]);
-      }
-    } else {
-      return Row(
-          mainAxisAlignment: MainAxisAlignment.end, children: [backButton]);
+  // Widget hiển thị danh sách khu vực (Areas) ở Dashboard
+  Widget _buildRecentAreasCard(StationDetailState state) {
+    // Hàm helper nhỏ để format tiền tệ (Ví dụ: 10000 -> 10.000 đ)
+    String formatCurrency(dynamic price) {
+      if (price == null) return "0 đ";
+      return "${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ";
     }
-  }
 
-  // --- Generic Fields (Helper) ---
-  // --- 1. TEXT FORM FIELD (ĐÃ TỐI ƯU UI) ---
-  Widget _buildTextFormField({
-    required String label,
-    required String hint,
-    required TextEditingController controller,
-    String? Function(String?)? validator,
-    bool readOnly = false,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // [THAY ĐỔI 1] Label dùng màu Xám (white70) thay vì Trắng tinh
-        // Giúp phân biệt rõ đâu là tiêu đề, đâu là nội dung
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textWhite.withOpacity(0.7), // Màu nhạt hơn
-            fontSize: 14, // Nhỏ hơn 1 chút để tinh tế
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          readOnly: readOnly,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-
-          // [THAY ĐỔI 2] Style chữ nội dung:
-          // - Nếu đang nhập (Edit): Màu Trắng sáng, đậm hơn.
-          // - Nếu chỉ xem (View): Màu hơi xám để dịu mắt.
-          style: TextStyle(
-            color: readOnly
-                ? AppColors.textWhite.withOpacity(0.9)
-                : AppColors.textWhite,
-            fontWeight: readOnly ? FontWeight.normal : FontWeight.w600,
-          ),
-
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
-            filled: true,
-
-            // [THAY ĐỔI 3] Nền Input:
-            // - Edit: Màu nền input chuẩn.
-            // - View: Nền trong suốt hoặc rất tối để chìm đi, làm nổi bật nội dung.
-            fillColor: readOnly
-                ? Colors.transparent // Hoặc Colors.black12
-                : AppColors.inputBackground,
-
-            // [THAY ĐỔI 4] Viền (Border):
-            // - View: Bỏ viền hoặc viền rất mờ -> Giảm cảm giác "rối" vì quá nhiều khung.
-            // - Edit: Viền rõ ràng.
-            border: readOnly
-                ? const UnderlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.white24)) // Chỉ gạch chân mờ
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: const BorderSide(color: AppColors.textHint),
-                  ),
-
-            enabledBorder: readOnly
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white24))
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide:
-                        BorderSide(color: AppColors.textHint.withOpacity(0.5)),
-                  ),
-
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide:
-                  const BorderSide(color: AppColors.primaryGlow, width: 2),
-            ),
-
-            // Padding gọn gàng hơn
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            isDense: true,
-          ),
-          validator: validator,
-        )
-      ],
-    );
-  }
-
-  // --- 2. DROPDOWN (ĐÃ TỐI ƯU UI) ---
-  Widget _buildDropdownAPI<T>({
-    required String label,
-    required String hint,
-    required T? value,
-    required List<DropdownMenuItem<T>> items,
-    required void Function(T?)? onChanged,
-    bool isLoading = false,
-    bool readOnly = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Label màu dịu hơn
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textWhite.withOpacity(0.7),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        DropdownButtonFormField<T>(
-          value: value,
-          style: const TextStyle(color: AppColors.textWhite),
-          dropdownColor:
-              AppColors.inputBackground, // Menu xổ xuống vẫn giữ màu nền
-
-          // Logic hiển thị Selected Item (như bài trước, nhưng chỉnh màu)
-          selectedItemBuilder: (BuildContext context) {
-            return items.map<Widget>((DropdownMenuItem<T> item) {
-              String text = "";
-              if (item.child is Text) text = (item.child as Text).data ?? "";
-              return Text(
-                text,
-                style: TextStyle(
-                  color: readOnly
-                      ? AppColors.textWhite.withOpacity(0.9)
-                      : AppColors.textWhite,
-                  fontSize: 14,
-                  fontWeight: readOnly ? FontWeight.normal : FontWeight.w600,
-                  overflow: TextOverflow.ellipsis,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.layers, color: AppColors.btnPrimary, size: 20),
+                    SizedBox(width: 8),
+                    Text('Trạng thái Khu vực (Top 5)',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.textWhite)),
+                  ],
                 ),
-              );
-            }).toList();
-          },
-          hint: Text(
-            isLoading ? "Đang tải..." : hint, // Hiển thị loading
-            style: const TextStyle(color: AppColors.textHint),
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            // View Mode: Nền trong suốt để bớt nặng nề
-            fillColor:
-                readOnly ? Colors.transparent : AppColors.inputBackground,
 
-            // View Mode: Dùng gạch chân (Underline) thay vì khung (Outline)
-            border: readOnly
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white24))
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: const BorderSide(color: AppColors.textHint),
+                //! chuyển sang menu ql areas
+                TextButton.icon(
+                  onPressed: () => setState(() => _activeTab = 'areas'),
+                  icon: const Icon(Icons.arrow_forward, size: 14),
+                  label: const Text('Chi tiết'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.menuActive,
+                    backgroundColor: AppColors.menuActive.withOpacity(0.1),
                   ),
-
-            enabledBorder: readOnly
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white24))
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide:
-                        BorderSide(color: AppColors.textHint.withOpacity(0.5)),
-                  ),
-
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide:
-                  const BorderSide(color: AppColors.primaryGlow, width: 2),
+                ),
+              ],
             ),
-
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            isDense: true,
           ),
+          const Divider(height: 1, color: AppColors.border),
+          Container(
+            color: AppColors.tableHeader.withOpacity(0.1),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: const Row(
+              children: [
+                Expanded(
+                    flex: 3,
+                    child: Text('Tên khu vực',
+                        style: TextStyle(
+                            color: AppColors.textHint, fontSize: 13))),
+                Expanded(
+                    flex: 2,
+                    child: Text('Loại hình',
+                        style: TextStyle(
+                            color: AppColors.textHint, fontSize: 13))),
+                Expanded(
+                    flex: 2,
+                    child: Text('Giá khu vực',
+                        style: TextStyle(
+                            color: AppColors.textHint, fontSize: 13))),
+              ],
+            ),
+          ),
+          // List Body
+          _isContentLoading
+              // Loading: Show fake list of skeletons
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero, // <-- (1) Xóa khoảng cách thừa
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 5, // 5 skeleton items
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      color: AppColors.containerBackground,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 3,
+                              child: _buildSkeleton(width: 100, height: 16)),
+                          Expanded(
+                              flex: 2,
+                              child: _buildSkeleton(width: 80, height: 14)),
+                          Expanded(
+                              flex: 2,
+                              child: _buildSkeleton(width: 60, height: 14)),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              // Loaded: Show real data
+              : ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero, // <-- (1) Xóa khoảng cách thừa
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: min(state.areas.length, 5),
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    final area = state.areas[index];
 
-          items: isLoading ? [] : items,
-          onChanged: (isLoading || readOnly) ? null : onChanged,
-          validator: (val) {
-            if (readOnly) return null;
-            return val == null ? "Vui lòng chọn $label" : null;
-          },
-
-          // Ẩn icon mũi tên khi ở chế độ xem để trông giống Text tĩnh hơn
-          icon: isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.grey))
-              : (readOnly
-                  ? const SizedBox.shrink()
-                  : const Icon(Icons.keyboard_arrow_down,
-                      color: Colors.white70)),
-        )
-      ],
+                    return Container(
+                      color: AppColors.containerBackground,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.activeStatus,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: AppColors.activeStatus
+                                                .withOpacity(0.6),
+                                            blurRadius: 6)
+                                      ]),
+                                ),
+                                const SizedBox(width: 12),
+                                //! Tên khu vực
+                                Text(area.areaName ?? "",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.textMain)),
+                              ],
+                            ),
+                          ),
+                          //! Loại hình
+                          Expanded(
+                              flex: 2,
+                              child: Text(area.spaceName ?? "",
+                                  style: const TextStyle(
+                                      color: AppColors.textHint))),
+                          Expanded(
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color:
+                                        AppColors.activeStatus.withOpacity(0.5),
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                  color:
+                                      AppColors.activeStatus.withOpacity(0.1),
+                                ),
+                                //! trạng thái -> giá (Đã format)
+                                child: Text(
+                                  formatCurrency(area
+                                      .price), // <-- (2) Áp dụng format tiền
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.activeStatus,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ],
+      ),
     );
   }
 
-  Widget _buildFooter() => Center(
-      child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24.0),
-          child: Text(
-              'Copyright © 2025 NETPOOL STATION BOOKING. All rights reserved.',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12))));
+  Widget _buildQuickActionsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.flash_on, color: AppColors.btnPrimary, size: 20),
+              SizedBox(width: 8),
+              Text('Thao tác nhanh',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.textWhite)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildActionBtn('QL Loại hình', 'NET, Billiards, PS5, ...', Icons.add,
+              AppColors.primaryBlue, () {}),
+          const SizedBox(height: 12),
+          _buildActionBtn(
+              'QL Tài nguyên',
+              'Xem, thêm, cập nhập tài nguyên, ...',
+              Icons.memory,
+              AppColors.activeStatus,
+              () {}),
+          const SizedBox(height: 12),
+          if (_userRole == 'STATION_OWNER')
+            _buildActionBtn('QL Nhân sự', 'Xem, thêm, nhân viên, ...',
+                Icons.manage_accounts, Colors.orangeAccent, () {}),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionBtn(String title, String subtitle, IconData icon,
+      Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.containerBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textWhite)),
+                Text(subtitle,
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textHint)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- FULL LIST BUILDERS FOR TABS ---
+
+  Widget _buildSpaceTypesList(StationDetailState state) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Danh sách Loại hình (Spaces)',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textWhite)),
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.arrow_forward, size: 16),
+                  label: const Text('Quản lý Loại hình'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.border),
+
+          // List Body with Loading Check
+          _isContentLoading
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 5,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading: _buildSkeleton(width: 44, height: 44, radius: 8),
+                      title: _buildSkeleton(width: 150, height: 16),
+                      subtitle: _buildSkeleton(width: 200, height: 12),
+                      trailing:
+                          _buildSkeleton(width: 60, height: 24, radius: 12),
+                    );
+                  },
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.spaces.length,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    final type = state.spaces[index];
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: AppColors.inputBackground,
+                            borderRadius: BorderRadius.circular(8)),
+                        child: getIcon(type.metadata?.icon,
+                            size: 24, color: AppColors.btnPrimary),
+                      ),
+                      title: Text(type.spaceName ?? "",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textWhite)),
+                      subtitle: Text(type.spaceCode ?? "",
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 12)),
+                      trailing: Text(type.statusName ?? "",
+                          style: TextStyle(
+                              color: type.statusCode == 'ACTIVE'
+                                  ? AppColors.activeStatus
+                                  : Colors.orange,
+                              fontWeight: FontWeight.bold)),
+                    );
+                  },
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullAreasList(StationDetailState state) {
+    // Hàm helper nhỏ để format tiền tệ (Ví dụ: 10000 -> 10.000 đ)
+    String formatCurrency(dynamic price) {
+      if (price == null) return "0 đ";
+      return "${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ";
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Danh sách Khu vực (Areas)',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textWhite)),
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.add_circle_outline, size: 16),
+                  label: const Text('QL Khu vực'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.btnPrimary,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.border),
+          _isContentLoading
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 5,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading:
+                          _buildSkeleton(width: 40, height: 40, radius: 20),
+                      title: _buildSkeleton(width: 120, height: 16),
+                      subtitle: _buildSkeleton(width: 180, height: 12),
+                      trailing: _buildSkeleton(width: 50, height: 14),
+                    );
+                  },
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.areas.length,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    final area = state.areas[index];
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.inputBackground,
+                        child: Text(area.areaId.toString(),
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.textWhite)),
+                      ),
+                      title: Text(area.areaName ?? "",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textWhite)),
+                      subtitle: Text(
+                          "Loại hình: ${area.spaceName} • Giá: ${formatCurrency(area.price)}",
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 12)),
+                      trailing: Text(area.statusName ?? "",
+                          style: TextStyle(
+                              color: area.statusCode == "ACTIVE"
+                                  ? AppColors.activeStatus
+                                  : Colors.orange,
+                              fontWeight: FontWeight.bold)),
+                    );
+                  },
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourcesList(StationDetailState state) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Danh sách Tài nguyên',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textWhite)),
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.add_box, size: 16),
+                  label: const Text('Nhập kho'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.activeStatus,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.border),
+          _isContentLoading
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 5,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading: _buildSkeleton(width: 24, height: 24, radius: 4),
+                      title: _buildSkeleton(width: 130, height: 16),
+                      subtitle: _buildSkeleton(width: 100, height: 12),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _buildSkeleton(width: 40, height: 14),
+                          const SizedBox(height: 4),
+                          _buildSkeleton(width: 30, height: 10),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.resources.length,
+                  separatorBuilder: (c, i) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    final res = state.resources[index];
+                    return ListTile(
+                      tileColor: AppColors.containerBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      leading: const Icon(Icons.inventory_2_outlined,
+                          color: AppColors.textHint),
+                      title: Text(res.resourceName ?? "",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textWhite)),
+                      subtitle: Text(
+                          "Loại: ${res.typeName} • ID: ${res.resourceCode}",
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 12)),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text("SL: 10",
+                              style: const TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.bold)),
+                          Text('Good',
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: res.statusCode == 'Good'
+                                      ? AppColors.activeStatus
+                                      : Colors.red)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ],
+      ),
+    );
+  }
 }

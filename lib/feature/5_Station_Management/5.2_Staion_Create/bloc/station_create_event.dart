@@ -16,6 +16,7 @@ class SubmitStationCreateEvent extends StationCreateEvent {
   final String district;
   final String hotline;
   final List<String>? media;
+  final String placeId;
   SubmitStationCreateEvent({
     this.avatar,
     required this.stationName,
@@ -24,6 +25,7 @@ class SubmitStationCreateEvent extends StationCreateEvent {
     required this.commune,
     required this.district,
     required this.hotline,
+    required this.placeId,
     this.media,
   });
 }
@@ -101,11 +103,13 @@ class SelectedCommuneEvent extends StationCreateEvent {
 
 class UpdateFullAddressEvent extends StationCreateEvent {
   String? address;
+  String? placeId;
   CommuneModel? commune;
   DistrictModel? district;
   ProvinceModel? province;
   UpdateFullAddressEvent({
     this.address,
+    this.placeId,
     this.commune,
     this.district,
     this.province,
