@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/bloc/station_resource_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/pages/resoucre_page.dart';
+import 'package:web_netpool_station_owner_admin/feature/12_Schedule_Timeslot_Management/schedule_timeslot.dart';
+import 'package:web_netpool_station_owner_admin/feature/2_Payment_Managemment/dashboard_payment.dart';
+import 'package:web_netpool_station_owner_admin/feature/3_Booking_Management/dashboard_booking.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/pages/station_detail_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/6_Account_Admin_Management/6.3_Account_Admin_Detail/bloc/admin_detail_bloc.dart';
@@ -140,6 +143,18 @@ Route<dynamic> menuRoute(RouteSettings settings) {
           );
         },
       );
+
+    //! QUẢN LÝ LỊCH + TIMESLOT $//
+    case schedulePageRoute:
+      return getPageRoute(const ScheduleManagerPage());
+
+    //! QUẢN LÝ thanh toán $//
+    case paymentOverviewPageRoute:
+      return getPageRoute(const StationPaymentOverviewPage());
+
+    //! QUẢN LÝ đặt lịch $//
+    case bookingOverviewPageRoute:
+      return getPageRoute(const StationBookingOverviewPage());
 
     //! TEST $//
     // case testRoute:

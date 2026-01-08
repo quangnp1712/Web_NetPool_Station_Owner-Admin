@@ -173,6 +173,10 @@ class _StationCreatePageState extends State<StationCreatePage> {
 
         if (state.isClearCaptchaController) {
           _captchaController.clear();
+          if (state.blocState ==
+              StationCreateBlocState.StationCreateSuccessState) {
+            _base64Images = [];
+          }
         }
         if (state.blocState == StationCreateBlocState.ResetFormState) {
           //  Reset controllers mới
@@ -180,6 +184,7 @@ class _StationCreatePageState extends State<StationCreatePage> {
           _addressController.clear();
           _hotlineController.clear();
           _captchaController.clear();
+          _base64Images = [];
 
           stationCreateBloc.add(GenerateCaptchaEvent());
         }

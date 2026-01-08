@@ -88,5 +88,9 @@ const String paymentOverviewPageRoute = "/payment/overview";
 const String paymentHistoryPageName = "Lịch sử Giao dịch";
 const String paymentHistoryPageRoute = "/payment/history";
 
+// 11: QUẢN LÝ Schedule - Lịch + Timeslot //
+const String schedulePageName = "Lịch và Slot";
+const String schedulePageRoute = "/station/schedule_slot";
+
 // ĐĂNG XUẤT //
 const logoutName = "Đăng xuất";

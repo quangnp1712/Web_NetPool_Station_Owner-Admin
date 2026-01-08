@@ -165,8 +165,6 @@ class StationCreateBloc extends Bloc<StationCreateEvent, StationCreateState> {
       if (responseSuccess || responseStatus == 200) {
         emit(state.copyWith(
           blocState: StationCreateBlocState.StationCreateSuccessState,
-        ));
-        emit(state.copyWith(
           stationCreateStatus: StationCreateStatus.success,
           message: "Đăng ký thành công",
         ));

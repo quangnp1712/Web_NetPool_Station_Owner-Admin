@@ -168,3 +168,11 @@ class ChangeTabEvent extends StationDetailEvent {
 }
 
 class LoadStationEditDialogEvent extends StationDetailEvent {}
+
+class ShowSpaceManageEvent extends StationDetailEvent {}
+
+class ShowAreaManageEvent extends StationDetailEvent {}
+
+class ShowResourceManageEvent extends StationDetailEvent {}
+
+class ShowAdminManageEvent extends StationDetailEvent {}

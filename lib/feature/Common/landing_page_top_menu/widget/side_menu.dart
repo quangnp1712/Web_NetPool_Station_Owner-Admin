@@ -445,7 +445,21 @@ class SideMenu extends StatelessWidget {
                     },
                   ),
 
-                  //! Mục 11: QL DỊCH VỤ ĂN UỐNG (Cả 2 đều thấy) ---
+                  //! Mục 11: Quản lý Lịch + Timeslot
+                  SideMenuItem(
+                    itemName: schedulePageName,
+                    icon: Icons.calendar_month_outlined, // Icon từ ảnh
+                    onTap: () {
+                      if (!menuController.isActive(schedulePageName)) {
+                        menuController.changeActiveItemTo(schedulePageName);
+                        if (ResponsiveWidget.isSmallScreen(context)) Get.back();
+                        navigationController
+                            .navigateAndSyncURL(schedulePageRoute);
+                      }
+                    },
+                  ),
+
+                  //! Mục 12: QL DỊCH VỤ ĂN UỐNG (Cả 2 đều thấy) ---
                   CustomExpansionItem(
                     parentName: menuParentName,
                     icon: Icons.fastfood_outlined,

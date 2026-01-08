@@ -399,8 +399,9 @@ class _StationDetailPageState extends State<StationDetailPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add_box, size: 16),
+                onPressed: () => bloc.add(ShowResourceManageEvent()),
+                icon: const Icon(Icons.arrow_forward, size: 16),
+                iconAlignment: IconAlignment.end,
                 label: const Text('Quản lý Tài nguyên'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.activeStatus,
@@ -610,8 +611,9 @@ class _StationDetailPageState extends State<StationDetailPage> {
 
                 //! chuyển sang menu ql areas
                 TextButton.icon(
-                  onPressed: () => setState(() => _activeTab = 'areas'),
+                  onPressed: () => bloc.add(ShowAreaManageEvent()),
                   icon: const Icon(Icons.arrow_forward, size: 14),
+                  iconAlignment: IconAlignment.end,
                   label: const Text('Chi tiết'),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.menuActive,
@@ -787,18 +789,22 @@ class _StationDetailPageState extends State<StationDetailPage> {
           ),
           const SizedBox(height: 24),
           _buildActionBtn('QL Loại hình', 'NET, Billiards, PS5, ...', Icons.add,
-              AppColors.primaryBlue, () {}),
+              AppColors.primaryBlue, () => bloc.add(ShowSpaceManageEvent())),
           const SizedBox(height: 12),
           _buildActionBtn(
               'QL Tài nguyên',
               'Xem, thêm, cập nhập tài nguyên, ...',
               Icons.memory,
               AppColors.activeStatus,
-              () {}),
+              () => bloc.add(ShowResourceManageEvent())),
           const SizedBox(height: 12),
           if (_userRole == 'STATION_OWNER')
-            _buildActionBtn('QL Nhân sự', 'Xem, thêm, nhân viên, ...',
-                Icons.manage_accounts, Colors.orangeAccent, () {}),
+            _buildActionBtn(
+                'QL Nhân sự',
+                'Xem, thêm, nhân viên, ...',
+                Icons.manage_accounts,
+                Colors.orangeAccent,
+                () => bloc.add(ShowAdminManageEvent())),
         ],
       ),
     );
@@ -863,14 +869,15 @@ class _StationDetailPageState extends State<StationDetailPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Danh sách Loại hình (Spaces)',
+                const Text('Danh sách Loại hình',
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textWhite)),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => bloc.add(ShowSpaceManageEvent()),
                   icon: const Icon(Icons.arrow_forward, size: 16),
+                  iconAlignment: IconAlignment.end,
                   label: const Text('Quản lý Loại hình'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
@@ -965,15 +972,16 @@ class _StationDetailPageState extends State<StationDetailPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Danh sách Khu vực (Areas)',
+                const Text('Danh sách Khu vực',
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textWhite)),
                 ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add_circle_outline, size: 16),
-                  label: const Text('QL Khu vực'),
+                  onPressed: () => bloc.add(ShowAreaManageEvent()),
+                  icon: const Icon(Icons.arrow_forward, size: 16),
+                  iconAlignment: IconAlignment.end,
+                  label: const Text('Quản lý Khu vực'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.btnPrimary,
                     foregroundColor: Colors.white,
@@ -1064,7 +1072,7 @@ class _StationDetailPageState extends State<StationDetailPage> {
                         fontWeight: FontWeight.bold,
                         color: AppColors.textWhite)),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => bloc.add(ShowResourceManageEvent()),
                   icon: const Icon(Icons.add_box, size: 16),
                   label: const Text('Nhập kho'),
                   style: ElevatedButton.styleFrom(

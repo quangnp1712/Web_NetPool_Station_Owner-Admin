@@ -55,9 +55,9 @@ class _StationEditDialogState extends State<StationEditDialog> {
   void initState() {
     super.initState();
     final state = widget.bloc.state;
-    _stationNameController.text = state.stationName;
+    _stationNameController.text = state.station?.stationName ?? "";
     _addressController.text = state.address;
-    _hotlineController.text = state.phone;
+    _hotlineController.text = state.station?.hotline ?? "";
     _fullAddressController.text = state.fullAddressController;
     _imageScrollController.dispose(); // Dispose scroll controller
 
@@ -119,10 +119,6 @@ class _StationEditDialogState extends State<StationEditDialog> {
           }
         },
         builder: (context, state) {
-          _stationNameController.text = state.stationName;
-          _addressController.text = state.address;
-          _hotlineController.text = state.phone;
-          _fullAddressController.text = state.fullAddressController;
           if (state.blocState == StationDetailBlocState.SelectedProvinceState) {
             if (state.selectedProvince != null) {
               widget.bloc.add(LoadDistrictsEvent(

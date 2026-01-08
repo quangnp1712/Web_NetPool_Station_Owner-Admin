@@ -42,7 +42,7 @@ class StationListRepository extends StationListApi
           'Accept': '*/*',
           'Authorization': 'Bearer $jwtToken',
         },
-      ).timeout(const Duration(seconds: 180));
+      ).timeout(const Duration(seconds: 140));
       return processResponse(response);
     } catch (e) {
       return ExceptionHandlers().getExceptionString(e);

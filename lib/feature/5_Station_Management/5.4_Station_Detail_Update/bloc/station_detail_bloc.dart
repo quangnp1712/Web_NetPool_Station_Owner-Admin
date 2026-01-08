@@ -7,6 +7,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:web_netpool_station_owner_admin/core/router/routes.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/debug_logger.dart';
 import 'package:web_netpool_station_owner_admin/core/utils/utf8_encoding.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.3_Autocomplete/models/autocomplete_model.dart';
@@ -24,6 +25,8 @@ import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/model/4_resource/resoucre_response_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/model/4_resource/resoucre_spec_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/repository/station_detail_repository.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/menu_controller.dart';
+import 'package:web_netpool_station_owner_admin/feature/Common/landing_page_top_menu/controller/navigation_controller.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_model.dart';
 import 'package:web_netpool_station_owner_admin/feature/data/city_controller/city_repository.dart';
 
@@ -32,6 +35,7 @@ part 'station_detail_state.dart';
 
 class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
   String _captchaText = "";
+  MenuController menuController = MenuController.instance;
 
   StationDetailBloc() : super(StationDetailState()) {
     on<StationDetailInitialEvent>(_stationDetailInitialEvent);
@@ -54,6 +58,10 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
     on<ClearAddressSuggestionsEvent>(_onClearAddress);
     on<ChangeTabEvent>(_onChangeTab);
     on<LoadStationEditDialogEvent>(_onLoadStationEditDialog);
+    on<ShowSpaceManageEvent>(_onShowSpaceManage);
+    on<ShowAreaManageEvent>(_onShowAreaManage);
+    on<ShowResourceManageEvent>(_onShowResourceManage);
+    on<ShowAdminManageEvent>(_onShowAdminManage);
   }
 
   FutureOr<void> _stationDetailInitialEvent(
@@ -62,217 +70,154 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
     add(LoadStationDetailEvent(stationId: event.stationId ?? ""));
   }
 
+  FutureOr<void> _onShowSpaceManage(
+      ShowSpaceManageEvent event, Emitter<StationDetailState> emit) async {
+    if (!menuController.isActive(spacePageName)) {
+      menuController.changeActiveItemTo(spacePageName);
+
+      navigationController.navigateAndSyncURL(spacePageRoute);
+    }
+  }
+
+  FutureOr<void> _onShowAreaManage(
+      ShowAreaManageEvent event, Emitter<StationDetailState> emit) async {
+    if (!menuController.isActive(areaPageName)) {
+      menuController.changeActiveItemTo(areaPageName);
+
+      navigationController.navigateAndSyncURL(areaPageRoute);
+    }
+  }
+
+  FutureOr<void> _onShowResourceManage(
+      ShowResourceManageEvent event, Emitter<StationDetailState> emit) async {
+    if (!menuController.isActive(resourcePageName)) {
+      menuController.changeActiveItemTo(resourcePageName);
+
+      navigationController.navigateAndSyncURL(resourcePageRoute);
+    }
+  }
+
+  FutureOr<void> _onShowAdminManage(
+      ShowAdminManageEvent event, Emitter<StationDetailState> emit) async {
+    if (!menuController.isActive(adminListPageName)) {
+      menuController.changeActiveItemTo(adminListPageName,
+          parentName: adminParentName);
+
+      navigationController.navigateAndSyncURL(adminListPageRoute);
+    }
+  }
+
   FutureOr<void> _loadStationDetailEvent(
       LoadStationDetailEvent event, Emitter<StationDetailState> emit) async {
-    emit(state.copyWith(
-      stationDetailStatus: StationDetailStatus.loadingHeader,
-    ));
+    // 1. Validation đầu vào
+    if (event.stationId.isEmpty) {
+      _emitFailure(emit, "Lỗi: Không có stationID");
+      return;
+    }
 
-    //$ KHỞI TẠO VÀ BẮT ĐẦU ĐẾM GIỜ
+    emit(
+        state.copyWith(stationDetailStatus: StationDetailStatus.loadingHeader));
     final stopwatch = Stopwatch()..start();
 
-    StationDetailModelResponse? stationDetailModelResponse;
-    //$ check stationID
     try {
-      if (event.stationId == "") {
-        emit(state.copyWith(
-          stationDetailStatus: StationDetailStatus.failure,
-          message: "Lỗi vui lòng thử lại",
-        ));
-        DebugLogger.printLog("Lỗi: không có stationID ");
-        return;
-      }
-
-      //! call api station + province
-      //! _onLoadDetailStation
-      //! _onLoadProvinces
+      // ---------------------------------------------------------
+      // BATCH 1: GỌI SONG SONG 4 API CHÍNH
+      // Station, Provinces, StationSpaces, PlatformSpaces
+      // Lý do: Các API này chỉ cần stationId, không phụ thuộc lẫn nhau.
+      // ---------------------------------------------------------
       final results = await Future.wait([
-        StationDetailRepository().findDetailStation(event.stationId),
-        CityRepository().getProvinces(),
+        StationDetailRepository().findDetailStation(event.stationId), // Index 0
+        CityRepository().getProvinces(), // Index 1
+        StationDetailRepository().getStationSpace(event.stationId), // Index 2
+        StationDetailRepository().getPlatformSpace(), // Index 3
       ]);
 
-      final stationResult = results[0];
-      final provinceResult = results[1];
+      // --- Xử lý kết quả Station (Bắt buộc phải có) ---
+      final stationData = _parseResponse<StationDetailModelResponse>(
+          results[0], (json) => StationDetailModelResponse.fromJson(json));
 
-      //! 1. Xử lý dữ liệu Station - stationResult
-      var responseMessage = stationResult['message'];
-      var responseStatus = stationResult['status'];
-      var responseSuccess = stationResult['success'];
-      var responseBody = stationResult['body'];
-      if (responseSuccess || responseStatus == 200) {
-        StationDetailModelResponse resultsBody =
-            StationDetailModelResponse.fromJson(responseBody);
-        if (resultsBody.data != null) {
-          stationDetailModelResponse = resultsBody;
-        }
-      } else {
-        DebugLogger.printLog("Lỗi: $responseMessage ");
-        emit(state.copyWith(
-          stationDetailStatus: StationDetailStatus.failure,
-          message: "Lỗi vui lòng thử lại",
-        ));
+      if (stationData?.data == null) {
+        _emitFailure(emit, results[0]['message'] ?? "Lỗi tải thông tin trạm");
         return;
       }
 
-      //! 2. Xử lý dữ liệu Tỉnh/TP - provinceResult
-      bool isLoadingProvinces = false;
-      List<ProvinceModel> provincesList;
-      try {
-        var responseMessage = provinceResult['message'];
-        var responseStatus = provinceResult['status'];
-        var responseSuccess = provinceResult['success'];
-        var responseBody = provinceResult['body'];
-        if (responseSuccess || responseStatus == 200) {
-          provincesList = (responseBody as List)
-              .map((e) => ProvinceModel.fromJson(e as Map<String, dynamic>))
-              .toList();
+      // --- Xử lý Provinces ---
+      final provincesData = _parseListResponse<ProvinceModel>(
+          results[1], (json) => ProvinceModel.fromJson(json));
 
-          isLoadingProvinces = true;
-        } else {
-          DebugLogger.printLog("Lỗi tải Tỉnh/TP");
-          isLoadingProvinces = false;
-          emit(state.copyWith(
-            stationDetailStatus: StationDetailStatus.failure,
-            message: "Lỗi vui lòng thử lại",
-          ));
-          return;
-        }
-      } catch (e) {
-        DebugLogger.printLog("Lỗi tải Tỉnh/TP: $e");
-        isLoadingProvinces = false;
-        emit(state.copyWith(
-          stationDetailStatus: StationDetailStatus.failure,
-          message: "Lỗi vui lòng thử lại",
-        ));
-        return;
-      }
+      // --- Xử lý Station Spaces & Platform Spaces ---
+      var stationSpaces = _parseListResponse<StationSpaceModel>(results[2],
+              (json) => StationSpaceListModelResponse.fromJson(json).data ?? [],
+              isWrapper: true) ??
+          [];
 
-      //! Ảnh
-      List<String> images = [];
-      if (stationDetailModelResponse!.data!.media != null &&
-          stationDetailModelResponse.data!.media!.isNotEmpty) {
-        images = stationDetailModelResponse.data!.media!
-            .map((m) => m.url ?? "")
-            .where((url) => url.isNotEmpty)
-            .toList();
-      } else if (stationDetailModelResponse.data!.avatar != null &&
-          stationDetailModelResponse.data!.avatar != "") {
-        images.add(stationDetailModelResponse.data!.avatar!.toString());
-      }
+      final platformSpaces = _parseListResponse<PlatformSpaceModel>(results[3],
+              (json) => SpaceListModelResponse.fromJson(json).data ?? [],
+              isWrapper: true) ??
+          [];
 
-      //! 3. Chuyển sang Loading Content (Skeleton UI) ngay khi có Header
-      emit(state.copyWith(
-        station: stationDetailModelResponse.data,
-        base64Images: images,
-        currentStationId: event.stationId,
-        stationDetailStatus: StationDetailStatus.loadingContent,
-        provincesList: provincesList,
-      ));
-
-      //! Lấy thông tin cho trạng thái khu vực
-      //! 4. Call API Space
-      //! 4.1 API STATION SPACE
-      //$ emit state.areas : stationSpaces
-      List<StationSpaceModel> stationSpaces = [];
-      var resultsSpace = await StationDetailRepository()
-          .getStationSpace(event.stationId.toString());
-      var responseMessageSpace = resultsSpace['message'];
-      var responseStatusSpace = resultsSpace['status'];
-      var responseSuccessSpace = resultsSpace['success'];
-      var responseBodySpace = resultsSpace['body'];
-      if (responseSuccessSpace || responseStatusSpace == 200) {
-        StationSpaceListModelResponse resultsBodySpace =
-            StationSpaceListModelResponse.fromJson(responseBodySpace);
-        if (resultsBodySpace.data != null) {
-          try {
-            stationSpaces = resultsBodySpace.data!;
-          } catch (e) {
-            stationSpaces = [];
-          }
-        }
-      }
-
-      //! 4.2 API PLATFORM SPACE
-      List<PlatformSpaceModel> platformSpaces = [];
-      var resultsPlatformSpaces =
-          await StationDetailRepository().getPlatformSpace();
-      var responseMessagePlatformSpaces = resultsPlatformSpaces['message'];
-      var responseStatusPlatformSpaces = resultsPlatformSpaces['status'];
-      var responseSuccessPlatformSpaces = resultsPlatformSpaces['success'];
-      var responseBodyPlatformSpaces = resultsPlatformSpaces['body'];
-
-      if (responseSuccessPlatformSpaces ||
-          responseStatusPlatformSpaces == 200) {
-        SpaceListModelResponse resultsBodyPlatformSpaces =
-            SpaceListModelResponse.fromJson(responseBodyPlatformSpaces);
-
-        if (resultsBodyPlatformSpaces.data != null) {
-          try {
-            platformSpaces = resultsBodyPlatformSpaces.data!;
-          } catch (e) {
-            platformSpaces = [];
-          }
-        }
-      }
-
-      //! 4.3 Gắn platform space vào staion space
-      if (platformSpaces.isNotEmpty && stationSpaces.isNotEmpty) {
-        final platformMap = {for (var p in platformSpaces) p.spaceId: p};
-
-        for (var space in stationSpaces) {
-          // Tìm kiếm trong Map cực nhanh
-          final platform = platformMap[space.spaceId];
-
-          if (platform != null) {
-            space.space = platform;
-          }
-        }
-      }
-
-      //! 5. Call API Areas
-      List<AreaModel> areas = [];
-      for (var space in stationSpaces) {
-        var resultsAreas = await StationDetailRepository().getArea(
-          "",
-          event.stationId.toString(),
-          space.spaceId.toString(),
-          "ACTIVE",
-          "0",
-          "10",
-        );
-        var responseMessageAreas = resultsAreas['message'];
-        var responseStatusAreas = resultsAreas['status'];
-        var responseSuccessAreas = resultsAreas['success'];
-        var responseBodyAreas = resultsAreas['body'];
-
-        if (responseSuccessAreas || responseStatusAreas == 200) {
-          AreaListModelResponse resultsBodyAreas =
-              AreaListModelResponse.fromJson(responseBodyAreas);
-
-          //! Lọc dữ liệu
-          if (resultsBodyAreas.data != null) {
-            try {
-              for (var area in resultsBodyAreas.data!) {
-                area.spaceName = space.spaceName;
-              }
-              areas.addAll(resultsBodyAreas.data!);
-              space.areas = resultsBodyAreas.data ?? [];
-            } catch (e) {
-              areas;
-            }
-          }
-        }
-      }
-
-      //! XỬ LÝ TÁCH ĐỊA CHỈ CHI TIẾT
-      String extractedDetail = _extractDetailAddress(
-        fullAddress: stationDetailModelResponse.data!.address ?? "",
-        province: stationDetailModelResponse.data!.province,
-        district: stationDetailModelResponse.data!.district,
-        commune: stationDetailModelResponse.data!.commune,
+      // --- Emit trạng thái Loading Content (Skeleton UI) ---
+      // Xử lý ảnh và địa chỉ trong khi chờ Area
+      final images = _extractImages(stationData!.data!);
+      final detailedAddress = _extractDetailAddress(
+        fullAddress: stationData.data!.address ?? "",
+        province: stationData.data!.province,
+        district: stationData.data!.district,
+        commune: stationData.data!.commune,
       );
 
-      //$ 2. DỪNG ĐỒNG HỒ VÀ LOG KẾT QUẢ
+      emit(state.copyWith(
+        station: stationData.data,
+        base64Images: images,
+        currentStationId: event.stationId,
+        stationDetailStatus:
+            StationDetailStatus.loadingContent, // Chuyển sang load content
+        provincesList: provincesData,
+      ));
+
+      // ---------------------------------------------------------
+      // BATCH 2: GỌI SONG SONG API AREA (Dựa trên StationSpaces có được)
+      // Thay vì for loop await từng cái, ta gom lại chạy 1 lần.
+      // ---------------------------------------------------------
+      List<AreaModel> allAreas = [];
+
+      if (stationSpaces.isNotEmpty) {
+        // Mapping Platform vào Space (Logic cũ của bạn, tối ưu Map lookup)
+        if (platformSpaces.isNotEmpty) {
+          final platformMap = {for (var p in platformSpaces) p.spaceId: p};
+          for (var space in stationSpaces) {
+            space.space = platformMap[space.spaceId];
+          }
+        }
+
+        // Tạo list các Futures để gọi Area song song
+        final areaFutures = stationSpaces
+            .map((space) => StationDetailRepository().getArea("",
+                event.stationId, space.spaceId.toString(), "ACTIVE", "0", "10"))
+            .toList();
+
+        // Chờ tất cả API Area trả về
+        final areaResults = await Future.wait(areaFutures);
+
+        // Map kết quả Area vào Space tương ứng
+        for (int i = 0; i < stationSpaces.length; i++) {
+          final space = stationSpaces[i];
+          final areaResponse = areaResults[i]; // Kết quả tương ứng theo index
+
+          final areaDataWrapper = _parseResponse<AreaListModelResponse>(
+              areaResponse, (json) => AreaListModelResponse.fromJson(json));
+
+          if (areaDataWrapper?.data != null) {
+            // Gán tên space cho area (như logic cũ)
+            for (var area in areaDataWrapper!.data!) {
+              area.spaceName = space.spaceName;
+            }
+            space.areas = areaDataWrapper.data ?? [];
+            allAreas.addAll(areaDataWrapper.data!);
+          }
+        }
+      }
+
       stopwatch.stop();
       final elapsed = stopwatch.elapsed;
       final minutes = elapsed.inMinutes;
@@ -283,20 +228,73 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
           "🚀 [Performance] Hoàn tất sau: $minutes phút $seconds giây $milliseconds ms "
           "(Tổng: ${stopwatch.elapsedMilliseconds}ms)");
 
-      //! trả kết quả
+      // --- Emit Final Success ---
       emit(state.copyWith(
-        address: extractedDetail,
-        areas: areas,
+        address: detailedAddress,
+        areas: allAreas,
         spaces: stationSpaces,
+        // Status sẽ giữ nguyên hoặc update thành success tùy logic UI của bạn
       ));
-      return;
-    } catch (e) {
-      emit(state.copyWith(
-        stationDetailStatus: StationDetailStatus.failure,
-        message: "Lỗi vui lòng thử lại",
-      ));
-      DebugLogger.printLog("Lỗi : $e");
+    } catch (e, stackTrace) {
+      DebugLogger.printLog("Lỗi System: $e \n $stackTrace");
+      _emitFailure(emit, "Lỗi hệ thống vui lòng thử lại");
     }
+  }
+
+// ==========================================
+// HELPER FUNCTIONS (Nên tách ra file utils hoặc để cuối file)
+// ==========================================
+
+  /// Hàm parse response generic để giảm code lặp lại
+  T? _parseResponse<T>(
+      dynamic result, T Function(Map<String, dynamic>) fromJson) {
+    if (result['success'] == true || result['status'] == 200) {
+      if (result['body'] != null) {
+        try {
+          return fromJson(result['body']);
+        } catch (e) {
+          DebugLogger.printLog("Parse Error ($T): $e");
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Hàm parse list response generic
+  /// [isWrapper]: Nếu body trả về Object chứa List (như SpaceListModelResponse) thì set true
+  List<T>? _parseListResponse<T>(
+      dynamic result, dynamic Function(dynamic) parser,
+      {bool isWrapper = false}) {
+    if (result['success'] == true || result['status'] == 200) {
+      final body = result['body'];
+      if (body != null) {
+        try {
+          if (isWrapper) {
+            // Trường hợp body là object chứa list (VD: {data: []})
+            return parser(body) as List<T>;
+          } else {
+            // Trường hợp body là list trực tiếp (VD: [{}, {}])
+            return (body as List).map((e) => parser(e) as T).toList();
+          }
+        } catch (e) {
+          DebugLogger.printLog("Parse List Error ($T): $e");
+        }
+      }
+    }
+    return [];
+  }
+
+  List<String> _extractImages(StationDetailModel data) {
+    if (data.media?.isNotEmpty ?? false) {
+      return data.media!
+          .map((m) => m.url ?? "")
+          .where((url) => url.isNotEmpty)
+          .toList();
+    }
+    if (data.avatar?.isNotEmpty ?? false) {
+      return [data.avatar!];
+    }
+    return [];
   }
 
   FutureOr<void> _onLoadStationEditDialog(LoadStationEditDialogEvent event,
@@ -426,9 +424,6 @@ class StationDetailBloc extends Bloc<StationDetailEvent, StationDetailState> {
       _generateCaptcha();
 
       emit(state.copyWith(
-          stationName: state.station!.stationName,
-          address: state.station!.address,
-          phone: state.station!.hotline,
           fullAddressController: fullAddress,
 
           // Data Dropdowns
