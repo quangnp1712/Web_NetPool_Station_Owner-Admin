@@ -6,6 +6,7 @@ import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/b
 import 'package:web_netpool_station_owner_admin/feature/10_Resource_Management/pages/resoucre_page.dart';
 import 'package:web_netpool_station_owner_admin/feature/12_Schedule_Timeslot_Management/schedule_timeslot.dart';
 import 'package:web_netpool_station_owner_admin/feature/2_Payment_Managemment/dashboard_payment.dart';
+import 'package:web_netpool_station_owner_admin/feature/3_Booking_Management/booking_list.dart';
 import 'package:web_netpool_station_owner_admin/feature/3_Booking_Management/dashboard_booking.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/bloc/station_detail_bloc.dart';
 import 'package:web_netpool_station_owner_admin/feature/5_Station_Management/5.4_Station_Detail_Update/pages/station_detail_page.dart';
@@ -155,6 +156,9 @@ Route<dynamic> menuRoute(RouteSettings settings) {
     //! QUẢN LÝ đặt lịch $//
     case bookingOverviewPageRoute:
       return getPageRoute(const StationBookingOverviewPage());
+
+    case bookingCalendarPageRoute:
+      return getPageRoute(const BookingListPage());
 
     //! TEST $//
     // case testRoute:
